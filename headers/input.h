@@ -12,12 +12,14 @@
 #define GB_INPUT_DOUBLE_PRESSED  32
 
 typedef enum GB_INPUT {
-    GB_THRUST,
-    GB_BREAK,
-    GB_ROTATE_LEFT,
-    GB_ROTATE_RIGHT,
-    GB_QUIT_GAME,
-    GB_NUM_INPUTS
+    GB_INPUT_THRUST,
+    GB_INPUT_BREAK,
+    GB_INPUT_ROTATE_LEFT,
+    GB_INPUT_ROTATE_RIGHT,
+    GB_INPUT_SELECT,
+    GB_INPUT_BE_AWESOME,
+    GB_INPUT_QUIT_GAME,
+    GB_INPUT_NUM_INPUTS
 } GB_INPUT;
 
 typedef struct GbInputState {
@@ -34,5 +36,6 @@ void gb_update_input();
 void gb_teardown_input();
 
 GbInputState gb_get_input_state(GB_INPUT input);
+uint8_t gb_check_input_state(GB_INPUT input, uint8_t mask);
 
 #endif
