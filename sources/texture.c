@@ -14,7 +14,7 @@ int loadTexture(char* filename, G_TEXTURE index) {
         return 0;
     }
 
-    g_textures[index] = SDL_CreateTextureFromSurface(g_mainRenderer, tempSurface);
+    g_textures[index] = SDL_CreateTextureFromSurface(gb_main_renderer, tempSurface);
 
     if (g_textures[index] == NULL) {
         fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
@@ -52,7 +52,7 @@ void textureRenderXYClip(G_TEXTURE index, SDL_Rect *dst, SDL_Rect *clip) {
     }
 
     SDL_RenderCopyEx(
-        g_mainRenderer,
+        gb_main_renderer,
         g_textures[index],
         clip,
         dst,

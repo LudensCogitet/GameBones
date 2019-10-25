@@ -37,5 +37,6 @@ void gb_teardown_input();
 
 GbInputState gb_get_input_state(GB_INPUT input);
 uint8_t gb_check_input_state(GB_INPUT input, uint8_t mask);
+void gb_set_input_key(GB_INPUT input, uint32_t key);
 
 #endif

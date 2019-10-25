@@ -3,11 +3,11 @@
 #include <SDL2/SDL.h>
 #include "../headers/renderer.h"
 
-SDL_Window* g_mainWindow = NULL;
-SDL_Renderer* g_mainRenderer = NULL;
+SDL_Window* gb_main_window = NULL;
+SDL_Renderer* gb_main_renderer = NULL;
 
-void initMainRenderer(char * caption) {
-    g_mainWindow = SDL_CreateWindow(
+void gb_init_main_renderer(char * caption) {
+    gb_main_window = SDL_CreateWindow(
         caption,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -16,28 +16,28 @@ void initMainRenderer(char * caption) {
         SDL_WINDOW_RESIZABLE
     );
 
-    if (g_mainWindow == NULL) {
+    if (gb_main_window == NULL) {
         fprintf(stderr, "SDL_CreateWindow failed: %s", SDL_GetError());
         exit(1);
     }
 
-    g_mainRenderer = SDL_CreateRenderer(
-        g_mainWindow,
+    gb_main_renderer = SDL_CreateRenderer(
+        gb_main_window,
         -1,
         SDL_RENDERER_ACCELERATED    |
         SDL_RENDERER_TARGETTEXTURE  |
         SDL_RENDERER_PRESENTVSYNC
     );
 
-    if (g_mainRenderer == NULL) {
+    if (gb_main_renderer == NULL) {
         fprintf(stderr, "SDL_CreateRenderer failed: %s", SDL_GetError());
         exit(1);
     }
 
-    SDL_SetRenderDrawColor(g_mainRenderer, 0X3b, 0X3b, 0X3b, 0x00);
+    SDL_SetRenderDrawColor(gb_main_renderer, 0X3b, 0X3b, 0X3b, 0x00);
 }
 
-void destroyMainRenderer() {
-    SDL_DestroyRenderer(g_mainRenderer);
-    SDL_DestroyWindow(g_mainWindow);
+void gb_destroy_main_renderer() {
+    SDL_DestroyRenderer(gb_main_renderer);
+    SDL_DestroyWindow(gb_main_window);
 }

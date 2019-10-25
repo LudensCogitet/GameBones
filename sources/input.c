@@ -14,16 +14,6 @@ int gb_init_input() {
         gb_input_map[i]->timestamp = 0;
     }
 
-    gb_input_map[GB_INPUT_THRUST]->keycode = SDLK_w;
-    gb_input_map[GB_INPUT_ROTATE_LEFT]->keycode = SDLK_a;
-    gb_input_map[GB_INPUT_ROTATE_RIGHT]->keycode = SDLK_d;
-    gb_input_map[GB_INPUT_BREAK]->keycode = SDLK_s;
-
-    gb_input_map[GB_INPUT_SELECT]->keycode = SDL_BUTTON_LEFT;
-    gb_input_map[GB_INPUT_BE_AWESOME]-> keycode = SDLK_b;
-
-    gb_input_map[GB_INPUT_QUIT_GAME]->keycode = SDLK_q;
-
     return 0;
 }
 
@@ -82,6 +72,10 @@ void gb_teardown_input() {
         free(gb_input_map[i]);
         gb_input_map[i] = NULL;
     }
+}
+
+void gb_set_input_key(GB_INPUT input, uint32_t key) {
+    gb_input_map[input]->keycode = key;
 }
 
 GbInputState gb_get_input_state(GB_INPUT input) {
