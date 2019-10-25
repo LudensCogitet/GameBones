@@ -9,7 +9,7 @@
 
 int main(int argc, char *argv[]) {
     gb_init_input();
-    gb_init_main_renderer("Input Tests");
+    gb_init_main_renderer("GFX tests");
 
     uint8_t done = 0;
     while (!done) {

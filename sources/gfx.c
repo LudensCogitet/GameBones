@@ -16,7 +16,7 @@ void gb_gfx_init() {
         gb_gfx_layer_textures[i] = NULL;
     }
 }
-
+void gb_gfx_destroy_texture(GB_GFX_LAYER index);
 void gb_gfx_teardown() {
     for (int i = 0; i < GFX_LAYER_NUM_LAYERS; i++) {
         gb_gfx_destroy_texture(i);
@@ -48,7 +48,7 @@ int gb_gfx_load_texture(char* filename, GB_GFX_LAYER index) {
 /** PRIVATE FUNCTIONS **/
 
 void gb_gfx_destroy_texture(GB_GFX_LAYER index) {
-    if (gb_gfx_layer_textures[index != NULL]) {
+    if (gb_gfx_layer_textures[index] != NULL) {
         SDL_DestroyTexture(gb_gfx_layer_textures[index]);
         gb_gfx_layer_textures[index] = NULL;
     }
