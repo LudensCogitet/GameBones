@@ -19,6 +19,7 @@ int main(int argc, char *argv[]) {
 
     GbSprite *ship[5];
     int shipsDead = 0;
+    uint8_t makeShips = 0;
     for (int i = 0; i < 5; i++) {
         ship[i] = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
         ship[i]->src.w = 128;
@@ -41,8 +42,29 @@ int main(int argc, char *argv[]) {
             done = 1;
         }
 
-        if (shipsDead < 5 && gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED)) {
-            ship[shipsDead++]->dispose = 1;
+        if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED) ||
+            gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED | GB_INPUT_SHIFT)) {
+            if (!makeShips) {
+                if (shipsDead < 5) {
+                    ship[shipsDead++]->dispose = 1;
+                } else {
+                    makeShips = 1;
+                }
+            }
+
+            if (makeShips) {
+                ship[--shipsDead] = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
+
+                ship[shipsDead]->src.w = 128;
+                ship[shipsDead]->src.h = 128;
+
+                ship[shipsDead]->dst.w = 64;
+                ship[shipsDead]->dst.h = 64;
+
+                ship[shipsDead]->dst.x = 64 * shipsDead;
+
+                makeShips = shipsDead;
+            }
         }
 
         gb_gfx_draw();

@@ -61,8 +61,15 @@ int gb_gfx_load_texture(char* filename, GB_GFX_TEXTURE texture) {
 }
 
 void gb_gfx_teardown() {
-    for (int i = 0; i < GFX_TEXTURE_NUM_TEXTURES; i++) {
+    for (unsigned int i = 0; i < GFX_TEXTURE_NUM_TEXTURES; i++) {
         gb_gfx_unload_texture(i);
+    }
+
+    for (unsigned int l = 0; l < GFX_LAYER_NUM_LAYERS; l++) {
+        for (unsigned int s = 0; s < gb_gfx_sprite_cursors[l]; s++) {
+            free(gb_gfx_sprites[l][s]);
+        }
+        gb_gfx_sprite_cursors[l] = 0;
     }
 }
 
