@@ -4,7 +4,7 @@
 
 static GbInputState *gb_input_map[GB_INPUT_NUM_INPUTS];
 
-int gb_init_input() {
+int gb_input_init() {
     for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
         gb_input_map[i] = (GbInputState *)malloc(sizeof(GbInputState));
 
@@ -17,7 +17,7 @@ int gb_init_input() {
     return 0;
 }
 
-void gb_update_input() {
+void gb_input_update() {
     SDL_Event event;
 
     uint8_t numHandled = 0;
@@ -67,21 +67,21 @@ void gb_update_input() {
     }
 }
 
-void gb_teardown_input() {
+void gb_input_teardown() {
     for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
         free(gb_input_map[i]);
         gb_input_map[i] = NULL;
     }
 }
 
-void gb_set_input_key(GB_INPUT input, uint32_t key) {
+void gb_input_set_key(GB_INPUT input, uint32_t key) {
     gb_input_map[input]->keycode = key;
 }
 
-GbInputState gb_get_input_state(GB_INPUT input) {
+GbInputState gb_input_get_state(GB_INPUT input) {
     return *gb_input_map[input];
 }
 
-uint8_t gb_check_input_state(GB_INPUT input, uint8_t mask) {
+uint8_t gb_input_check_state(GB_INPUT input, uint8_t mask) {
     return (gb_input_map[input]->state & mask) == mask;
 }

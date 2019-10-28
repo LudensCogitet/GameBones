@@ -31,12 +31,12 @@ typedef struct GbInputState {
     uint32_t timestamp;
 } GbInputState;
 
-int gb_init_input();
-void gb_update_input();
-void gb_teardown_input();
+int gb_input_init();
+void gb_input_update();
+void gb_input_teardown();
 
-GbInputState gb_get_input_state(GB_INPUT input);
-uint8_t gb_check_input_state(GB_INPUT input, uint8_t mask);
-void gb_set_input_key(GB_INPUT input, uint32_t key);
+GbInputState gb_input_get_state(GB_INPUT input);
+uint8_t gb_input_check_state(GB_INPUT input, uint8_t mask);
+void gb_input_set_key(GB_INPUT input, uint32_t key);
 
 #endif

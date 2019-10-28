@@ -34,7 +34,7 @@ void gb_init_main_renderer(char * caption) {
         exit(1);
     }
 
-    SDL_SetRenderDrawColor(gb_main_renderer, 0X3b, 0X3b, 0X3b, 0x00);
+    SDL_SetRenderDrawColor(gb_main_renderer, 0X0, 0X0, 0X0, 0x00);
 }
 
 void gb_destroy_main_renderer() {
