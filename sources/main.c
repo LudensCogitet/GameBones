@@ -11,6 +11,57 @@
 #include "../headers/textures.h"
 #include "../headers/animation.h"
 
+static float ship_direction[48][2] = {
+{-0.000000, -1.000000},
+{-0.130526, -0.991445},
+{-0.258819, -0.965926},
+{-0.382683, -0.923880},
+{-0.500000, -0.866025},
+{-0.608761, -0.793353},
+{-0.707107, -0.707107},
+{-0.793353, -0.608761},
+{-0.866025, -0.500000},
+{-0.923880, -0.382683},
+{-0.965926, -0.258819},
+{-0.991445, -0.130526},
+{-1.000000, 0.000000},
+{-0.991445, 0.130526},
+{-0.965926, 0.258819},
+{-0.923880, 0.382683},
+{-0.866025, 0.500000},
+{-0.793353, 0.608761},
+{-0.707107, 0.707107},
+{-0.608761, 0.793353},
+{-0.500000, 0.866025},
+{-0.382683, 0.923880},
+{-0.258819, 0.965926},
+{-0.130526, 0.991445},
+{0.000000, 1.000000},
+{0.130526, 0.991445},
+{0.258819, 0.965926},
+{0.382683, 0.923880},
+{0.500000, 0.866025},
+{0.608761, 0.793353},
+{0.707107, 0.707107},
+{0.793353, 0.608761},
+{0.866025, 0.500000},
+{0.923880, 0.382683},
+{0.965926, 0.258819},
+{0.991445, 0.130526},
+{1.000000, 0.000000},
+{0.991445, -0.130526},
+{0.965926, -0.258819},
+{0.923880, -0.382683},
+{0.866025, -0.500000},
+{0.793353, -0.608761},
+{0.707107, -0.707107},
+{0.608761, -0.793353},
+{0.500000, -0.866025},
+{0.382683, -0.923880},
+{0.258819, -0.965926},
+{0.130526, -0.991445}
+};
+
 int main(int argc, char *argv[]) {
     gb_init_main_renderer("GFX tests");
     gb_input_init();
@@ -31,13 +82,17 @@ int main(int argc, char *argv[]) {
     ship->dst.x = 300;
     ship->dst.y = 300;
 
-    anim = gb_anim_new_animation(0, 0, 128, 0, 50, 48, 1, ANIM_TYPE_LOOP);
-
-    uint16_t dr = 50;
+    float * ship_dir = ship_direction[0];
+    float dx = 0;
+    float dy = 0;
+    anim = gb_anim_new_animation(0, 0, 128, 0, 21, 48, 1, ANIM_TYPE_LOOP);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
     gb_input_set_key(GB_INPUT_ROTATE_RIGHT, SDLK_d);
+    gb_input_set_key(GB_INPUT_THRUST, SDLK_w);
+    gb_input_set_key(GB_INPUT_BREAK, SDLK_s);
+    gb_input_set_key(GB_INPUT_SELECT, SDLK_SPACE);
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -53,17 +108,36 @@ int main(int argc, char *argv[]) {
         if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
             anim->direction = 1;
             gb_anim_apply(&ship->src, delta, anim);
+            ship_dir = ship_direction[anim->current_frame];
         }
 
         if (gb_input_check_state(GB_INPUT_ROTATE_RIGHT, GB_INPUT_PRESSED)) {
             anim->direction = -1;
             gb_anim_apply(&ship->src, delta, anim);
+            ship_dir = ship_direction[anim->current_frame];
         }
 
+        if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
+            dx += ship_dir[0];
+            dy += ship_dir[1];
+        }
+
+        if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
+            dx -= ship_dir[0];
+            dy -= ship_dir[1];
+        }
+
+        if (gb_input_check_state(GB_INPUT_SELECT, GB_INPUT_JUST_PRESSED)) {
+            dx = 0;
+            dy = 0;
+            ship->dst.x = 300;
+            ship->dst.y = 300;
+        }
 //        if (gb_anim_apply(&ship->src, delta, anim)) {
 //          printf("animation complete\n");
 //        }
-
+        ship->dst.x += dx * 0.5;
+        ship->dst.y += dy * 0.5;
 
         gb_gfx_draw();
         SDL_Delay(0);
