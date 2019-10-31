@@ -31,8 +31,9 @@ int main(int argc, char *argv[]) {
     ship->dst.x = 300;
     ship->dst.y = 300;
 
-    anim = gb_anim_new_animation(0, 0, 128, 0, 60, 31, 1, ANIM_TYPE_LOOP);
+    anim = gb_anim_new_animation(0, 0, 128, 0, 50, 48, 1, ANIM_TYPE_LOOP);
 
+    uint16_t dr = 50;
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
