@@ -43,7 +43,7 @@ void gb_input_update() {
                         gb_input_map[i]->last_state = gb_input_map[i]->state;
                         gb_input_map[i]->timestamp = SDL_GetTicks();
 
-                        gb_input_map[i]->state = (event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN) ? GB_INPUT_PRESSED | GB_INPUT_JUST_PRESSED : 0;
+                        gb_input_map[i]->state = (event.type == SDL_KEYDOWN || event.type == SDL_MOUSEBUTTONDOWN) ? GB_INPUT_PRESSED | GB_INPUT_JUST_PRESSED : GB_INPUT_RELEASED;
 
                         if (gb_input_map[i]->state) {
                             SDL_Keymod mod = SDL_GetModState();
@@ -63,7 +63,7 @@ void gb_input_update() {
     for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
         if (inputHandled[i]) continue;
 
-        gb_input_map[i]->state &= (~GB_INPUT_JUST_PRESSED);
+        gb_input_map[i]->state &= ~(GB_INPUT_JUST_PRESSED | GB_INPUT_RELEASED);
     }
 }
 

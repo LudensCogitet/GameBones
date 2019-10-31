@@ -6,10 +6,11 @@
 
 #define GB_INPUT_PRESSED          1
 #define GB_INPUT_JUST_PRESSED     2
-#define GB_INPUT_SHIFT            4
-#define GB_INPUT_ALT              8
-#define GB_INPUT_CTRL            16
-#define GB_INPUT_DOUBLE_PRESSED  32
+#define GB_INPUT_RELEASED         4
+#define GB_INPUT_SHIFT            8
+#define GB_INPUT_ALT             16
+#define GB_INPUT_CTRL            32
+#define GB_INPUT_DOUBLE_PRESSED  64
 
 typedef enum GB_INPUT {
     GB_INPUT_THRUST,

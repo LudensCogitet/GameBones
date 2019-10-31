@@ -18,25 +18,25 @@ int main(int argc, char *argv[]) {
 
     gb_gfx_load_texture("./data/assets/ship_frames.png", GFX_TEXTURE_SHIP);
 
-    GbSprite *ship[5];
-    GbAnimation * anim[5];
-    int shipsDead = 0;
-    uint8_t makeShips = 0;
-    for (int i = 0; i < 5; i++) {
-        ship[i] = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
-        ship[i]->src.w = 128;
-        ship[i]->src.h = 128;
+    GbSprite *ship;
+    GbAnimation *anim;
 
-        ship[i]->dst.w = 64;
-        ship[i]->dst.h = 64;
+    ship = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
+    ship->src.w = 128;
+    ship->src.h = 128;
 
-        ship[i]->dst.x = 64 * i;
+    ship->dst.w = 128;
+    ship->dst.h = 128;
 
-        anim[i] = gb_anim_new_animation(0, 0, 128, 0, 30, 31, 1, ANIM_TYPE_LOOP);
-    }
+    ship->dst.x = 300;
+    ship->dst.y = 300;
+
+    anim = gb_anim_new_animation(0, 0, 128, 0, 60, 31, 1, ANIM_TYPE_LOOP);
+
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
-    gb_input_set_key(GB_INPUT_THRUST, SDLK_RETURN);
+    gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
+    gb_input_set_key(GB_INPUT_ROTATE_RIGHT, SDLK_d);
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -48,35 +48,21 @@ int main(int argc, char *argv[]) {
         if (gb_input_check_state(GB_INPUT_QUIT_GAME, GB_INPUT_JUST_PRESSED)) {
             done = 1;
         }
-//
-//        if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED) ||
-//            gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED | GB_INPUT_SHIFT)) {
-//            if (!makeShips) {
-//                if (shipsDead < 5) {
-//                    ship[shipsDead++]->dispose = 1;
-//                } else {
-//                    makeShips = 1;
-//                }
-//            }
-//
-//            if (makeShips) {
-//                ship[--shipsDead] = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
-//
-//                ship[shipsDead]->src.w = 128;
-//                ship[shipsDead]->src.h = 128;
-//
-//                ship[shipsDead]->dst.w = 64;
-//                ship[shipsDead]->dst.h = 64;
-//
-//                ship[shipsDead]->dst.x = 64 * shipsDead;
-//
-//                makeShips = shipsDead;
-//            }
+
+        if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
+            anim->direction = 1;
+            gb_anim_apply(&ship->src, delta, anim);
+        }
+
+        if (gb_input_check_state(GB_INPUT_ROTATE_RIGHT, GB_INPUT_PRESSED)) {
+            anim->direction = -1;
+            gb_anim_apply(&ship->src, delta, anim);
+        }
+
+//        if (gb_anim_apply(&ship->src, delta, anim)) {
+//          printf("animation complete\n");
 //        }
 
-        for (unsigned int i = 0; i < 5; i++) {
-            printf("%d\n", gb_anim_apply(&ship[i]->src, delta, anim[i]));
-        }
 
         gb_gfx_draw();
         SDL_Delay(0);
@@ -86,10 +72,8 @@ int main(int argc, char *argv[]) {
         last_time = current_time;
     }
 
-    for (unsigned int i = 0; i < 5; i++) {
-        free(anim[i]);
-        anim[i] = NULL;
-    }
+    free(anim);
+    anim = NULL;
 
     gb_gfx_teardown();
     gb_input_teardown();
