@@ -63,8 +63,8 @@ uint8_t gb_anim_apply(SDL_Rect *src, uint32_t delta, GbAnimation *animation) {
                         (animation->init_direction < 0 && animation->direction == animation->init_direction && animation->current_frame == animation->frame_count -1);
     }
 
-    src->x = animation->dx * animation->current_frame;
-    src->y = animation->dy * animation->current_frame;
+    if (animation->dx) src->x = animation->init_x + (animation->dx * animation->current_frame);
+    if (animation->dy) src->y = animation->init_y + (animation->dy * animation->current_frame);
 
     return anim_finished;
 }

@@ -67,10 +67,12 @@ int main(int argc, char *argv[]) {
     gb_input_init();
     gb_gfx_init();
 
-    gb_gfx_load_texture("./data/assets/ship_frames.png", GFX_TEXTURE_SHIP);
+    gb_gfx_load_texture("./data/assets/ship.png", GFX_TEXTURE_SHIP);
 
     GbSprite *ship;
-    GbAnimation *anim;
+    GbAnimation *anim_rotate_ship;
+    GbAnimation *anim_boost;
+    GbAnimation *anim_thrust;
 
     ship = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
     ship->src.w = 128;
@@ -85,7 +87,9 @@ int main(int argc, char *argv[]) {
     float * ship_dir = ship_direction[0];
     float dx = 0;
     float dy = 0;
-    anim = gb_anim_new_animation(0, 0, 128, 0, 21, 48, 1, ANIM_TYPE_LOOP);
+    anim_rotate_ship = gb_anim_new_animation(0, 0, 128, 0, 21, 48, 1, ANIM_TYPE_LOOP);
+    anim_boost = gb_anim_new_animation(0, 128, 0, 128, 50, 5, 1, ANIM_TYPE_LOOP);
+    anim_thrust = gb_anim_new_animation(0, 128, 0, 128, 100, 3, -1, ANIM_TYPE_PINGPONG);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
@@ -99,7 +103,11 @@ int main(int argc, char *argv[]) {
     uint32_t current_time = 0;
     uint32_t delta = 0;
     double dDelta = 0;
-    float power = 50; // pixels per second
+    float power = 10; // pixels per second
+
+    uint8_t boosting = 0;
+    uint8_t thrusting = 0;
+
     while (!done) {
         gb_input_update();
 
@@ -108,22 +116,31 @@ int main(int argc, char *argv[]) {
         }
 
         if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
-            anim->direction = 1;
-            gb_anim_apply(&ship->src, delta, anim);
-            ship_dir = ship_direction[anim->current_frame];
+            anim_rotate_ship->direction = 1;
+            gb_anim_apply(&ship->src, delta, anim_rotate_ship);
+            ship_dir = ship_direction[anim_rotate_ship->current_frame];
         }
 
         if (gb_input_check_state(GB_INPUT_ROTATE_RIGHT, GB_INPUT_PRESSED)) {
-            anim->direction = -1;
-            gb_anim_apply(&ship->src, delta, anim);
-            ship_dir = ship_direction[anim->current_frame];
+            anim_rotate_ship->direction = -1;
+            gb_anim_apply(&ship->src, delta, anim_rotate_ship);
+            ship_dir = ship_direction[anim_rotate_ship->current_frame];
+        }
+
+        if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED)) {
+            boosting = 1;
+        }
+
+        if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_RELEASED)) {
+            boosting = thrusting = anim_thrust->current_frame = anim_boost->current_frame = 0;
+            anim_thrust->direction = -1;
+            ship->src.y = 0;
         }
 
         if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
             dx += ship_dir[0] * (power * dDelta);
             dy += ship_dir[1] * (power * dDelta);
         }
-
 
         if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
             dx = dy = 0;
@@ -134,6 +151,20 @@ int main(int argc, char *argv[]) {
             dy = 0;
             ship->dst.x = 300;
             ship->dst.y = 300;
+        }
+
+        if (boosting) {
+            boosting = !gb_anim_apply(&ship->src, delta, anim_boost);
+            dx += (ship_dir[0] * (power * dDelta));
+            dy += (ship_dir[1] * (power * dDelta));
+            if (!boosting) {
+                thrusting = 1;
+                anim_boost->current_frame = 0;
+            }
+        }
+
+        if (thrusting) {
+            gb_anim_apply(&ship->src, delta, anim_thrust);
         }
 
         printf("%f, %f\n", dx, dy);
@@ -150,8 +181,10 @@ int main(int argc, char *argv[]) {
         last_time = current_time;
     }
 
-    free(anim);
-    anim = NULL;
+    free(anim_rotate_ship);
+    free(anim_boost);
+    free(anim_thrust);
+    anim_rotate_ship = NULL;
 
     gb_gfx_teardown();
     gb_input_teardown();

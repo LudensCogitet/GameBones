@@ -33,7 +33,7 @@ void gb_init_main_renderer(char * caption) {
         fprintf(stderr, "SDL_CreateRenderer failed: %s", SDL_GetError());
         exit(1);
     }
-
+    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" );
     SDL_SetRenderDrawColor(gb_main_renderer, 0X0, 0X0, 0X0, 0x00);
 }
 
