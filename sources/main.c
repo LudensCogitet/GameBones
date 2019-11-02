@@ -76,8 +76,8 @@ int main(int argc, char *argv[]) {
     ship->src.w = 128;
     ship->src.h = 128;
 
-    ship->dst.w = 128;
-    ship->dst.h = 128;
+    ship->dst.w = 64;
+    ship->dst.h = 64;
 
     ship->dst.x = 300;
     ship->dst.y = 300;
@@ -91,13 +91,15 @@ int main(int argc, char *argv[]) {
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
     gb_input_set_key(GB_INPUT_ROTATE_RIGHT, SDLK_d);
     gb_input_set_key(GB_INPUT_THRUST, SDLK_w);
-    gb_input_set_key(GB_INPUT_BREAK, SDLK_s);
-    gb_input_set_key(GB_INPUT_SELECT, SDLK_SPACE);
+    gb_input_set_key(GB_INPUT_BREAK, SDLK_SPACE);
+    gb_input_set_key(GB_INPUT_SELECT, SDLK_RETURN);
 
     uint8_t done = 0;
     uint32_t last_time = 0;
     uint32_t current_time = 0;
     uint32_t delta = 0;
+    double dDelta = 0;
+    float power = 50; // pixels per second
     while (!done) {
         gb_input_update();
 
@@ -118,13 +120,13 @@ int main(int argc, char *argv[]) {
         }
 
         if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
-            dx += ship_dir[0];
-            dy += ship_dir[1];
+            dx += ship_dir[0] * (power * dDelta);
+            dy += ship_dir[1] * (power * dDelta);
         }
 
+
         if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
-            dx -= ship_dir[0];
-            dy -= ship_dir[1];
+            dx = dy = 0;
         }
 
         if (gb_input_check_state(GB_INPUT_SELECT, GB_INPUT_JUST_PRESSED)) {
@@ -133,17 +135,18 @@ int main(int argc, char *argv[]) {
             ship->dst.x = 300;
             ship->dst.y = 300;
         }
-//        if (gb_anim_apply(&ship->src, delta, anim)) {
-//          printf("animation complete\n");
-//        }
-        ship->dst.x += dx * 0.5;
-        ship->dst.y += dy * 0.5;
+
+        printf("%f, %f\n", dx, dy);
+
+        ship->dst.x += dx;
+        ship->dst.y += dy;
 
         gb_gfx_draw();
         SDL_Delay(0);
 
         current_time = SDL_GetTicks();
         delta = current_time - last_time;
+        dDelta = (double)(delta * 0.001);
         last_time = current_time;
     }
 
