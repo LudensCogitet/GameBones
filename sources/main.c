@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
     ship->src.w = 128;
     ship->src.h = 128;
 
-    ship->dst.w = 128;
-    ship->dst.h = 128;
+    ship->dst.w = 32;
+    ship->dst.h = 32;
 
     ship->dst.x = 300;
     ship->dst.y = 300;
@@ -103,7 +103,8 @@ int main(int argc, char *argv[]) {
     uint32_t current_time = 0;
     uint32_t delta = 0;
     double dDelta = 0;
-    float acceleration = 600; // pixels per second
+    float acceleration = 300; // pixels per second
+    float boostAcceleration = acceleration * 5;
 
     uint8_t boosting = 0;
     uint8_t thrusting = 0;
@@ -141,8 +142,8 @@ int main(int argc, char *argv[]) {
         }
 
         if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
-            dx += ship_dir[0] * (acceleration * dDelta);
-            dy += ship_dir[1] * (acceleration * dDelta);
+            dx += ship_dir[0] * (boosting ? boostAcceleration * dDelta : acceleration * dDelta);
+            dy += ship_dir[1] * (boosting ? boostAcceleration * dDelta : acceleration * dDelta);
         }
 
         if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
@@ -158,8 +159,6 @@ int main(int argc, char *argv[]) {
 
         if (boosting) {
             boosting = !gb_anim_apply(&ship->src, delta, anim_boost);
-            dx += (ship_dir[0] * (acceleration * dDelta));
-            dy += (ship_dir[1] * (acceleration * dDelta));
             if (!boosting) {
                 thrusting = 1;
                 anim_boost->current_frame = 0;
