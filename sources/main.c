@@ -78,8 +78,8 @@ int main(int argc, char *argv[]) {
     ship->src.w = 128;
     ship->src.h = 128;
 
-    ship->dst.w = 64;
-    ship->dst.h = 64;
+    ship->dst.w = 128;
+    ship->dst.h = 128;
 
     ship->dst.x = 300;
     ship->dst.y = 300;
@@ -103,10 +103,13 @@ int main(int argc, char *argv[]) {
     uint32_t current_time = 0;
     uint32_t delta = 0;
     double dDelta = 0;
-    float power = 10; // pixels per second
+    float acceleration = 20; // pixels per second
 
     uint8_t boosting = 0;
     uint8_t thrusting = 0;
+
+    double x = ship->dst.x;
+    double y = ship->dst.y;
 
     while (!done) {
         gb_input_update();
@@ -138,8 +141,8 @@ int main(int argc, char *argv[]) {
         }
 
         if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
-            dx += ship_dir[0] * (power * dDelta);
-            dy += ship_dir[1] * (power * dDelta);
+            dx += ship_dir[0] * (acceleration * dDelta);
+            dy += ship_dir[1] * (acceleration * dDelta);
         }
 
         if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
@@ -149,14 +152,14 @@ int main(int argc, char *argv[]) {
         if (gb_input_check_state(GB_INPUT_SELECT, GB_INPUT_JUST_PRESSED)) {
             dx = 0;
             dy = 0;
-            ship->dst.x = 300;
-            ship->dst.y = 300;
+            ship->dst.x = x = 300;
+            ship->dst.y = y = 300;
         }
 
         if (boosting) {
             boosting = !gb_anim_apply(&ship->src, delta, anim_boost);
-            dx += (ship_dir[0] * (power * dDelta));
-            dy += (ship_dir[1] * (power * dDelta));
+            dx += (ship_dir[0] * (acceleration * dDelta));
+            dy += (ship_dir[1] * (acceleration * dDelta));
             if (!boosting) {
                 thrusting = 1;
                 anim_boost->current_frame = 0;
@@ -169,8 +172,11 @@ int main(int argc, char *argv[]) {
 
         printf("%f, %f\n", dx, dy);
 
-        ship->dst.x += dx;
-        ship->dst.y += dy;
+        x += dx;
+        y += dy;
+
+        ship->dst.x = x;
+        ship->dst.y = y;
 
         gb_gfx_draw();
         SDL_Delay(0);
