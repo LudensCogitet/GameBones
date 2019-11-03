@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     uint32_t current_time = 0;
     uint32_t delta = 0;
     double dDelta = 0;
-    float acceleration = 20; // pixels per second
+    float acceleration = 600; // pixels per second
 
     uint8_t boosting = 0;
     uint8_t thrusting = 0;
@@ -170,10 +170,10 @@ int main(int argc, char *argv[]) {
             gb_anim_apply(&ship->src, delta, anim_thrust);
         }
 
-        printf("%f, %f\n", dx, dy);
+        x += dx * dDelta;
+        y += dy * dDelta;
 
-        x += dx;
-        y += dy;
+        printf("%f, %f\n", x, y);
 
         ship->dst.x = x;
         ship->dst.y = y;
