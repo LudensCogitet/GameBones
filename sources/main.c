@@ -70,11 +70,22 @@ int main(int argc, char *argv[]) {
     gb_gfx_load_texture("./data/assets/ship.png", GFX_TEXTURE_SHIP);
 
     GbSprite *ship;
+    GbSprite *fixedShip;
     GbAnimation *anim_rotate_ship;
     GbAnimation *anim_boost;
     GbAnimation *anim_thrust;
 
-    ship = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP);
+    fixedShip = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP, 1);
+    fixedShip->src.w = 128;
+    fixedShip->src.h = 128;
+
+    fixedShip->dst.w = 128;
+    fixedShip->dst.h = 128;
+
+    fixedShip->dst.x = 0;
+    fixedShip->dst.y = 0;
+
+    ship = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP, 0);
     ship->src.w = 128;
     ship->src.h = 128;
 
@@ -98,6 +109,11 @@ int main(int argc, char *argv[]) {
     gb_input_set_key(GB_INPUT_BREAK, SDLK_SPACE);
     gb_input_set_key(GB_INPUT_SELECT, SDLK_RETURN);
 
+    gb_input_set_key(GB_INPUT_PAN_CAMERA_UP, SDLK_UP);
+    gb_input_set_key(GB_INPUT_PAN_CAMERA_DOWN, SDLK_DOWN);
+    gb_input_set_key(GB_INPUT_PAN_CAMERA_LEFT, SDLK_LEFT);
+    gb_input_set_key(GB_INPUT_PAN_CAMERA_RIGHT, SDLK_RIGHT);
+
     uint8_t done = 0;
     uint32_t last_time = 0;
     uint32_t current_time = 0;
@@ -112,8 +128,27 @@ int main(int argc, char *argv[]) {
     double x = ship->dst.x;
     double y = ship->dst.y;
 
+    int32_t c_dx = 0;
+    int32_t c_dy = 0;
+
     while (!done) {
         gb_input_update();
+
+        c_dx = 0;
+        c_dy = 0;
+
+        if (gb_input_check_state(GB_INPUT_PAN_CAMERA_LEFT, GB_INPUT_PRESSED)) {
+            c_dx = -10;
+        }
+        if (gb_input_check_state(GB_INPUT_PAN_CAMERA_RIGHT, GB_INPUT_PRESSED)) {
+            c_dx = 10;
+        }
+        if (gb_input_check_state(GB_INPUT_PAN_CAMERA_UP, GB_INPUT_PRESSED)) {
+            c_dy = -10;
+        }
+        if (gb_input_check_state(GB_INPUT_PAN_CAMERA_DOWN, GB_INPUT_PRESSED)) {
+            c_dy = 10;
+        }
 
         if (gb_input_check_state(GB_INPUT_QUIT_GAME, GB_INPUT_JUST_PRESSED)) {
             done = 1;
@@ -176,7 +211,7 @@ int main(int argc, char *argv[]) {
 
         ship->dst.x = x;
         ship->dst.y = y;
-
+        gb_gfx_camera_move(c_dx, c_dy);
         gb_gfx_draw();
         SDL_Delay(0);
 
