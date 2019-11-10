@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <SDL2/SDL_ttf.h>
+
 #include "../headers/renderer.h"
 #include "../headers/gfx.h"
 #include "../headers/textures.h"
@@ -32,6 +34,8 @@ void gb_gfx_init() {
     for (unsigned int i = 0; i < GFX_LAYER_NUM_LAYERS; i++) {
         gb_gfx_sprite_cursors[i] = 0;
     }
+
+
 }
 
 void gb_gfx_unload_texture(GB_GFX_TEXTURE texture) {
@@ -141,6 +145,10 @@ GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t 
     gb_gfx_sprites[layer][gb_gfx_sprite_cursors[layer] - 1] = newSprite;
 
     return newSprite;
+}
+
+GbSprite *gb_gfx_text_draw(char *text, uint8_t wrapW, uint8_t fixed) {
+    return NULL;
 }
 
 void gb_gfx_camera_set(int32_t x, int32_t y) {

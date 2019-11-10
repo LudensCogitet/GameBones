@@ -89,8 +89,8 @@ int main(int argc, char *argv[]) {
     ship->src.w = 128;
     ship->src.h = 128;
 
-    ship->dst.w = 32;
-    ship->dst.h = 32;
+    ship->dst.w = 64;
+    ship->dst.h = 64;
 
     ship->dst.x = 300;
     ship->dst.y = 300;

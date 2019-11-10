@@ -28,6 +28,8 @@ void gb_gfx_unload_texture(GB_GFX_TEXTURE texture);
 void gb_gfx_draw();
 GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t fixed);
 
+GbSprite *gb_gfx_text_draw(char *text, uint8_t wrapW, uint8_t fixed);
+
 void gb_gfx_camera_set(int32_t x, int32_t y);
 void gb_gfx_camera_move(int32_t dx, int32_t dy);
 void gb_gfx_camera_get_pos(int32_t *x, int32_t *y);
