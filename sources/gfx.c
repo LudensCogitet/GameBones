@@ -35,7 +35,7 @@ void gb_gfx_init() {
         gb_gfx_sprite_cursors[i] = 0;
     }
 
-
+    TTF_Init();
 }
 
 void gb_gfx_unload_texture(GB_GFX_TEXTURE texture) {
