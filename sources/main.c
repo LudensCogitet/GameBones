@@ -63,17 +63,29 @@ static float ship_direction[48][2] = {
 };
 
 int main(int argc, char *argv[]) {
+    char counter[10];
+
     gb_init_main_renderer("GFX tests");
     gb_input_init();
     gb_gfx_init();
 
-    gb_gfx_load_texture("./data/assets/ship.png", GFX_TEXTURE_SHIP);
+    gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
+    gb_gfx_font_load("./data/assets/FreeMono.ttf", GFX_FONT_LARGE_FREE_MONO, 18);
+
+    gb_gfx_font_set(GFX_FONT_LARGE_FREE_MONO);
+    gb_gfx_font_color_set(GFX_COLOR_WHITE);
+    gb_gfx_font_layer_set(GFX_LAYER_FOREGROUND);
 
     GbSprite *ship;
     GbSprite *fixedShip;
+    GbSprite *text;
     GbAnimation *anim_rotate_ship;
     GbAnimation *anim_boost;
     GbAnimation *anim_thrust;
+
+    text = gb_gfx_new_text("This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. ", 300, 1);
+    text->dst.x = 400;
+    text->dst.y = 400;
 
     fixedShip = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP, 1);
     fixedShip->src.w = 128;
@@ -152,6 +164,19 @@ int main(int argc, char *argv[]) {
 
         if (gb_input_check_state(GB_INPUT_QUIT_GAME, GB_INPUT_JUST_PRESSED)) {
             done = 1;
+        }
+
+        if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_JUST_PRESSED)) {
+            text->fixed = !text->fixed;
+
+
+            if (text->fixed) {
+                gb_gfx_text_change(text, "You hit it again!", 1000);
+            } else {
+                gb_gfx_text_change(text, "You just hit the spacebar!", 1000);
+            }
+
+
         }
 
         if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
