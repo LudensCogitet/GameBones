@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     gb_gfx_init();
 
     gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
-    gb_gfx_font_load("./data/assets/FreeMono.ttf", GFX_FONT_LARGE_FREE_MONO, 18);
+    gb_gfx_font_load("./data/assets/FreeMono.ttf", GFX_FONT_LARGE_FREE_MONO, 50);
 
     gb_gfx_font_set(GFX_FONT_LARGE_FREE_MONO);
     gb_gfx_font_color_set(GFX_COLOR_WHITE);
@@ -83,9 +83,9 @@ int main(int argc, char *argv[]) {
     GbAnimation *anim_boost;
     GbAnimation *anim_thrust;
 
-    text = gb_gfx_new_text("This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. ", 300, 1);
-    text->dst.x = 400;
-    text->dst.y = 400;
+    text = gb_gfx_new_text("This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. This is a test. ", LOGICAL_SCREEN_WIDTH, 1);
+    text->dst.x = 0;
+    text->dst.y = 0;
 
     fixedShip = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP, 1);
     fixedShip->src.w = 128;
@@ -101,11 +101,11 @@ int main(int argc, char *argv[]) {
     ship->src.w = 128;
     ship->src.h = 128;
 
-    ship->dst.w = 64;
-    ship->dst.h = 64;
+    ship->dst.w = 1000;
+    ship->dst.h = 1000;
 
-    ship->dst.x = 300;
-    ship->dst.y = 300;
+    ship->dst.x = 0;
+    ship->dst.y = 0;
 
     float * ship_dir = ship_direction[0];
     float dx = 0;

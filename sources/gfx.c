@@ -135,7 +135,7 @@ void gb_gfx_texture_dynamic_unload(GB_GFX_TEXTURE texture) {
 
 void gb_gfx_draw() {
     SDL_RenderClear(gb_main_renderer);
-
+    static SDL_Rect dst;
     for (unsigned int l = 0; l < GFX_LAYER_NUM_LAYERS; l++) {
         for (unsigned int s = 0; s < gb_gfx_sprite_cursors[l]; s++) {
             if (gb_gfx_sprites[l][s]->dispose) {
@@ -154,31 +154,25 @@ void gb_gfx_draw() {
                 if (gb_gfx_sprites[l][s] == NULL) break;
             }
 
-            if (!gb_gfx_sprites[l][s]->fixed) {
-                SDL_Rect dst = gb_gfx_sprites[l][s]->dst;
+            dst = gb_gfx_sprites[l][s]->dst;
+            dst.x *= gb_scale_factor_x;
+            dst.y *= gb_scale_factor_y;
+            dst.w *= gb_scale_factor_x;
+            dst.h *= gb_scale_factor_y;
 
-                dst.x -= gb_gfx_camera_offset_x;
-                dst.y -= gb_gfx_camera_offset_y;
-                SDL_RenderCopyEx(
-                    gb_main_renderer,
-                    gb_gfx_textures[gb_gfx_sprites[l][s]->texture],
-                    &gb_gfx_sprites[l][s]->src,
-                    &dst,
-                    0,
-                    NULL,
-                    SDL_FLIP_NONE
-                );
-            } else {
-                SDL_RenderCopyEx(
-                    gb_main_renderer,
-                    gb_gfx_textures[gb_gfx_sprites[l][s]->texture],
-                    &gb_gfx_sprites[l][s]->src,
-                    &gb_gfx_sprites[l][s]->dst,
-                    0,
-                    NULL,
-                    SDL_FLIP_NONE
-                );
+            if (!gb_gfx_sprites[l][s]->fixed) {
+                dst.x -= gb_gfx_camera_offset_x * gb_scale_factor_x;
+                dst.y -= gb_gfx_camera_offset_y * gb_scale_factor_y;
             }
+            SDL_RenderCopyEx(
+                gb_main_renderer,
+                gb_gfx_textures[gb_gfx_sprites[l][s]->texture],
+                &gb_gfx_sprites[l][s]->src,
+                &dst,
+                0,
+                NULL,
+                SDL_FLIP_NONE
+            );
         }
     }
 
@@ -224,9 +218,9 @@ void gb_gfx_font_unload(GB_GFX_FONT font) {
 
 void gb_gfx_font_load(char *ttfFile, GB_GFX_FONT font, uint16_t pt) {
     gb_gfx_font_unload(font);
-    pt = (pt * ((float)gb_screen_height / (float)LOGICAL_SCREEN_HEIGHT));
+    //pt = (pt * ((float)LOGICAL_SCREEN_HEIGHT) / (float)gb_screen_height );
 
-    gb_gfx_fonts[font] = TTF_OpenFont(ttfFile, pt);
+    gb_gfx_fonts[font] = TTF_OpenFont(ttfFile, pt * gb_scale_factor_y);
 }
 
 void gb_gfx_font_set(GB_GFX_FONT font) {
@@ -249,7 +243,7 @@ GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
         return NULL;
     }
 
-    SDL_Surface *temp = TTF_RenderText_Blended_Wrapped(gb_gfx_fonts[gb_gfx_font], text, gb_gfx_colors[gb_gfx_font_color], wrapW);
+    SDL_Surface *temp = TTF_RenderText_Blended_Wrapped(gb_gfx_fonts[gb_gfx_font], text, gb_gfx_colors[gb_gfx_font_color], wrapW * gb_scale_factor_x);
     gb_gfx_texture_unload(textureIndex);
     gb_gfx_textures[textureIndex] = SDL_CreateTextureFromSurface(gb_main_renderer, temp);
     SDL_FreeSurface(temp);
@@ -257,8 +251,8 @@ GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
     GbSprite *textSprite = gb_gfx_new_sprite(gb_gfx_font_layer, textureIndex, fixed);
     SDL_QueryTexture(gb_gfx_textures[textureIndex], NULL, NULL, &textSprite->src.w, &textSprite->src.h);
 
-    textSprite->dst.w = textSprite->src.w;
-    textSprite->dst.h = textSprite->src.h;
+    textSprite->dst.w = textSprite->src.w / gb_scale_factor_x;
+    textSprite->dst.h = textSprite->src.h / gb_scale_factor_y;
 
     return textSprite;
 }
