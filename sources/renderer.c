@@ -6,8 +6,8 @@
 SDL_Window* gb_main_window = NULL;
 SDL_Renderer* gb_main_renderer = NULL;
 
-uint32_t gb_screen_width = 1920;
-uint32_t gb_screen_height = 1080;
+uint32_t gb_screen_width = 1280;
+uint32_t gb_screen_height = 720;
 
 float gb_scale_factor_x;
 float gb_scale_factor_y;
