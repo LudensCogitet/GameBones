@@ -74,7 +74,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir) {
     asteroid->sprite->dst.w = 110;
     asteroid->sprite->dst.h = 110;
 
-    asteroid->anim_rotate = gb_anim_new_animation(0, 0, 128, 0, 50, 23, 1, ANIM_TYPE_LOOP);
+    asteroid->anim_rotate = gb_anim_new_animation(0, 0, 128, 0, 80, 23, 1, ANIM_TYPE_LOOP);
 
     gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
 
