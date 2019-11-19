@@ -12,6 +12,7 @@
 #include "../headers/animation.h"
 #include "../headers/entity.h"
 #include "../headers/entities/player_ship.h"
+#include "../headers/entities/asteroid.h"
 
 int main(int argc, char *argv[]) {
     gb_init_main_renderer("Logic Tests");
@@ -20,8 +21,13 @@ int main(int argc, char *argv[]) {
     gb_entity_init();
 
     gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
+    gb_gfx_texture_load("./data/assets/asteroid.png", GFX_TEXTURE_ASTEROID);
 
     player_ship_new(LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, 0, 300, 1000);
+    asteroid_new(1000, 1000, 4);
+    asteroid_new(234, 165, 7);
+    asteroid_new(600, 500, 2);
+    asteroid_new(100, 100, 20);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);

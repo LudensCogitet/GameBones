@@ -1,5 +1,6 @@
 #include "../headers/entity.h"
 #include "../headers/entities/player_ship.h"
+#include "../headers/entities/asteroid.h"
 
 static GbEntity *gb_entity_entities[GB_ENTITY_MAX_ENTITIES];
 static unsigned int gb_entity_entities_cursor = 0;
@@ -64,6 +65,8 @@ void gb_entity_act(uint32_t delta) {
             case ENTITY_TYPE_PLAYER_SHIP:
                 player_ship_act((PlayerShip *)gb_entity_entities[i]->entity, delta);
             break;
+            case ENTITY_TYPE_ASTEROID:
+                asteroid_act((Asteroid *)gb_entity_entities[i]->entity, delta);
         }
     }
 }
