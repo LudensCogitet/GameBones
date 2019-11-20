@@ -2,6 +2,7 @@
 #include "../../headers/entity.h"
 #include "../../headers/input.h"
 #include "../../headers/physics.h"
+#include <stdlib.h>
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));

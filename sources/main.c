@@ -19,8 +19,8 @@ int main(int argc, char *argv[]) {
     gb_init_main_renderer("Logic Tests");
     gb_input_init();
     gb_gfx_init();
-    gb_entity_init();
     gb_physics_init();
+    gb_entity_init();
 
     gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
     gb_gfx_texture_load("./data/assets/asteroid.png", GFX_TEXTURE_ASTEROID);
@@ -84,8 +84,8 @@ int main(int argc, char *argv[]) {
         last_time = current_time;
     }
 
-    gb_physics_teardown();
     gb_entity_teardown();
+    gb_physics_teardown();
     gb_gfx_teardown();
     gb_input_teardown();
     gb_destroy_main_renderer();

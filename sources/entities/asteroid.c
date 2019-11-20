@@ -1,6 +1,7 @@
 #include "../../headers/entities/asteroid.h"
 #include "../../headers/entity.h"
 #include "../../headers/physics.h"
+#include <stdlib.h>
 
 Asteroid *asteroid_new(float x, float y, unsigned int dir) {
     Asteroid *asteroid = (Asteroid *)malloc(sizeof(Asteroid));

@@ -1,6 +1,7 @@
 #include "../headers/entity.h"
 #include "../headers/entities/player_ship.h"
 #include "../headers/entities/asteroid.h"
+#include <stdlib.h>
 
 static GbEntity *gb_entity_entities[GB_ENTITY_MAX_ENTITIES];
 static unsigned int gb_entity_entities_cursor;
@@ -18,6 +19,8 @@ void gb_entity_teardown() {
         switch (gb_entity_entities[i]->type) {
             case ENTITY_TYPE_PLAYER_SHIP:
                 player_ship_destroy((PlayerShip *)gb_entity_entities[i]->entity);
+            case ENTITY_TYPE_ASTEROID:
+                asteroid_destroy((Asteroid *)gb_entity_entities[i]->entity);
             break;
         }
 
