@@ -70,7 +70,7 @@ void gb_input_update() {
 void gb_input_teardown() {
     for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
         free(gb_input_map[i]);
-        gb_input_map[i] = NULL;
+        gb_input_map[i] = 0;
     }
 }
 

@@ -3,19 +3,13 @@
 
 #include "../gfx.h"
 #include "../animation.h"
+#include "../physics.h"
 
 typedef struct Asteroid {
     GbAnimation *anim_rotate;
 
     GbSprite *sprite;
-
-    double x;
-    double y;
-
-    float dx;
-    float dy;
-
-    float *dir;
+    GbPhysBod *body;
 } Asteroid;
 
 Asteroid *asteroid_new(float x, float y, unsigned int dir);

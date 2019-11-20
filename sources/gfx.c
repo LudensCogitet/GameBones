@@ -33,12 +33,12 @@ static int32_t gb_gfx_camera_offset_y = 0;
 void gb_gfx_init() {
     for (unsigned int l = 0; l < GFX_LAYER_NUM_LAYERS; l++) {
         for (unsigned int s = 0; s < GB_GFX_MAX_SPRITES_PER_LAYER; s++) {
-            gb_gfx_sprites[l][s] = NULL;
+            gb_gfx_sprites[l][s] = 0;
         }
     }
 
     for (unsigned int i = 0; i < GFX_TEXTURE_NUM_TEXTURES; i++) {
-        gb_gfx_textures[i] = NULL;
+        gb_gfx_textures[i] = 0;
     }
 
     for (unsigned int i = 0; i < GFX_LAYER_NUM_LAYERS; i++) {
@@ -81,16 +81,16 @@ void gb_gfx_teardown() {
 /* TEXTURES */
 
 void gb_gfx_texture_unload(GB_GFX_TEXTURE texture) {
-    if (gb_gfx_textures[texture] != NULL) {
+    if (gb_gfx_textures[texture] != 0) {
         SDL_DestroyTexture(gb_gfx_textures[texture]);
-        gb_gfx_textures[texture] = NULL;
+        gb_gfx_textures[texture] = 0;
     }
 }
 
 int gb_gfx_texture_load(char* filename, GB_GFX_TEXTURE texture) {
     SDL_Surface* tempSurface = IMG_Load(filename);
 
-    if (tempSurface == NULL) {
+    if (tempSurface == 0) {
         fprintf(stderr, "Failed to load image from file: %s", IMG_GetError());
         return 0;
     }
@@ -98,7 +98,7 @@ int gb_gfx_texture_load(char* filename, GB_GFX_TEXTURE texture) {
     gb_gfx_texture_unload(texture);
     gb_gfx_textures[texture] = SDL_CreateTextureFromSurface(gb_main_renderer, tempSurface);
 
-    if (gb_gfx_textures[texture] == NULL) {
+    if (gb_gfx_textures[texture] == 0) {
         fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
         SDL_FreeSurface(tempSurface);
         return 0;
@@ -116,7 +116,7 @@ GB_GFX_TEXTURE gb_gfx_texture_dynamic_get_free() {
         if (gb_gfx_dynamic_texture_cursor > GFX_TEXTURE_DYNAMIC_LAST)
             gb_gfx_dynamic_texture_cursor = GFX_TEXTURE_DYNAMIC_FIRST;
 
-        if (gb_gfx_textures[gb_gfx_dynamic_texture_cursor] == NULL) {
+        if (gb_gfx_textures[gb_gfx_dynamic_texture_cursor] == 0) {
             return current;
         }
     }
@@ -132,6 +132,11 @@ void gb_gfx_texture_dynamic_unload(GB_GFX_TEXTURE texture) {
 }
 
 /* SPRITES */
+
+void gb_gfx_sprite_move(double x, double y, GbSprite *sprite) {
+    sprite->dst.x = x - sprite->dst.w * 0.5;
+    sprite->dst.y = y - sprite->dst.h * 0.5;
+}
 
 void gb_gfx_draw() {
     SDL_RenderClear(gb_main_renderer);
@@ -149,9 +154,9 @@ void gb_gfx_draw() {
                     gb_gfx_sprites[l][s] = gb_gfx_sprites[l][gb_gfx_sprite_cursors[l]];
                 }
 
-                gb_gfx_sprites[l][gb_gfx_sprite_cursors[l]] = NULL;
+                gb_gfx_sprites[l][gb_gfx_sprite_cursors[l]] = 0;
 
-                if (gb_gfx_sprites[l][s] == NULL) break;
+                if (gb_gfx_sprites[l][s] == 0) break;
             }
 
             dst = gb_gfx_sprites[l][s]->dst;
@@ -170,7 +175,7 @@ void gb_gfx_draw() {
                 &gb_gfx_sprites[l][s]->src,
                 &dst,
                 0,
-                NULL,
+                0,
                 SDL_FLIP_NONE
             );
         }
@@ -182,7 +187,7 @@ void gb_gfx_draw() {
 GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t fixed) {
     if (++gb_gfx_sprite_cursors[layer] >= GB_GFX_MAX_SPRITES_PER_LAYER) {
         --gb_gfx_sprite_cursors[layer];
-        return NULL;
+        return 0;
     }
 
     GbSprite *newSprite = (GbSprite *)malloc(sizeof(GbSprite));
@@ -210,9 +215,9 @@ GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t 
 /* FONTS */
 
 void gb_gfx_font_unload(GB_GFX_FONT font) {
-    if (gb_gfx_fonts[font] != NULL) {
+    if (gb_gfx_fonts[font] != 0) {
         TTF_CloseFont(gb_gfx_fonts[font]);
-        gb_gfx_fonts[font] = NULL;
+        gb_gfx_fonts[font] = 0;
     }
 }
 
@@ -240,7 +245,7 @@ void gb_gfx_font_layer_set(GB_GFX_LAYER layer) {
 GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
     GB_GFX_TEXTURE textureIndex = gb_gfx_texture_dynamic_get_free();
     if (textureIndex > GFX_TEXTURE_DYNAMIC_LAST) {
-        return NULL;
+        return 0;
     }
 
     SDL_Surface *temp = TTF_RenderText_Blended_Wrapped(gb_gfx_fonts[gb_gfx_font], text, gb_gfx_colors[gb_gfx_font_color], wrapW * gb_scale_factor_x);
@@ -249,7 +254,7 @@ GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
     SDL_FreeSurface(temp);
 
     GbSprite *textSprite = gb_gfx_new_sprite(gb_gfx_font_layer, textureIndex, fixed);
-    SDL_QueryTexture(gb_gfx_textures[textureIndex], NULL, NULL, &textSprite->src.w, &textSprite->src.h);
+    SDL_QueryTexture(gb_gfx_textures[textureIndex], 0, 0, &textSprite->src.w, &textSprite->src.h);
 
     textSprite->dst.w = textSprite->src.w / gb_scale_factor_x;
     textSprite->dst.h = textSprite->src.h / gb_scale_factor_y;
@@ -263,7 +268,7 @@ void gb_gfx_text_change(GbSprite *sprite, char *text, uint32_t wrapW) {
     gb_gfx_textures[sprite->texture] = SDL_CreateTextureFromSurface(gb_main_renderer, temp);
     SDL_FreeSurface(temp);
 
-    SDL_QueryTexture(gb_gfx_textures[sprite->texture], NULL, NULL, &sprite->src.w, &sprite->src.h);
+    SDL_QueryTexture(gb_gfx_textures[sprite->texture], 0, 0, &sprite->src.w, &sprite->src.h);
 
     sprite->dst.w = sprite->src.w;
     sprite->dst.h = sprite->src.h;

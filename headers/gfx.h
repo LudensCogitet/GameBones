@@ -37,6 +37,7 @@ void gb_gfx_teardown();
 int gb_gfx_texture_load(char* filename, GB_GFX_TEXTURE texture);
 void gb_gfx_texture_unload(GB_GFX_TEXTURE texture);
 
+void gb_gfx_sprite_move(double x, double y, GbSprite *sprite);
 void gb_gfx_draw();
 
 GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t fixed);

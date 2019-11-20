@@ -3,12 +3,14 @@
 #include "../headers/entities/asteroid.h"
 
 static GbEntity *gb_entity_entities[GB_ENTITY_MAX_ENTITIES];
-static unsigned int gb_entity_entities_cursor = 0;
+static unsigned int gb_entity_entities_cursor;
 
 void gb_entity_init() {
     for (unsigned int i = 0; i < GB_ENTITY_MAX_ENTITIES; i++) {
-        gb_entity_entities[i] = NULL;
+        gb_entity_entities[i] = 0;
     }
+
+    gb_entity_entities_cursor = 0;
 }
 
 void gb_entity_teardown() {
@@ -20,13 +22,15 @@ void gb_entity_teardown() {
         }
 
         free(gb_entity_entities[i]);
-        gb_entity_entities[i] = NULL;
+        gb_entity_entities[i] = 0;
     }
+
+    gb_entity_entities_cursor = 0;
 }
 
 GbEntity *gb_entity_add(GB_ENTITY_TYPE type, void *entity) {
     if (gb_entity_entities_cursor >= GB_ENTITY_MAX_ENTITIES)
-        return NULL;
+        return 0;
 
     gb_entity_entities[gb_entity_entities_cursor] = (GbEntity *)malloc(sizeof(GbEntity));
 
@@ -50,7 +54,7 @@ void gb_entity_remove(unsigned int entityIndex) {
         gb_entity_entities[entityIndex] = gb_entity_entities[gb_entity_entities_cursor];
     }
 
-    gb_entity_entities[gb_entity_entities_cursor] = NULL;
+    gb_entity_entities[gb_entity_entities_cursor] = 0;
 }
 
 void gb_entity_act(uint32_t delta) {
@@ -59,7 +63,7 @@ void gb_entity_act(uint32_t delta) {
             gb_entity_remove(i);
         }
 
-        if (gb_entity_entities[i] == NULL) break;
+        if (gb_entity_entities[i] == 0) break;
 
         switch (gb_entity_entities[i]->type) {
             case ENTITY_TYPE_PLAYER_SHIP:

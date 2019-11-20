@@ -3,6 +3,7 @@
 
 #include "../gfx.h"
 #include "../animation.h"
+#include "../physics.h"
 
 typedef struct PlayerShip {
     GbAnimation *anim_rotate_ship;
@@ -10,14 +11,7 @@ typedef struct PlayerShip {
     GbAnimation *anim_thrust;
 
     GbSprite *sprite;
-
-    double x;
-    double y;
-
-    float dx;
-    float dy;
-
-    float *dir;
+    GbPhysBod *body;
 
     float acceleration;
     float boostAcceleration;

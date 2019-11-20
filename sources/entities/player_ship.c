@@ -1,68 +1,12 @@
 #include "../../headers/entities/player_ship.h"
 #include "../../headers/entity.h"
 #include "../../headers/input.h"
-#include <stdio.h>
-
-static float ship_direction[48][2] = {
-{-0.000000, -1.000000},
-{-0.130526, -0.991445},
-{-0.258819, -0.965926},
-{-0.382683, -0.923880},
-{-0.500000, -0.866025},
-{-0.608761, -0.793353},
-{-0.707107, -0.707107},
-{-0.793353, -0.608761},
-{-0.866025, -0.500000},
-{-0.923880, -0.382683},
-{-0.965926, -0.258819},
-{-0.991445, -0.130526},
-{-1.000000, 0.000000},
-{-0.991445, 0.130526},
-{-0.965926, 0.258819},
-{-0.923880, 0.382683},
-{-0.866025, 0.500000},
-{-0.793353, 0.608761},
-{-0.707107, 0.707107},
-{-0.608761, 0.793353},
-{-0.500000, 0.866025},
-{-0.382683, 0.923880},
-{-0.258819, 0.965926},
-{-0.130526, 0.991445},
-{0.000000, 1.000000},
-{0.130526, 0.991445},
-{0.258819, 0.965926},
-{0.382683, 0.923880},
-{0.500000, 0.866025},
-{0.608761, 0.793353},
-{0.707107, 0.707107},
-{0.793353, 0.608761},
-{0.866025, 0.500000},
-{0.923880, 0.382683},
-{0.965926, 0.258819},
-{0.991445, 0.130526},
-{1.000000, 0.000000},
-{0.991445, -0.130526},
-{0.965926, -0.258819},
-{0.923880, -0.382683},
-{0.866025, -0.500000},
-{0.793353, -0.608761},
-{0.707107, -0.707107},
-{0.608761, -0.793353},
-{0.500000, -0.866025},
-{0.382683, -0.923880},
-{0.258819, -0.965926},
-{0.130526, -0.991445}
-};
+#include "../../headers/physics.h"
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));
 
-    ship->x = x;
-    ship->y = y;
-    ship->dx = 0;
-    ship->dy = 0;
-
-    ship->dir = ship_direction[dir];
+    ship->body = gb_physics_new_body(x, y, dir, 0);
 
     ship->acceleration = acc;
     ship->boostAcceleration = boostAcc;
@@ -97,6 +41,7 @@ void player_ship_destroy(PlayerShip *ship) {
     free(ship->anim_thrust);
 
     ship->sprite->dispose = 1;
+    ship->body->dispose = 1;
 
     free(ship);
 }
@@ -104,16 +49,18 @@ void player_ship_destroy(PlayerShip *ship) {
 void player_ship_act(PlayerShip *ship, uint32_t delta) {
     double dDelta = (double)(delta * 0.001);
 
+    float acceleration = 0;
+
     if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
         ship->anim_rotate_ship->direction = 1;
         gb_anim_apply(&(ship->sprite->src), delta, ship->anim_rotate_ship);
-        ship->dir = ship_direction[ship->anim_rotate_ship->current_frame];
+        ship->body->dir = gb_physics_directions[ship->anim_rotate_ship->current_frame];
     }
 
     if (gb_input_check_state(GB_INPUT_ROTATE_RIGHT, GB_INPUT_PRESSED)) {
         ship->anim_rotate_ship->direction = -1;
         gb_anim_apply(&(ship->sprite->src), delta, ship->anim_rotate_ship);
-        ship->dir = ship_direction[ship->anim_rotate_ship->current_frame];
+        ship->body->dir = gb_physics_directions[ship->anim_rotate_ship->current_frame];
     }
 
     if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED)) {
@@ -127,12 +74,11 @@ void player_ship_act(PlayerShip *ship, uint32_t delta) {
     }
 
     if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
-        ship->dx += ship->dir[0] * (ship->boosting ? ship->boostAcceleration * dDelta : ship->acceleration * dDelta);
-        ship->dy += ship->dir[1] * (ship->boosting ? ship->boostAcceleration * dDelta : ship->acceleration * dDelta);
+        acceleration = ship->boosting ? ship->boostAcceleration : ship->acceleration;
     }
 
     if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
-        ship->dx = ship->dy = 0;
+        ship->body->dx = ship->body->dy = 0;
     }
 
     if (ship->boosting) {
@@ -147,9 +93,6 @@ void player_ship_act(PlayerShip *ship, uint32_t delta) {
         gb_anim_apply(&(ship->sprite->src), delta, ship->anim_thrust);
     }
 
-    ship->x += ship->dx * dDelta;
-    ship->y += ship->dy * dDelta;
-
-    ship->sprite->dst.x = ship->x - ship->sprite->dst.w * 0.5;
-    ship->sprite->dst.y = ship->y - ship->sprite->dst.h * 0.5;
+    gb_physics_body_move(ship->body, dDelta, acceleration);
+    gb_gfx_sprite_move(ship->body->x, ship->body->y, ship->sprite);
 }

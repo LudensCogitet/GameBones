@@ -3,8 +3,8 @@
 #include <SDL2/SDL.h>
 #include "../headers/renderer.h"
 
-SDL_Window* gb_main_window = NULL;
-SDL_Renderer* gb_main_renderer = NULL;
+SDL_Window* gb_main_window = 0;
+SDL_Renderer* gb_main_renderer = 0;
 
 uint32_t gb_screen_width = 1280;
 uint32_t gb_screen_height = 720;
@@ -25,7 +25,7 @@ void gb_init_main_renderer(char * caption) {
         SDL_WINDOW_RESIZABLE
     );
 
-    if (gb_main_window == NULL) {
+    if (gb_main_window == 0) {
         fprintf(stderr, "SDL_CreateWindow failed: %s", SDL_GetError());
         exit(1);
     }
@@ -38,7 +38,7 @@ void gb_init_main_renderer(char * caption) {
         SDL_RENDERER_PRESENTVSYNC
     );
 
-    if (gb_main_renderer == NULL) {
+    if (gb_main_renderer == 0) {
         fprintf(stderr, "SDL_CreateRenderer failed: %s", SDL_GetError());
         exit(1);
     }
