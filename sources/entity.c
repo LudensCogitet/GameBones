@@ -19,6 +19,7 @@ void gb_entity_teardown() {
         switch (gb_entity_entities[i]->type) {
             case ENTITY_TYPE_PLAYER_SHIP:
                 player_ship_destroy((PlayerShip *)gb_entity_entities[i]->entity);
+            break;
             case ENTITY_TYPE_ASTEROID:
                 asteroid_destroy((Asteroid *)gb_entity_entities[i]->entity);
             break;
@@ -48,6 +49,9 @@ void gb_entity_remove(unsigned int entityIndex) {
     switch (gb_entity_entities[entityIndex]->type) {
         case ENTITY_TYPE_PLAYER_SHIP:
             player_ship_destroy((PlayerShip *)gb_entity_entities[entityIndex]->entity);
+        break;
+        case ENTITY_TYPE_ASTEROID:
+            asteroid_destroy((Asteroid *)gb_entity_entities[entityIndex]->entity);
         break;
     }
 
