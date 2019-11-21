@@ -55,5 +55,7 @@ void gb_gfx_text_change(GbSprite *sprite, char *text, uint32_t wrapW);
 void gb_gfx_camera_set(int32_t x, int32_t y);
 void gb_gfx_camera_move(int32_t dx, int32_t dy);
 void gb_gfx_camera_get_pos(int32_t *x, int32_t *y);
+void gb_gfx_camera_follow(double *x, double *y, uint32_t distance_x, uint32_t distance_y);
+void gb_gfx_camera_unfollow();
 
 #endif // TEXTURE_H_INCLUDED

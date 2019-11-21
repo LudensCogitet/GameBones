@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include <SDL2/SDL_ttf.h>
 
@@ -138,7 +139,10 @@ void gb_gfx_sprite_move(double x, double y, GbSprite *sprite) {
     sprite->dst.y = y - sprite->dst.h * 0.5;
 }
 
+void gb_gfx_camera_update();
 void gb_gfx_draw() {
+    gb_gfx_camera_update();
+
     SDL_RenderClear(gb_main_renderer);
     static SDL_Rect dst;
     for (unsigned int l = 0; l < GFX_LAYER_NUM_LAYERS; l++) {
@@ -276,6 +280,11 @@ void gb_gfx_text_change(GbSprite *sprite, char *text, uint32_t wrapW) {
 
 /* CAMERA */
 
+static double *follow_x = 0;
+static double *follow_y = 0;
+static int32_t follow_distance_x = 0;
+static int32_t follow_distance_y = 0;
+
 void gb_gfx_camera_set(int32_t x, int32_t y) {
     gb_gfx_camera_offset_x = x;
     gb_gfx_camera_offset_y = y;
@@ -289,4 +298,51 @@ void gb_gfx_camera_move(int32_t dx, int32_t dy) {
 void gb_gfx_camera_get_pos(int32_t *x, int32_t *y) {
     *x = gb_gfx_camera_offset_x;
     *y = gb_gfx_camera_offset_y;
+}
+
+void gb_gfx_camera_follow(double *x, double *y, uint32_t distance_x, uint32_t distance_y) {
+    follow_x = x;
+    follow_y = y;
+    follow_distance_x = distance_x;
+    follow_distance_y = distance_y;
+}
+
+void gb_gfx_camera_unfollow() {
+    follow_x = 0;
+    follow_y = 0;
+    follow_distance_x = 0;
+    follow_distance_y = 0;
+}
+
+void gb_gfx_camera_update() {
+    if (!follow_x || !follow_y) return;
+
+    int32_t dx = 0;
+    int32_t dy = 0;
+
+    int16_t leftDiff = *follow_x - gb_gfx_camera_offset_x;
+
+    if (abs(leftDiff) <= follow_distance_x) {
+        dx = leftDiff - follow_distance_x;
+    } else {
+        int16_t rightDiff = (gb_gfx_camera_offset_x + LOGICAL_SCREEN_WIDTH) - *follow_x;
+        if (abs(rightDiff) <= follow_distance_x) {
+            dx = -(rightDiff - follow_distance_x);
+        }
+    }
+
+    int16_t topDiff = *follow_y - gb_gfx_camera_offset_y;
+
+    if (abs(topDiff) <= follow_distance_y) {
+        dy = topDiff - follow_distance_y;
+    } else {
+        int16_t bottomDiff = (gb_gfx_camera_offset_y + LOGICAL_SCREEN_HEIGHT) - *follow_y;
+        if (abs(bottomDiff) <= follow_distance_y) {
+            dy = -(bottomDiff - follow_distance_y);
+        }
+    }
+
+    if (dx || dy) {
+        gb_gfx_camera_move(dx, dy);
+    }
 }

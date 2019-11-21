@@ -25,11 +25,13 @@ int main(int argc, char *argv[]) {
     gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
     gb_gfx_texture_load("./data/assets/asteroid.png", GFX_TEXTURE_ASTEROID);
 
-    player_ship_new(LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, 0, 300, 1000);
+    PlayerShip * player = player_ship_new(LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, 0, 300, 1000);
     asteroid_new(1000, 1000, 4);
     asteroid_new(234, 165, 7);
     asteroid_new(600, 500, 2);
-    asteroid_new(100, 100, 20);
+    Asteroid * asteroid = asteroid_new(100, 100, 20);
+    uint8_t toggleFollow = 0;
+    gb_gfx_camera_follow(&asteroid->body->x, &asteroid->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
@@ -72,6 +74,15 @@ int main(int argc, char *argv[]) {
 
         if (gb_input_check_state(GB_INPUT_QUIT_GAME, GB_INPUT_JUST_PRESSED)) {
             done = 1;
+        }
+
+        if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_JUST_PRESSED)) {
+            if (toggleFollow)
+                gb_gfx_camera_follow(&asteroid->body->x, &asteroid->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
+            else
+                gb_gfx_camera_unfollow();
+
+            toggleFollow = !toggleFollow;
         }
 
         gb_entity_act(delta);
