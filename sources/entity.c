@@ -16,6 +16,7 @@ void gb_entity_init() {
 
 void gb_entity_teardown() {
     for (unsigned int i = 0; i < gb_entity_entities_cursor; i++) {
+
         switch (gb_entity_entities[i]->type) {
             case ENTITY_TYPE_PLAYER_SHIP:
                 player_ship_destroy((PlayerShip *)gb_entity_entities[i]->entity);

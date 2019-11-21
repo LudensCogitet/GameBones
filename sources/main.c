@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
         delta = current_time - last_time;
         last_time = current_time;
     }
-
+    gb_gfx_camera_unfollow();
     gb_entity_teardown();
     gb_physics_teardown();
     gb_gfx_teardown();

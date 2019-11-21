@@ -1,3 +1,4 @@
+#include "../headers/entity.h"
 #include "../headers/physics.h"
 #include <stdlib.h>
 
@@ -63,11 +64,13 @@ void gb_physics_init() {
     gb_physics_bodies_cursor = 0;
 }
 
-GbPhysBod *gb_physics_new_body(double x, double y, unsigned int dir, float v) {
+GbPhysBod *gb_physics_new_body(GbEntity *parent, double x, double y, unsigned int dir, float v) {
     if (gb_physics_bodies_cursor >= GB_PHYSICS_MAX_BODIES)
         return 0;
 
     gb_physics_bodies[gb_physics_bodies_cursor] = (GbPhysBod *)malloc(sizeof(GbPhysBod));
+
+    gb_physics_bodies[gb_physics_bodies_cursor]->parent_entity = parent;
 
     gb_physics_bodies[gb_physics_bodies_cursor]->x = x;
     gb_physics_bodies[gb_physics_bodies_cursor]->y = y;

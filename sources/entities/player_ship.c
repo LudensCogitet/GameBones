@@ -7,8 +7,8 @@
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));
-
-    ship->body = gb_physics_new_body(x, y, dir, 0);
+    GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship);
+    ship->body = gb_physics_new_body(entity, x, y, dir, 0);
 
     ship->acceleration = acc;
     ship->boostAcceleration = boostAcc;
@@ -32,7 +32,6 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
     ship->anim_boost = gb_anim_new_animation(0, 128, 0, 128, 50, 5, 1, ANIM_TYPE_LOOP);
     ship->anim_thrust = gb_anim_new_animation(0, 128, 0, 128, 100, 3, -1, ANIM_TYPE_PINGPONG);
 
-    gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship);
     //gb_gfx_camera_follow(&ship->body->x, &ship->body->y, LOGICAL_SCREEN_WIDTH * 0.25, LOGICAL_SCREEN_HEIGHT * 0.25);
     return ship;
 }

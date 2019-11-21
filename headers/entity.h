@@ -1,7 +1,7 @@
 #ifndef ENTITY_H_INCLUDED
 #define ENTITY_H_INCLUDED
 
-#include "./entities/player_ship.h"
+#include <stdint.h>
 
 #define GB_ENTITY_MAX_ENTITIES 100
 
