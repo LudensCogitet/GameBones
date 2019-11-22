@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
     asteroid_new(600, 500, 2);
     Asteroid * asteroid = asteroid_new(100, 100, 20);
     uint8_t toggleFollow = 0;
-    gb_gfx_camera_follow(&asteroid->body->x, &asteroid->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
+    gb_gfx_camera_follow(&player->body->x, &player->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
@@ -78,9 +78,9 @@ int main(int argc, char *argv[]) {
 
         if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_JUST_PRESSED)) {
             if (toggleFollow)
-                gb_gfx_camera_follow(&asteroid->body->x, &asteroid->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
+                gb_gfx_camera_follow(&asteroid->body->x, &asteroid->body->y, LOGICAL_SCREEN_WIDTH * 0.5, LOGICAL_SCREEN_HEIGHT * 0.5);
             else
-                gb_gfx_camera_unfollow();
+                gb_gfx_camera_follow(&player->body->x, &player->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
 
             toggleFollow = !toggleFollow;
         }
