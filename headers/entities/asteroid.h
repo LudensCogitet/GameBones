@@ -14,6 +14,6 @@ typedef struct Asteroid {
 
 Asteroid *asteroid_new(float x, float y, unsigned int dir);
 void asteroid_destroy(Asteroid *asteroid);
-void asteroid_act(Asteroid *asteroid, uint32_t delta);
+void asteroid_act(Asteroid *asteroid, double delta);
 
 #endif

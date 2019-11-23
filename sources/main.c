@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
     uint8_t done = 0;
     uint32_t last_time = 0;
     uint32_t current_time = 0;
-    uint32_t delta = 0;
+    double delta = 0;
 
     int32_t c_dx = 0;
     int32_t c_dy = 0;
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
         SDL_Delay(0);
 
         current_time = SDL_GetTicks();
-        delta = current_time - last_time;
+        delta = (double)((current_time - last_time) * 0.001);
         last_time = current_time;
     }
     gb_gfx_camera_unfollow();

@@ -20,6 +20,6 @@ typedef struct GbEntity {
 void gb_entity_init();
 void gb_entity_teardown();
 GbEntity *gb_entity_add(GB_ENTITY_TYPE type, void *entity);
-void gb_entity_act(uint32_t delta);
+void gb_entity_act(double delta);
 
 #endif

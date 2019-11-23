@@ -10,7 +10,7 @@ GbAnimation *gb_anim_new_animation(
                                    uint16_t init_y,
                                    uint16_t dx,
                                    uint16_t dy,
-                                   uint16_t interval,
+                                   double interval,
                                    uint16_t frame_count,
                                    int8_t direction,
                                    GB_ANIM_TYPE type) {
@@ -31,7 +31,7 @@ GbAnimation *gb_anim_new_animation(
    return new_animation;
 }
 
-uint8_t gb_anim_apply(SDL_Rect *src, uint32_t delta, GbAnimation *animation) {
+uint8_t gb_anim_apply(SDL_Rect *src, double delta, GbAnimation *animation) {
     animation->accumulator += delta;
 
     if (animation->accumulator < animation->interval) {

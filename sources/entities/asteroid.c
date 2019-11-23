@@ -21,7 +21,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir) {
     asteroid->sprite->dst.w = 110;
     asteroid->sprite->dst.h = 110;
 
-    asteroid->anim_rotate = gb_anim_new_animation(0, 0, 128, 0, 80, 23, 1, ANIM_TYPE_LOOP);
+    asteroid->anim_rotate = gb_anim_new_animation(0, 0, 128, 0, 0.08, 23, 1, ANIM_TYPE_LOOP);
 
     return asteroid;
 }
@@ -35,11 +35,9 @@ void asteroid_destroy(Asteroid *asteroid) {
     free(asteroid);
 }
 
-void asteroid_act(Asteroid *asteroid, uint32_t delta) {
-    double dDelta = (double)(delta * 0.001);
-
+void asteroid_act(Asteroid *asteroid, double delta) {
     gb_anim_apply(&(asteroid->sprite->src), delta, asteroid->anim_rotate);
 
-    gb_physics_body_move(asteroid->body, dDelta, 0);
+    gb_physics_body_move(asteroid->body, delta, 0);
     gb_gfx_sprite_move(asteroid->body->x, asteroid->body->y, asteroid->sprite);
 }

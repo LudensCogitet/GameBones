@@ -22,6 +22,6 @@ typedef struct PlayerShip {
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc);
 void player_ship_destroy(PlayerShip *ship);
-void player_ship_act(PlayerShip *ship, uint32_t delta);
+void player_ship_act(PlayerShip *ship, double delta);
 
 #endif

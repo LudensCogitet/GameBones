@@ -65,7 +65,7 @@ void gb_entity_remove(unsigned int entityIndex) {
     gb_entity_entities[gb_entity_entities_cursor] = 0;
 }
 
-void gb_entity_act(uint32_t delta) {
+void gb_entity_act(double delta) {
     for (unsigned int i = 0; i < gb_entity_entities_cursor; i++) {
         if (gb_entity_entities[i]->dispose) {
             gb_entity_remove(i);

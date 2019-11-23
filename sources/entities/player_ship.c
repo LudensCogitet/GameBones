@@ -28,9 +28,9 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
     ship->sprite->dst.w = 90;
     ship->sprite->dst.h = 90;
 
-    ship->anim_rotate_ship = gb_anim_new_animation(0, 0, 128, 0, 21, 48, 1, ANIM_TYPE_LOOP);
-    ship->anim_boost = gb_anim_new_animation(0, 128, 0, 128, 50, 5, 1, ANIM_TYPE_LOOP);
-    ship->anim_thrust = gb_anim_new_animation(0, 128, 0, 128, 100, 3, -1, ANIM_TYPE_PINGPONG);
+    ship->anim_rotate_ship = gb_anim_new_animation(0, 0, 128, 0, 0.02, 48, 1, ANIM_TYPE_LOOP);
+    ship->anim_boost = gb_anim_new_animation(0, 128, 0, 128, 0.05, 5, 1, ANIM_TYPE_LOOP);
+    ship->anim_thrust = gb_anim_new_animation(0, 128, 0, 128, 0.1, 3, -1, ANIM_TYPE_PINGPONG);
 
     //gb_gfx_camera_follow(&ship->body->x, &ship->body->y, LOGICAL_SCREEN_WIDTH * 0.25, LOGICAL_SCREEN_HEIGHT * 0.25);
     return ship;
@@ -47,9 +47,7 @@ void player_ship_destroy(PlayerShip *ship) {
     free(ship);
 }
 
-void player_ship_act(PlayerShip *ship, uint32_t delta) {
-    double dDelta = (double)(delta * 0.001);
-
+void player_ship_act(PlayerShip *ship, double delta) {
     float acceleration = 0;
 
     if (gb_input_check_state(GB_INPUT_ROTATE_LEFT, GB_INPUT_PRESSED)) {
@@ -94,6 +92,6 @@ void player_ship_act(PlayerShip *ship, uint32_t delta) {
         gb_anim_apply(&(ship->sprite->src), delta, ship->anim_thrust);
     }
 
-    gb_physics_body_move(ship->body, dDelta, acceleration);
+    gb_physics_body_move(ship->body, delta, acceleration);
     gb_gfx_sprite_move(ship->body->x, ship->body->y, ship->sprite);
 }
