@@ -3,11 +3,7 @@
 #define ANIMATION_H_INCLUDED
 
 #include "SDL2/SDL.h"
-
-typedef enum GB_ANIM_TYPE {
-    ANIM_TYPE_LOOP,
-    ANIM_TYPE_PINGPONG,
-} GB_ANIM_TYPE;
+#include "../headers/enums.h"
 
 typedef struct GbAnimation {
     uint16_t init_x;

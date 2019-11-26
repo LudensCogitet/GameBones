@@ -66,7 +66,7 @@ void gb_physics_init() {
     gb_physics_bodies_cursor = 0;
 }
 
-GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, unsigned int dir, float v) {
+GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, double m, unsigned int dir, float v) {
     if (gb_physics_bodies_cursor >= GB_PHYSICS_MAX_BODIES)
         return 0;
 
@@ -76,9 +76,10 @@ GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE collid
 
     gb_physics_bodies[gb_physics_bodies_cursor]->x = x;
     gb_physics_bodies[gb_physics_bodies_cursor]->y = y;
+    gb_physics_bodies[gb_physics_bodies_cursor]->m = m;
     gb_physics_bodies[gb_physics_bodies_cursor]->dir = gb_physics_directions[dir];
 
-    gb_physics_bodies[gb_physics_bodies_cursor]->collider.type = colliderType;
+    gb_physics_bodies[gb_physics_bodies_cursor]->collider.circle.collider_type = colliderType;
 
     gb_physics_bodies[gb_physics_bodies_cursor]->dx = gb_physics_bodies[gb_physics_bodies_cursor]->dir[0] * v;
     gb_physics_bodies[gb_physics_bodies_cursor]->dy = gb_physics_bodies[gb_physics_bodies_cursor]->dir[1] * v;
@@ -111,12 +112,33 @@ void gb_physics_detect_collisions() {
         for (unsigned int j = i; j < gb_physics_bodies_cursor; j++) {
             if (i == j) continue;
 
-            switch (gb_physics_bodies[i]->collider.type) {
+            switch (gb_physics_bodies[i]->collider.collider_type) {
                 case PHYSICS_COLLIDER_CIRCLE:
-                    switch(gb_physics_bodies[j]->collider.type) {
+                    switch(gb_physics_bodies[j]->collider.collider_type) {
                         case PHYSICS_COLLIDER_CIRCLE:
                             if (gb_physics_detect_collision_circle_circle(gb_physics_bodies[i], gb_physics_bodies[j])) {
-                                printf("COLLISION\n");
+
+                                GbMessage message;
+
+                                message.collision.type = MESSAGE_COLLISION;
+                                message.collision.other_collider = gb_physics_bodies[j]->collider;
+                                message.collision.x = gb_physics_bodies[j]->x;
+                                message.collision.y = gb_physics_bodies[j]->y;
+                                message.collision.dx = gb_physics_bodies[j]->dx;
+                                message.collision.dy = gb_physics_bodies[j]->dy;
+                                message.collision.m = gb_physics_bodies[j]->m;
+                                message.collision.other_type = gb_physics_bodies[j]->parent_entity->type;
+                                gb_entity_message_send(message, gb_physics_bodies[i]->parent_entity);
+
+                                message.collision.other_collider = gb_physics_bodies[i]->collider;
+                                message.collision.x = gb_physics_bodies[i]->x;
+                                message.collision.y = gb_physics_bodies[i]->y;
+                                message.collision.dx = gb_physics_bodies[i]->dx;
+                                message.collision.dy = gb_physics_bodies[i]->dy;
+                                message.collision.m = gb_physics_bodies[i]->m;
+                                message.collision.other_type = gb_physics_bodies[i]->parent_entity->type;
+                                gb_entity_message_send(message, gb_physics_bodies[j]->parent_entity);
+
                             }
                         break;
                     }
@@ -133,4 +155,12 @@ void gb_physics_teardown() {
     }
 
     gb_physics_bodies_cursor = 0;
+}
+
+void gb_physics_resolve_forces(float *dx, float *dy, unsigned int mass, double dx1, double dy1, unsigned int mass1) {
+    double ldx = *dx;
+    double ldy = *dy;
+
+    *dx = (ldx * (mass - mass1) + (2 * mass1 * dx1)) / (mass + mass1);
+    *dy = (ldy * (mass - mass1) + (2 * mass1 * dy1)) / (mass + mass1);
 }

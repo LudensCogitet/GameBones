@@ -4,24 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include "./textures.h"
-
-typedef enum GB_GFX_LAYER {
-    GFX_LAYER_BACKGROUND,
-    GFX_LAYER_MIDGROUND,
-    GFX_LAYER_FOREGROUND,
-    GFX_LAYER_NUM_LAYERS
-} GB_GFX_LAYER;
-
-typedef enum GB_GFX_FONT {
-    GFX_FONT_LARGE_FREE_MONO,
-    GFX_FONT_NUM_FONTS
-} GB_GFX_FONT;
-
-typedef enum GB_GFX_COLOR {
-    GFX_COLOR_WHITE,
-    GFX_COLOR_BLACK,
-    GFX_COLOR_NUM_COLORS
-} GB_GFX_COLOR;
+#include "../headers/enums.h"
 
 typedef struct GbSprite {
     uint8_t dispose;

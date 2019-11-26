@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <SDL2/SDL.h>
+#include "../headers/enums.h"
 
 #define GB_INPUT_PRESSED          1
 #define GB_INPUT_JUST_PRESSED     2
@@ -11,21 +12,6 @@
 #define GB_INPUT_ALT             16
 #define GB_INPUT_CTRL            32
 #define GB_INPUT_DOUBLE_PRESSED  64
-
-typedef enum GB_INPUT {
-    GB_INPUT_THRUST,
-    GB_INPUT_BREAK,
-    GB_INPUT_ROTATE_LEFT,
-    GB_INPUT_ROTATE_RIGHT,
-    GB_INPUT_SELECT,
-    GB_INPUT_PAN_CAMERA_UP,
-    GB_INPUT_PAN_CAMERA_DOWN,
-    GB_INPUT_PAN_CAMERA_LEFT,
-    GB_INPUT_PAN_CAMERA_RIGHT,
-    GB_INPUT_BE_AWESOME,
-    GB_INPUT_QUIT_GAME,
-    GB_INPUT_NUM_INPUTS
-} GB_INPUT;
 
 typedef struct GbInputState {
     SDL_Keycode keycode;

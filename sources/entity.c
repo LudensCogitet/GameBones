@@ -38,7 +38,7 @@ GbEntity *gb_entity_add(GB_ENTITY_TYPE type, void *entity) {
         return 0;
 
     gb_entity_entities[gb_entity_entities_cursor] = (GbEntity *)malloc(sizeof(GbEntity));
-
+    gb_entity_entities[gb_entity_entities_cursor]->messageCursor = 0;
     gb_entity_entities[gb_entity_entities_cursor]->type = type;
     gb_entity_entities[gb_entity_entities_cursor]->entity = entity;
     gb_entity_entities[gb_entity_entities_cursor]->dispose = 0;
@@ -79,6 +79,40 @@ void gb_entity_act(double delta) {
             break;
             case ENTITY_TYPE_ASTEROID:
                 asteroid_act((Asteroid *)gb_entity_entities[i]->entity, delta);
+        }
+    }
+}
+
+void gb_entity_message_send(GbMessage message, GbEntity *entity) {
+    if (entity->messageCursor > GB_ENTITIY_MESSAGE_BOX_SIZE) return;
+
+    entity->messages[entity->messageCursor++] = message;
+
+}
+
+void gb_entity_message_handle() {
+    for (unsigned int i = 0; i < gb_entity_entities_cursor; i++) {
+        if (!gb_entity_entities[i]->messageCursor) continue;
+
+        gb_entity_entities[i]->messageCursor--;
+
+        switch (gb_entity_entities[i]->type) {
+            case ENTITY_TYPE_PLAYER_SHIP:
+                do {
+                    player_ship_handle_message(
+                        (PlayerShip *)gb_entity_entities[i]->entity,
+                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
+                    );
+                } while (gb_entity_entities[i]->messageCursor);
+            break;
+            case ENTITY_TYPE_ASTEROID:
+                do {
+                    asteroid_handle_message(
+                        (Asteroid *)gb_entity_entities[i]->entity,
+                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
+                    );
+                } while (gb_entity_entities[i]->messageCursor);
+            break;
         }
     }
 }

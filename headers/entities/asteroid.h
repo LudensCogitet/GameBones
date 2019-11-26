@@ -4,6 +4,7 @@
 #include "../gfx.h"
 #include "../animation.h"
 #include "../physics.h"
+#include "../message.h"
 
 typedef struct Asteroid {
     GbAnimation *anim_rotate;
@@ -15,5 +16,5 @@ typedef struct Asteroid {
 Asteroid *asteroid_new(float x, float y, unsigned int dir);
 void asteroid_destroy(Asteroid *asteroid);
 void asteroid_act(Asteroid *asteroid, double delta);
-
+void asteroid_handle_message(Asteroid *asteroid, GbMessage message);
 #endif
