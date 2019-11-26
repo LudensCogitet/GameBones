@@ -1,6 +1,8 @@
 #include "../headers/entity.h"
 #include "../headers/physics.h"
 #include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
 
 float gb_physics_directions[GB_PHYSICS_NUM_DIRS][2] = {
 {-0.000000, -1.000000},
@@ -64,7 +66,7 @@ void gb_physics_init() {
     gb_physics_bodies_cursor = 0;
 }
 
-GbPhysBod *gb_physics_new_body(GbEntity *parent, double x, double y, unsigned int dir, float v) {
+GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, unsigned int dir, float v) {
     if (gb_physics_bodies_cursor >= GB_PHYSICS_MAX_BODIES)
         return 0;
 
@@ -75,6 +77,8 @@ GbPhysBod *gb_physics_new_body(GbEntity *parent, double x, double y, unsigned in
     gb_physics_bodies[gb_physics_bodies_cursor]->x = x;
     gb_physics_bodies[gb_physics_bodies_cursor]->y = y;
     gb_physics_bodies[gb_physics_bodies_cursor]->dir = gb_physics_directions[dir];
+
+    gb_physics_bodies[gb_physics_bodies_cursor]->collider.type = colliderType;
 
     gb_physics_bodies[gb_physics_bodies_cursor]->dx = gb_physics_bodies[gb_physics_bodies_cursor]->dir[0] * v;
     gb_physics_bodies[gb_physics_bodies_cursor]->dy = gb_physics_bodies[gb_physics_bodies_cursor]->dir[1] * v;
@@ -92,6 +96,34 @@ void gb_physics_body_move(GbPhysBod *body, double delta, float acc) {
 
     body->x += body->dx * delta;
     body->y += body->dy * delta;
+}
+
+uint8_t gb_physics_detect_collision_circle_circle(GbPhysBod *b1, GbPhysBod *b2) {
+    double xDistance = (b1->x - b2->x);
+    double yDistance = (b1->y - b2->y);
+
+    return ((xDistance * xDistance) + (yDistance * yDistance)) <
+           (b1->collider.circle.radius + b2->collider.circle.radius) * (b1->collider.circle.radius + b2->collider.circle.radius);
+}
+
+void gb_physics_detect_collisions() {
+    for (unsigned int i = 0; i < gb_physics_bodies_cursor; i++) {
+        for (unsigned int j = i; j < gb_physics_bodies_cursor; j++) {
+            if (i == j) continue;
+
+            switch (gb_physics_bodies[i]->collider.type) {
+                case PHYSICS_COLLIDER_CIRCLE:
+                    switch(gb_physics_bodies[j]->collider.type) {
+                        case PHYSICS_COLLIDER_CIRCLE:
+                            if (gb_physics_detect_collision_circle_circle(gb_physics_bodies[i], gb_physics_bodies[j])) {
+                                printf("COLLISION\n");
+                            }
+                        break;
+                    }
+                break;
+            }
+        }
+    }
 }
 
 void gb_physics_teardown() {

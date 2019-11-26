@@ -26,9 +26,9 @@ int main(int argc, char *argv[]) {
     gb_gfx_texture_load("./data/assets/asteroid.png", GFX_TEXTURE_ASTEROID);
 
     PlayerShip * player = player_ship_new(LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, 0, 300, 1000);
-    asteroid_new(1000, 1000, 4);
-    asteroid_new(234, 165, 7);
-    asteroid_new(600, 500, 2);
+//    asteroid_new(1000, 1000, 4);
+//    asteroid_new(234, 165, 7);
+//    asteroid_new(600, 500, 2);
     Asteroid * asteroid = asteroid_new(100, 100, 20);
     uint8_t toggleFollow = 0;
     gb_gfx_camera_follow(&player->body->x, &player->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
         }
 
         gb_entity_act(delta);
+        gb_physics_detect_collisions();
         gb_gfx_camera_move(c_dx, c_dy);
         gb_gfx_draw();
         SDL_Delay(0);

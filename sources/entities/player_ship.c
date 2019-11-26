@@ -8,7 +8,9 @@
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship);
-    ship->body = gb_physics_new_body(entity, x, y, dir, 0);
+    ship->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, dir, 0);
+
+    ship->body->collider.circle.radius = 35;
 
     ship->acceleration = acc;
     ship->boostAcceleration = boostAcc;
@@ -16,7 +18,19 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
     ship->boosting = 0;
     ship->thrusting = 0;
 
-    ship->sprite = gb_gfx_new_sprite(GFX_LAYER_MIDGROUND, GFX_TEXTURE_SHIP, 0);
+    ship->sprite = gb_gfx_new_sprite(
+        GFX_LAYER_MIDGROUND,
+        GFX_TEXTURE_SHIP,
+        0,
+        0,
+        128,
+        128,
+        x,
+        y,
+        90,
+        90,
+        0
+    );
 
     ship->sprite->src.x = 0;
     ship->sprite->src.y = 0;

@@ -40,7 +40,19 @@ void gb_gfx_texture_unload(GB_GFX_TEXTURE texture);
 void gb_gfx_sprite_move(double x, double y, GbSprite *sprite);
 void gb_gfx_draw();
 
-GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t fixed);
+GbSprite *gb_gfx_new_sprite(
+    GB_GFX_LAYER layer,
+    GB_GFX_TEXTURE texture,
+    int srcX,
+    int srcY,
+    int srcW,
+    int srcH,
+    double x,
+    double y,
+    int w,
+    int h,
+    uint8_t fixed
+);
 
 void gb_gfx_font_load(char *ttfFile, GB_GFX_FONT font, uint16_t pt);
 void gb_gfx_font_unload(GB_GFX_FONT font);
@@ -49,7 +61,7 @@ void gb_gfx_font_set(GB_GFX_FONT font);
 void gb_gfx_font_color_set(GB_GFX_COLOR color);
 void gb_gfx_font_layer_set(GB_GFX_LAYER layer);
 
-GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed);
+GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_t fixed);
 void gb_gfx_text_change(GbSprite *sprite, char *text, uint32_t wrapW);
 
 void gb_gfx_camera_set(int32_t x, int32_t y);

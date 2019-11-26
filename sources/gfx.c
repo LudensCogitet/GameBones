@@ -188,7 +188,19 @@ void gb_gfx_draw() {
     SDL_RenderPresent(gb_main_renderer);
 }
 
-GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t fixed) {
+GbSprite *gb_gfx_new_sprite(
+    GB_GFX_LAYER layer,
+    GB_GFX_TEXTURE texture,
+    int srcX,
+    int srcY,
+    int srcW,
+    int srcH,
+    double x,
+    double y,
+    int w,
+    int h,
+    uint8_t fixed
+) {
     if (++gb_gfx_sprite_cursors[layer] >= GB_GFX_MAX_SPRITES_PER_LAYER) {
         --gb_gfx_sprite_cursors[layer];
         return 0;
@@ -199,15 +211,15 @@ GbSprite *gb_gfx_new_sprite(GB_GFX_LAYER layer, GB_GFX_TEXTURE texture, uint8_t 
     newSprite->dispose = 0;
     newSprite->fixed = fixed;
 
-    newSprite->dst.x = 0;
-    newSprite->dst.y = 0;
-    newSprite->dst.w = 0;
-    newSprite->dst.h = 0;
+    newSprite->dst.x = x - w * 0.5;
+    newSprite->dst.y = y - h * 0.5;
+    newSprite->dst.w = w;
+    newSprite->dst.h = h;
 
-    newSprite->src.x = 0;
-    newSprite->src.y = 0;
-    newSprite->src.w = 0;
-    newSprite->src.h = 0;
+    newSprite->src.x = srcX;
+    newSprite->src.y = srcY;
+    newSprite->src.w = srcW;
+    newSprite->src.h = srcH;
 
     newSprite->texture = texture;
 
@@ -246,7 +258,7 @@ void gb_gfx_font_layer_set(GB_GFX_LAYER layer) {
 
 /* TEXT */
 
-GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
+GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_t fixed) {
     GB_GFX_TEXTURE textureIndex = gb_gfx_texture_dynamic_get_free();
     if (textureIndex > GFX_TEXTURE_DYNAMIC_LAST) {
         return 0;
@@ -257,9 +269,23 @@ GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, uint8_t fixed) {
     gb_gfx_textures[textureIndex] = SDL_CreateTextureFromSurface(gb_main_renderer, temp);
     SDL_FreeSurface(temp);
 
-    GbSprite *textSprite = gb_gfx_new_sprite(gb_gfx_font_layer, textureIndex, fixed);
+    GbSprite *textSprite = gb_gfx_new_sprite(
+    gb_gfx_font_layer,
+    textureIndex,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    fixed);
+
     SDL_QueryTexture(gb_gfx_textures[textureIndex], 0, 0, &textSprite->src.w, &textSprite->src.h);
 
+    textSprite->dst.x = x;
+    textSprite->dst.y = y;
     textSprite->dst.w = textSprite->src.w / gb_scale_factor_x;
     textSprite->dst.h = textSprite->src.h / gb_scale_factor_y;
 

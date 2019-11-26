@@ -7,9 +7,22 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir) {
     Asteroid *asteroid = (Asteroid *)malloc(sizeof(Asteroid));
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
 
-    asteroid->body = gb_physics_new_body(entity, x, y, dir, 100);
+    asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, dir, 100);
+    asteroid->body->collider.circle.radius = 45;
 
-    asteroid->sprite = gb_gfx_new_sprite(GFX_LAYER_BACKGROUND, GFX_TEXTURE_ASTEROID, 0);
+    asteroid->sprite = gb_gfx_new_sprite(
+        GFX_LAYER_BACKGROUND,
+        GFX_TEXTURE_ASTEROID,
+        0,
+        0,
+        128,
+        128,
+        x,
+        y,
+        110,
+        110,
+        0
+    );
 
     asteroid->sprite->src.x = 0;
     asteroid->sprite->src.y = 0;
