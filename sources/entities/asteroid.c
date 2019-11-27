@@ -3,12 +3,12 @@
 #include "../../headers/physics.h"
 #include <stdlib.h>
 
-Asteroid *asteroid_new(float x, float y, unsigned int dir) {
+Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
     Asteroid *asteroid = (Asteroid *)malloc(sizeof(Asteroid));
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
 
-    asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, 100);
-    asteroid->body->collider.circle.radius = 45;
+    asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, v);
+    asteroid->body->collider.circle.radius = 35;
 
     asteroid->sprite = gb_gfx_new_sprite(
         GFX_LAYER_BACKGROUND,

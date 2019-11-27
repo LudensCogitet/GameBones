@@ -13,7 +13,7 @@ typedef struct Asteroid {
     GbPhysBod *body;
 } Asteroid;
 
-Asteroid *asteroid_new(float x, float y, unsigned int dir);
+Asteroid *asteroid_new(float x, float y, unsigned int dir, float v);
 void asteroid_destroy(Asteroid *asteroid);
 void asteroid_act(Asteroid *asteroid, double delta);
 void asteroid_handle_message(Asteroid *asteroid, GbMessage message);
