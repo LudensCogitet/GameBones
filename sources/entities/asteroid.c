@@ -11,7 +11,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
     asteroid->body->collider.circle.radius = 35;
 
     asteroid->sprite = gb_gfx_new_sprite(
-        GFX_LAYER_BACKGROUND,
+        GFX_LAYER_MIDGROUND,
         GFX_TEXTURE_ASTEROID,
         0,
         0,
