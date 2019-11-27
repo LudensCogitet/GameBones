@@ -8,7 +8,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
 
     asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, v);
-    asteroid->body->collider.circle.radius = 35;
+    asteroid->body->collider.circle.radius = 20;
 
     asteroid->sprite = gb_gfx_new_sprite(
         GFX_LAYER_MIDGROUND,
@@ -19,8 +19,8 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
         128,
         x,
         y,
-        110,
-        110,
+        90,
+        90,
         0
     );
 

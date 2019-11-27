@@ -11,7 +11,7 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship);
     ship->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, 0);
 
-    ship->body->collider.circle.radius = 35;
+    ship->body->collider.circle.radius = 15;
 
     ship->acceleration = acc;
     ship->boostAcceleration = boostAcc;
@@ -28,20 +28,10 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
         128,
         x,
         y,
-        90,
-        90,
+        70,
+        70,
         0
     );
-
-    ship->sprite->src.x = 0;
-    ship->sprite->src.y = 0;
-    ship->sprite->src.w = 128;
-    ship->sprite->src.h = 128;
-
-    ship->sprite->dst.x = x - ship->sprite->dst.w * 0.5;
-    ship->sprite->dst.y = y - ship->sprite->dst.h * 0.5;
-    ship->sprite->dst.w = 90;
-    ship->sprite->dst.h = 90;
 
     ship->anim_rotate_ship = gb_anim_new_animation(0, 0, 128, 0, 0.02, 48, 1, ANIM_TYPE_LOOP);
     ship->anim_boost = gb_anim_new_animation(0, 128, 0, 128, 0.05, 5, 1, ANIM_TYPE_LOOP);
