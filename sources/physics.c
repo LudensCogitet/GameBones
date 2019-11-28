@@ -158,9 +158,10 @@ void gb_physics_teardown() {
 }
 
 void gb_physics_resolve_forces(float *dx, float *dy, unsigned int mass, double dx1, double dy1, unsigned int mass1) {
-    double ldx = *dx;
-    double ldy = *dy;
+    float ldx = *dx;
+    float ldy = *dy;
 
     *dx = (ldx * (mass - mass1) + (2 * mass1 * dx1)) / (mass + mass1);
     *dy = (ldy * (mass - mass1) + (2 * mass1 * dy1)) / (mass + mass1);
+
 }
