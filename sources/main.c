@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
         }
 
         gb_entity_act(delta);
-        gb_physics_detect_collisions();
+        gb_physics_detect_collisions(delta);
         gb_entity_message_handle();
         gb_gfx_camera_move(c_dx, c_dy);
         gb_gfx_draw();

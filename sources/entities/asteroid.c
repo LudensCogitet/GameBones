@@ -7,7 +7,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
     Asteroid *asteroid = (Asteroid *)malloc(sizeof(Asteroid));
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
 
-    asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, v);
+    asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 3, dir, v);
     asteroid->body->collider.circle.radius = 20;
 
     asteroid->sprite = gb_gfx_new_sprite(
@@ -59,7 +59,7 @@ void asteroid_act(Asteroid *asteroid, double delta) {
 void asteroid_handle_message(Asteroid *asteroid, GbMessage message) {
     switch (message.type) {
         case MESSAGE_COLLISION:
-            gb_physics_resolve_forces(&asteroid->body->dx, &asteroid->body->dy, asteroid->body->m, message.collision.dx, message.collision.dy, message.collision.m);
+            gb_physics_resolve_forces(&asteroid->body->dx, &asteroid->body->dy, message.collision.collision);
         break;
     }
 }

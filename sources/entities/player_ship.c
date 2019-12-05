@@ -104,7 +104,7 @@ void player_ship_act(PlayerShip *ship, double delta) {
 void player_ship_handle_message(PlayerShip *ship, GbMessage message) {
     switch (message.type) {
         case MESSAGE_COLLISION:
-            gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, ship->body->m, message.collision.dx, message.collision.dy, message.collision.m);
+            gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, message.collision.collision);
         break;
     }
 }
