@@ -19,6 +19,8 @@ typedef struct PlayerShip {
 
     uint8_t boosting;
     uint8_t thrusting;
+
+    int sfx_cruise_channel;
 } PlayerShip;
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc);

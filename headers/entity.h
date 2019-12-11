@@ -4,8 +4,8 @@
 #include <stdint.h>
 #include "../headers/message.h"
 
-#define GB_ENTITY_MAX_ENTITIES 100
-#define GB_ENTITIY_MESSAGE_BOX_SIZE 5
+#define GB_ENTITY_MAX_ENTITIES 1000
+#define GB_ENTITIY_MESSAGE_BOX_SIZE 10
 
 typedef struct GbEntity {
     GB_ENTITY_TYPE type;

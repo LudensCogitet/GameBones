@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 
 #include "../headers/renderer.h"
 #include "../headers/input.h"
@@ -14,6 +15,7 @@
 #include "../headers/entities/player_ship.h"
 #include "../headers/entities/asteroid.h"
 #include "../headers/physics.h"
+#include "../headers/sfx.h"
 
 int main(int argc, char *argv[]) {
     gb_init_main_renderer("Logic Tests");
@@ -21,10 +23,17 @@ int main(int argc, char *argv[]) {
     gb_gfx_init();
     gb_physics_init();
     gb_entity_init();
+    gb_sfx_init();
 
     gb_gfx_texture_load("./data/assets/ship.png", GFX_TEXTURE_SHIP);
     gb_gfx_texture_load("./data/assets/asteroid.png", GFX_TEXTURE_ASTEROID);
     gb_gfx_texture_load("./data/assets/space_background.png", GFX_TEXTURE_BACKGROUND);
+    gb_gfx_texture_load("./data/assets/temp_bullet.png", GFX_TEXTURE_BULLET);
+
+    gb_sfx_sound_load("./data/assets/player_ship_boost.wav", SFX_SOUND_SHIP_BOOST);
+    gb_sfx_sound_load("./data/assets/player_ship_cruise.wav", SFX_SOUND_SHIP_CRUISE);
+    gb_sfx_sound_load("./data/assets/crash.wav", SFX_SOUND_SHIP_CRASH);
+    gb_sfx_sound_load("./data/assets/asteroid_hit.wav", SFX_SOUND_ASTEROID_HIT);
 
     PlayerShip * player = player_ship_new(LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, 0, 300, 1000);
     asteroid_new(1000, 1000, 4, 0);
@@ -40,7 +49,7 @@ int main(int argc, char *argv[]) {
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
     gb_input_set_key(GB_INPUT_ROTATE_RIGHT, SDLK_d);
     gb_input_set_key(GB_INPUT_THRUST, SDLK_w);
-    gb_input_set_key(GB_INPUT_BREAK, SDLK_SPACE);
+    gb_input_set_key(GB_INPUT_FIRE, SDLK_SPACE);
     gb_input_set_key(GB_INPUT_SELECT, SDLK_RETURN);
 
     gb_input_set_key(GB_INPUT_PAN_CAMERA_UP, SDLK_UP);
@@ -100,6 +109,7 @@ int main(int argc, char *argv[]) {
         last_time = current_time;
     }
     gb_gfx_camera_unfollow();
+    gb_sfx_teardown();
     gb_entity_teardown();
     gb_physics_teardown();
     gb_gfx_teardown();

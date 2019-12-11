@@ -89,6 +89,16 @@ GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE collid
     return gb_physics_bodies[gb_physics_bodies_cursor++];
 }
 
+void gb_physics_body_remove(unsigned int entityIndex) {
+    free(gb_physics_bodies[entityIndex]);
+
+    if (--gb_physics_bodies_cursor > 0) {
+        gb_physics_bodies[entityIndex] = gb_physics_bodies[gb_physics_bodies_cursor];
+    }
+
+    gb_physics_bodies[gb_physics_bodies_cursor] = 0;
+}
+
 void gb_physics_body_move(GbPhysBod *body, double delta, float acc) {
     if (acc) {
         body->dx += (body->dir[0] * acc) * delta;
@@ -109,8 +119,17 @@ uint8_t gb_physics_detect_collision_circle_circle(GbPhysBod *b1, GbPhysBod *b2) 
 
 void gb_physics_detect_collisions(double delta) {
     for (unsigned int i = 0; i < gb_physics_bodies_cursor; i++) {
+        if (gb_physics_bodies[i]->dispose) {
+            gb_physics_body_remove(i);
+            if (gb_physics_bodies[i] == 0) break;
+        }
         for (unsigned int j = i; j < gb_physics_bodies_cursor; j++) {
             if (i == j) continue;
+
+            if (gb_physics_bodies[j]->dispose) {
+                gb_physics_body_remove(j);
+                if (gb_physics_bodies[j] == 0) break;
+            }
 
             switch (gb_physics_bodies[i]->collider.collider_type) {
                 case PHYSICS_COLLIDER_CIRCLE:

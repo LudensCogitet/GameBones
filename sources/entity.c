@@ -1,6 +1,7 @@
 #include "../headers/entity.h"
 #include "../headers/entities/player_ship.h"
 #include "../headers/entities/asteroid.h"
+#include "../headers/entities/bullet.h"
 #include <stdlib.h>
 
 static GbEntity *gb_entity_entities[GB_ENTITY_MAX_ENTITIES];
@@ -23,6 +24,9 @@ void gb_entity_teardown() {
             break;
             case ENTITY_TYPE_ASTEROID:
                 asteroid_destroy((Asteroid *)gb_entity_entities[i]->entity);
+            break;
+            case ENTITY_TYPE_BULLET:
+                bullet_destroy((Bullet *)gb_entity_entities[i]->entity);
             break;
         }
 
@@ -54,6 +58,9 @@ void gb_entity_remove(unsigned int entityIndex) {
         case ENTITY_TYPE_ASTEROID:
             asteroid_destroy((Asteroid *)gb_entity_entities[entityIndex]->entity);
         break;
+        case ENTITY_TYPE_BULLET:
+            bullet_destroy((Bullet *)gb_entity_entities[entityIndex]->entity);
+        break;
     }
 
     free(gb_entity_entities[entityIndex]);
@@ -79,12 +86,15 @@ void gb_entity_act(double delta) {
             break;
             case ENTITY_TYPE_ASTEROID:
                 asteroid_act((Asteroid *)gb_entity_entities[i]->entity, delta);
+            break;
+            case ENTITY_TYPE_BULLET:
+                bullet_act((Bullet *)gb_entity_entities[i]->entity, delta);
         }
     }
 }
 
 void gb_entity_message_send(GbMessage message, GbEntity *entity) {
-    if (entity->messageCursor > GB_ENTITIY_MESSAGE_BOX_SIZE) return;
+    if (entity->messageCursor >= GB_ENTITIY_MESSAGE_BOX_SIZE) return;
 
     entity->messages[entity->messageCursor++] = message;
 
@@ -109,6 +119,14 @@ void gb_entity_message_handle() {
                 do {
                     asteroid_handle_message(
                         (Asteroid *)gb_entity_entities[i]->entity,
+                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
+                    );
+                } while (gb_entity_entities[i]->messageCursor);
+            break;
+            case ENTITY_TYPE_BULLET:
+                do {
+                    bullet_handle_message(
+                        (Bullet *)gb_entity_entities[i]->entity,
                         gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
                     );
                 } while (gb_entity_entities[i]->messageCursor);

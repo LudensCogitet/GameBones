@@ -1,8 +1,10 @@
 #include "../../headers/entities/player_ship.h"
+#include "../../headers/entities/bullet.h"
 #include "../../headers/entity.h"
 #include "../../headers/input.h"
 #include "../../headers/physics.h"
 #include "../../headers/renderer.h"
+#include "../../headers/sfx.h";
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -68,6 +70,7 @@ void player_ship_act(PlayerShip *ship, double delta) {
     }
 
     if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_JUST_PRESSED)) {
+        gb_sfx_sound_play(SFX_SOUND_SHIP_BOOST, 0);
         ship->boosting = 1;
     }
 
@@ -75,19 +78,27 @@ void player_ship_act(PlayerShip *ship, double delta) {
         ship->boosting = ship->thrusting = ship->anim_thrust->current_frame = ship->anim_boost->current_frame = 0;
         ship->anim_thrust->direction = -1;
         ship->sprite->src.y = 0;
+        gb_sfx_sound_stop(ship->sfx_cruise_channel);
     }
 
     if (gb_input_check_state(GB_INPUT_THRUST, GB_INPUT_PRESSED)) {
         acceleration = ship->boosting ? ship->boostAcceleration : ship->acceleration;
     }
 
-    if (gb_input_check_state(GB_INPUT_BREAK, GB_INPUT_PRESSED)) {
-        ship->body->dx = ship->body->dy = 0;
+    if (gb_input_check_state(GB_INPUT_FIRE, GB_INPUT_JUST_PRESSED)) {
+        bullet_new(
+            ship->body->x + (ship->body->dir[0] * 30),
+            ship->body->y + (ship->body->dir[1] * 30),
+            ship->body->dx + (ship->body->dir[0] * 1000),
+            ship->body->dy + (ship->body->dir[1] * 1000),
+            0.5
+        );
     }
 
     if (ship->boosting) {
         ship->boosting = !gb_anim_apply(&(ship->sprite->src), delta, ship->anim_boost);
         if (!ship->boosting) {
+            ship->sfx_cruise_channel = gb_sfx_sound_play(SFX_SOUND_SHIP_CRUISE, -1);
             ship->thrusting = 1;
             ship->anim_boost->current_frame = 0;
         }
@@ -104,6 +115,7 @@ void player_ship_act(PlayerShip *ship, double delta) {
 void player_ship_handle_message(PlayerShip *ship, GbMessage message) {
     switch (message.type) {
         case MESSAGE_COLLISION:
+            gb_sfx_sound_play(SFX_SOUND_SHIP_CRASH, 0);
             gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, message.collision.collision);
         break;
     }

@@ -59,6 +59,7 @@ void asteroid_act(Asteroid *asteroid, double delta) {
 void asteroid_handle_message(Asteroid *asteroid, GbMessage message) {
     switch (message.type) {
         case MESSAGE_COLLISION:
+            gb_sfx_sound_play(SFX_SOUND_ASTEROID_HIT, 0);
             gb_physics_resolve_forces(&asteroid->body->dx, &asteroid->body->dy, message.collision.collision);
         break;
     }
