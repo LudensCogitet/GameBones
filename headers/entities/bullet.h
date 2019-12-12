@@ -18,6 +18,6 @@ typedef struct Bullet {
 Bullet *bullet_new(float x, float y, double dx, double dy, double lifespan);
 void bullet_destroy(Bullet *bullet);
 void bullet_act(Bullet *bullet, double delta);
-void bullet_handle_message(Bullet *bullet, GbMessage message);
+void bullet_handle_messages(Bullet *bullet, GbMessage *messages, unsigned int numMessages);
 
 #endif

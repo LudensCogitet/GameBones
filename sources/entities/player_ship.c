@@ -112,11 +112,13 @@ void player_ship_act(PlayerShip *ship, double delta) {
     gb_gfx_sprite_move(ship->body->x, ship->body->y, ship->sprite);
 }
 
-void player_ship_handle_message(PlayerShip *ship, GbMessage message) {
-    switch (message.type) {
-        case MESSAGE_COLLISION:
-            gb_sfx_sound_play(SFX_SOUND_SHIP_CRASH, 0);
-            gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, message.collision.collision);
-        break;
+void player_ship_handle_messages(PlayerShip *ship, GbMessage *messages, unsigned int numMessages) {
+    for (unsigned int i = 0; i < numMessages; i++) {
+        switch (messages[i].type) {
+            case MESSAGE_COLLISION:
+                gb_sfx_sound_play(SFX_SOUND_SHIP_CRASH, 0);
+                gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, messages[i].collision.collision);
+            break;
+        }
     }
 }

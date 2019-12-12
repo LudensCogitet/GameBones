@@ -104,34 +104,31 @@ void gb_entity_message_handle() {
     for (unsigned int i = 0; i < gb_entity_entities_cursor; i++) {
         if (!gb_entity_entities[i]->messageCursor) continue;
 
-        gb_entity_entities[i]->messageCursor--;
-
         switch (gb_entity_entities[i]->type) {
             case ENTITY_TYPE_PLAYER_SHIP:
-                do {
-                    player_ship_handle_message(
-                        (PlayerShip *)gb_entity_entities[i]->entity,
-                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
-                    );
-                } while (gb_entity_entities[i]->messageCursor);
+                player_ship_handle_messages(
+                    (PlayerShip *)gb_entity_entities[i]->entity,
+                    gb_entity_entities[i]->messages,
+                    gb_entity_entities[i]->messageCursor
+                );
             break;
             case ENTITY_TYPE_ASTEROID:
-                do {
-                    asteroid_handle_message(
-                        (Asteroid *)gb_entity_entities[i]->entity,
-                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
-                    );
-                } while (gb_entity_entities[i]->messageCursor);
+                asteroid_handle_messages(
+                    (Asteroid *)gb_entity_entities[i]->entity,
+                    gb_entity_entities[i]->messages,
+                    gb_entity_entities[i]->messageCursor
+                );
             break;
             case ENTITY_TYPE_BULLET:
-                do {
-                    bullet_handle_message(
-                        (Bullet *)gb_entity_entities[i]->entity,
-                        gb_entity_entities[i]->messages[gb_entity_entities[i]->messageCursor]
-                    );
-                } while (gb_entity_entities[i]->messageCursor);
+                bullet_handle_messages(
+                    (Bullet *)gb_entity_entities[i]->entity,
+                    gb_entity_entities[i]->messages,
+                    gb_entity_entities[i]->messageCursor
+                );
             break;
         }
+
+        gb_entity_entities[i]->messageCursor = 0;
     }
 }
 

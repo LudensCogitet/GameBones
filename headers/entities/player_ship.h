@@ -26,6 +26,6 @@ typedef struct PlayerShip {
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc);
 void player_ship_destroy(PlayerShip *ship);
 void player_ship_act(PlayerShip *ship, double delta);
-void player_ship_handle_message(PlayerShip *ship, GbMessage message);
+void player_ship_handle_messages(PlayerShip *ship, GbMessage *messages, unsigned int numMessages);
 
 #endif
