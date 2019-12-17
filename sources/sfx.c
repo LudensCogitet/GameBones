@@ -2,6 +2,7 @@
 #include "../headers/enums.h"
 
 #include <SDL2/SDL_mixer.h>
+#include <stdio.h>
 
 static Mix_Chunk *gb_sfx_sounds[SFX_SOUND_NUM_SOUNDS];
 

@@ -4,7 +4,7 @@
 #include "../../headers/input.h"
 #include "../../headers/physics.h"
 #include "../../headers/renderer.h"
-#include "../../headers/sfx.h";
+#include "../../headers/sfx.h"
 #include <stdlib.h>
 #include <stdio.h>
 
