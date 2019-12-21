@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     gb_input_set_key(GB_INPUT_ROTATE_RIGHT, SDLK_d);
     gb_input_set_key(GB_INPUT_THRUST, SDLK_w);
     gb_input_set_key(GB_INPUT_FIRE, SDLK_SPACE);
-    gb_input_set_key(GB_INPUT_SELECT, SDLK_RETURN);
+    gb_input_set_key(GB_INPUT_SELECT, SDL_BUTTON_LEFT);
 
     gb_input_set_key(GB_INPUT_PAN_CAMERA_UP, SDLK_UP);
     gb_input_set_key(GB_INPUT_PAN_CAMERA_DOWN, SDLK_DOWN);

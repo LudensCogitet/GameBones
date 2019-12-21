@@ -10,7 +10,7 @@
 
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));
-    GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship);
+    GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship, ENTITY_PRIORITY_MID);
     ship->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, 0);
 
     ship->body->collider.circle.radius = 15;

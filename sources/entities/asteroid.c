@@ -1,11 +1,12 @@
 #include "../../headers/entities/asteroid.h"
+#include "../../headers/input.h"
 #include "../../headers/entity.h"
 #include "../../headers/physics.h"
 #include <stdlib.h>
 
 Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
     Asteroid *asteroid = (Asteroid *)malloc(sizeof(Asteroid));
-    GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid);
+    GbEntity *entity = gb_entity_add(ENTITY_TYPE_ASTEROID, (void *)asteroid, ENTITY_PRIORITY_MID);
 
     asteroid->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 3, dir, v);
     asteroid->body->collider.circle.radius = 20;
@@ -53,6 +54,13 @@ void asteroid_act(Asteroid *asteroid, double delta) {
 
     gb_physics_body_move(asteroid->body, delta, 0);
     gb_gfx_sprite_move(asteroid->body->x, asteroid->body->y, asteroid->sprite);
+
+    if (gb_input_check_state(GB_INPUT_SELECT, GB_INPUT_JUST_PRESSED)) {
+        int x, y;
+        gb_input_get_mouse_pos_world(&x, &y);
+        asteroid_new(x, y, 0, 0);
+        gb_input_clear_state(GB_INPUT_SELECT);
+    }
 }
 
 

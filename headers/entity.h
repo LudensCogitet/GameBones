@@ -17,7 +17,7 @@ typedef struct GbEntity {
 
 void gb_entity_init();
 void gb_entity_teardown();
-GbEntity *gb_entity_add(GB_ENTITY_TYPE type, void *entity);
+GbEntity *gb_entity_add(GB_ENTITY_TYPE type, void *entity, GB_ENTITY_PRIORITY priority);
 
 void gb_entity_message_send(GbMessage message, GbEntity *entity);
 void gb_entity_message_handle();

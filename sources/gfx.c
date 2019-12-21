@@ -322,6 +322,11 @@ void gb_gfx_camera_move(int32_t dx, int32_t dy) {
 }
 
 void gb_gfx_camera_get_pos(int32_t *x, int32_t *y) {
+    *x = gb_gfx_camera_offset_x * gb_scale_factor_x;
+    *y = gb_gfx_camera_offset_y * gb_scale_factor_y;
+}
+
+void gb_gfx_get_camera_offset(int32_t *x, int32_t *y) {
     *x = gb_gfx_camera_offset_x;
     *y = gb_gfx_camera_offset_y;
 }
@@ -371,4 +376,9 @@ void gb_gfx_camera_update() {
     if (dx || dy) {
         gb_gfx_camera_move(dx, dy);
     }
+}
+
+void gb_gfx_screen_to_world_coords(int *x, int *y) {
+    *x /= gb_scale_factor_x;
+    *y /= gb_scale_factor_y;
 }

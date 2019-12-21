@@ -9,7 +9,7 @@
 
 Bullet *bullet_new(float x, float y, double dx, double dy, double lifespan) {
     Bullet *bullet = (Bullet *)malloc(sizeof(Bullet));
-    bullet->self = gb_entity_add(ENTITY_TYPE_BULLET, (void *)bullet);
+    bullet->self = gb_entity_add(ENTITY_TYPE_BULLET, (void *)bullet, ENTITY_PRIORITY_MID);
 
     bullet->body = gb_physics_new_body(bullet->self, PHYSICS_COLLIDER_CIRCLE, x, y, 0.2, 0, 0);
 

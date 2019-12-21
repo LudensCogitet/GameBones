@@ -85,3 +85,26 @@ GbInputState gb_input_get_state(GB_INPUT input) {
 uint8_t gb_input_check_state(GB_INPUT input, uint8_t mask) {
     return (gb_input_map[input]->state & mask) == mask;
 }
+
+void gb_input_clear_state(GB_INPUT input) {
+    gb_input_map[input]->last_state = gb_input_map[input]->state;
+    gb_input_map[input]->timestamp = SDL_GetTicks();
+    gb_input_map[input]->state = 0;
+}
+
+void gb_input_get_mouse_pos_screen(int *x, int *y) {
+    SDL_GetMouseState(x, y);
+    gb_gfx_screen_to_world_coords(x, y);
+}
+
+void gb_input_get_mouse_pos_world(int *x, int *y) {
+    int cx, cy;
+
+    gb_gfx_camera_get_pos(&cx, &cy);
+    SDL_GetMouseState(x, y);
+
+    *x += cx;
+    *y += cy;
+
+    gb_gfx_screen_to_world_coords(x, y);
+}

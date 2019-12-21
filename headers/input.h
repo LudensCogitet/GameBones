@@ -29,5 +29,9 @@ void gb_input_teardown();
 GbInputState gb_input_get_state(GB_INPUT input);
 uint8_t gb_input_check_state(GB_INPUT input, uint8_t mask);
 void gb_input_set_key(GB_INPUT input, uint32_t key);
+void gb_input_clear_state(GB_INPUT input);
+
+void gb_input_get_mouse_pos_screen(int *x, int *y);
+void gb_input_get_mouse_pos_world(int *x, int *y);
 
 #endif
