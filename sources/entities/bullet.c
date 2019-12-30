@@ -30,6 +30,7 @@ Bullet *bullet_new(float x, float y, double dx, double dy, double lifespan) {
         32,
         x,
         y,
+        GFX_ANCHOR_DEFAULT,
         10,
         10,
         0

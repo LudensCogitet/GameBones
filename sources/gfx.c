@@ -135,8 +135,23 @@ void gb_gfx_texture_dynamic_unload(GB_GFX_TEXTURE texture) {
 /* SPRITES */
 
 void gb_gfx_sprite_move(double x, double y, GbSprite *sprite) {
-    sprite->dst.x = x - sprite->dst.w * 0.5;
-    sprite->dst.y = y - sprite->dst.h * 0.5;
+    if (sprite->anchor == GFX_ANCHOR_DEFAULT) {
+        sprite->dst.x = x - sprite->dst.w * 0.5;
+        sprite->dst.y = y - sprite->dst.h * 0.5;
+        return;
+    }
+
+    if (sprite->anchor & GFX_ANCHOR_TOP) {
+        sprite->dst.y = y;
+    } else if (sprite->anchor & GFX_ANCHOR_BOTTOM) {
+        sprite->dst.y = y - sprite->dst.h;
+    }
+
+    if (sprite->anchor & GFX_ANCHOR_LEFT) {
+        sprite->dst.x = x;
+    } else if(sprite->anchor & GFX_ANCHOR_RIGHT) {
+        sprite->dst.x = x - sprite->dst.w;
+    }
 }
 
 void gb_gfx_camera_update();
@@ -197,6 +212,7 @@ GbSprite *gb_gfx_new_sprite(
     int srcH,
     double x,
     double y,
+    uint8_t anchor,
     int w,
     int h,
     uint8_t fixed
@@ -211,10 +227,12 @@ GbSprite *gb_gfx_new_sprite(
     newSprite->dispose = 0;
     newSprite->fixed = fixed;
 
-    newSprite->dst.x = x - w * 0.5;
-    newSprite->dst.y = y - h * 0.5;
+    newSprite->anchor = anchor;
+
     newSprite->dst.w = w;
     newSprite->dst.h = h;
+
+    gb_gfx_sprite_move(x, y, newSprite);
 
     newSprite->src.x = srcX;
     newSprite->src.y = srcY;
@@ -258,7 +276,7 @@ void gb_gfx_font_layer_set(GB_GFX_LAYER layer) {
 
 /* TEXT */
 
-GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_t fixed) {
+GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_t anchor, uint8_t fixed) {
     GB_GFX_TEXTURE textureIndex = gb_gfx_texture_dynamic_get_free();
     if (textureIndex > GFX_TEXTURE_DYNAMIC_LAST) {
         return 0;
@@ -269,25 +287,22 @@ GbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_
     gb_gfx_textures[textureIndex] = SDL_CreateTextureFromSurface(gb_main_renderer, temp);
     SDL_FreeSurface(temp);
 
+    int w, h;
+    SDL_QueryTexture(gb_gfx_textures[textureIndex], 0, 0, &w, &h);
+
     GbSprite *textSprite = gb_gfx_new_sprite(
     gb_gfx_font_layer,
     textureIndex,
     0,
     0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
+    w,
+    h,
+    x,
+    y,
+    anchor,
+    w / gb_scale_factor_x,
+    h / gb_scale_factor_y,
     fixed);
-
-    SDL_QueryTexture(gb_gfx_textures[textureIndex], 0, 0, &textSprite->src.w, &textSprite->src.h);
-
-    textSprite->dst.x = x;
-    textSprite->dst.y = y;
-    textSprite->dst.w = textSprite->src.w / gb_scale_factor_x;
-    textSprite->dst.h = textSprite->src.h / gb_scale_factor_y;
 
     return textSprite;
 }

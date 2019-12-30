@@ -39,11 +39,18 @@ int main(int argc, char *argv[]) {
     asteroid_new(1000, 1000, 4, 0);
     asteroid_new(234, 165, 7, 0);
     asteroid_new(600, 500, 2, 0);
+
+    gb_gfx_font_load("./data/assets/FreeMono.ttf", GFX_FONT_LARGE_FREE_MONO, 50);
+    gb_gfx_font_set(GFX_FONT_LARGE_FREE_MONO);
+    gb_gfx_font_color_set(GFX_COLOR_WHITE);
+    gb_gfx_font_layer_set(GFX_LAYER_MIDGROUND);
+    gb_gfx_new_text("Hello. This is an example of my text generation code.", 500, 0, 0, GFX_ANCHOR_TOP | GFX_ANCHOR_LEFT , 1);
+
     Asteroid * asteroid = asteroid_new(100, 100, 20, 0);
     uint8_t toggleFollow = 0;
     gb_gfx_camera_follow(&player->body->x, &player->body->y, LOGICAL_SCREEN_WIDTH * 0.4, LOGICAL_SCREEN_HEIGHT * 0.4);
 
-    gb_gfx_new_sprite(GFX_LAYER_BACKGROUND, GFX_TEXTURE_BACKGROUND, 0, 0, 1920, 1080, LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, LOGICAL_SCREEN_WIDTH, LOGICAL_SCREEN_HEIGHT, 1);
+    gb_gfx_new_sprite(GFX_LAYER_BACKGROUND, GFX_TEXTURE_BACKGROUND, 0, 0, 1920, 1080, LOGICAL_SCREEN_WIDTH / 2, LOGICAL_SCREEN_HEIGHT / 2, GFX_ANCHOR_DEFAULT, LOGICAL_SCREEN_WIDTH, LOGICAL_SCREEN_HEIGHT, 1);
 
     gb_input_set_key(GB_INPUT_QUIT_GAME, SDLK_q);
     gb_input_set_key(GB_INPUT_ROTATE_LEFT, SDLK_a);
@@ -109,6 +116,7 @@ int main(int argc, char *argv[]) {
         last_time = current_time;
     }
     gb_gfx_camera_unfollow();
+    gb_gfx_font_unload(GFX_FONT_LARGE_FREE_MONO);
     gb_sfx_teardown();
     gb_entity_teardown();
     gb_physics_teardown();

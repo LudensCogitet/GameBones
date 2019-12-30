@@ -20,6 +20,7 @@ Asteroid *asteroid_new(float x, float y, unsigned int dir, float v) {
         128,
         x,
         y,
+        GFX_ANCHOR_DEFAULT,
         90,
         90,
         0

@@ -30,6 +30,7 @@ PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float
         128,
         x,
         y,
+        GFX_ANCHOR_DEFAULT,
         70,
         70,
         0
