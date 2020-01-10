@@ -11,7 +11,7 @@ Bullet *bullet_new(float x, float y, double dx, double dy, double lifespan) {
     Bullet *bullet = (Bullet *)malloc(sizeof(Bullet));
     bullet->self = gb_entity_add(ENTITY_TYPE_BULLET, (void *)bullet, ENTITY_PRIORITY_MID);
 
-    bullet->body = gb_physics_new_body(bullet->self, PHYSICS_COLLIDER_CIRCLE, x, y, 0.2, 0, 0);
+    bullet->body = gb_physics_new_body(bullet->self, PHYSICS_COLLIDER_CIRCLE, x, y, 0.2, 0, 0, 1, 0);
 
     bullet->body->collider.circle.radius = 5;
 
@@ -62,6 +62,8 @@ void bullet_handle_messages(Bullet *bullet, GbMessage *messages, unsigned int nu
     for (unsigned int i = 0; i < numMessages; i++) {
         switch (messages[i].type) {
             case MESSAGE_COLLISION:
+                if (!messages[i].collision.collision.solid2) break;
+
                 bullet->self->dispose = 1;
             break;
         }

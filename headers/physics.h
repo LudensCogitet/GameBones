@@ -25,6 +25,8 @@ typedef struct GbCollision {
     float dx1;
     float dy1;
     double m1;
+    uint8_t solid1;
+    uint16_t id1;
     GB_ENTITY_TYPE type1;
     GbCollider collider1;
 
@@ -33,6 +35,8 @@ typedef struct GbCollision {
     float dx2;
     float dy2;
     double m2;
+    uint8_t solid2;
+    uint16_t id2;
     GB_ENTITY_TYPE type2;
     GbCollider collider2;
 
@@ -42,6 +46,10 @@ typedef struct GbCollision {
 typedef struct GbEntity GbEntity;
 typedef struct GbPhysBod {
     uint8_t dispose;
+    uint8_t solid;
+
+    uint16_t id;
+
     double x;
     double y;
 
@@ -60,7 +68,7 @@ typedef struct GbPhysBod {
 float gb_physics_directions[GB_PHYSICS_NUM_DIRS][2];
 
 void gb_physics_init();
-GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, double m, unsigned int dir, float v);
+GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, double m, unsigned int dir, float v, uint8_t solid, uint16_t id);
 void gb_physics_detect_collisions(double delta);
 void gb_physics_body_move(GbPhysBod *body, double delta, float acc);
 void gb_physics_resolve_forces(float *dx, float *dy, GbCollision c);

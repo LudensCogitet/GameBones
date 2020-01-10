@@ -66,7 +66,7 @@ void gb_physics_init() {
     gb_physics_bodies_cursor = 0;
 }
 
-GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, double m, unsigned int dir, float v) {
+GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE colliderType, double x, double y, double m, unsigned int dir, float v, uint8_t solid, uint16_t id) {
     if (gb_physics_bodies_cursor >= GB_PHYSICS_MAX_BODIES)
         return 0;
 
@@ -83,6 +83,9 @@ GbPhysBod *gb_physics_new_body(GbEntity *parent, GB_PHYSICS_COLLIDER_TYPE collid
 
     gb_physics_bodies[gb_physics_bodies_cursor]->dx = gb_physics_bodies[gb_physics_bodies_cursor]->dir[0] * v;
     gb_physics_bodies[gb_physics_bodies_cursor]->dy = gb_physics_bodies[gb_physics_bodies_cursor]->dir[1] * v;
+
+    gb_physics_bodies[gb_physics_bodies_cursor]->solid = solid;
+    gb_physics_bodies[gb_physics_bodies_cursor]->id = id;
 
     gb_physics_bodies[gb_physics_bodies_cursor]->dispose = 0;
 
@@ -148,6 +151,8 @@ void gb_physics_detect_collisions(double delta) {
                                 message.collision.collision.dy1 = gb_physics_bodies[i]->dy;
                                 message.collision.collision.m1 = gb_physics_bodies[i]->m;
                                 message.collision.collision.type1 = gb_physics_bodies[i]->parent_entity->type;
+                                message.collision.collision.solid1 = gb_physics_bodies[i]->solid;
+                                message.collision.collision.id1 = gb_physics_bodies[i]->id;
 
                                 message.collision.collision.collider2 = gb_physics_bodies[j]->collider;
                                 message.collision.collision.x2 = gb_physics_bodies[j]->x;
@@ -156,6 +161,8 @@ void gb_physics_detect_collisions(double delta) {
                                 message.collision.collision.dy2 = gb_physics_bodies[j]->dy;
                                 message.collision.collision.m2 = gb_physics_bodies[j]->m;
                                 message.collision.collision.type2 = gb_physics_bodies[j]->parent_entity->type;
+                                message.collision.collision.solid2 = gb_physics_bodies[j]->solid;
+                                message.collision.collision.id2 = gb_physics_bodies[j]->id;
 
                                 gb_entity_message_send(message, gb_physics_bodies[i]->parent_entity);
 
@@ -166,6 +173,8 @@ void gb_physics_detect_collisions(double delta) {
                                 message.collision.collision.dy1 = gb_physics_bodies[j]->dy;
                                 message.collision.collision.m1 = gb_physics_bodies[j]->m;
                                 message.collision.collision.type1 = gb_physics_bodies[j]->parent_entity->type;
+                                message.collision.collision.solid1 = gb_physics_bodies[j]->solid;
+                                message.collision.collision.id1 = gb_physics_bodies[j]->id;
 
                                 message.collision.collision.collider2 = gb_physics_bodies[i]->collider;
                                 message.collision.collision.x2 = gb_physics_bodies[i]->x;
@@ -174,6 +183,8 @@ void gb_physics_detect_collisions(double delta) {
                                 message.collision.collision.dy2 = gb_physics_bodies[i]->dy;
                                 message.collision.collision.m2 = gb_physics_bodies[i]->m;
                                 message.collision.collision.type2 = gb_physics_bodies[i]->parent_entity->type;
+                                message.collision.collision.solid2 = gb_physics_bodies[i]->solid;
+                                message.collision.collision.id2 = gb_physics_bodies[i]->id;
 
                                 gb_entity_message_send(message, gb_physics_bodies[j]->parent_entity);
                             }

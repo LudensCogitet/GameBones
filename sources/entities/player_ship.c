@@ -11,7 +11,7 @@
 PlayerShip *player_ship_new(float x, float y, unsigned int dir, float acc, float boostAcc) {
     PlayerShip *ship = (PlayerShip *)malloc(sizeof(PlayerShip));
     GbEntity *entity = gb_entity_add(ENTITY_TYPE_PLAYER_SHIP, (void *)ship, ENTITY_PRIORITY_MID);
-    ship->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, 0);
+    ship->body = gb_physics_new_body(entity, PHYSICS_COLLIDER_CIRCLE, x, y, 1, dir, 0, 1, 0);
 
     ship->body->collider.circle.radius = 15;
 
@@ -117,6 +117,8 @@ void player_ship_handle_messages(PlayerShip *ship, GbMessage *messages, unsigned
     for (unsigned int i = 0; i < numMessages; i++) {
         switch (messages[i].type) {
             case MESSAGE_COLLISION:
+                if (!messages[i].collision.collision.solid2) break;
+
                 gb_sfx_sound_play(SFX_SOUND_SHIP_CRASH, 0);
                 gb_physics_resolve_forces(&ship->body->dx, &ship->body->dy, messages[i].collision.collision);
             break;
