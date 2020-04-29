@@ -115,7 +115,8 @@ gbSprite *gbGfxSpriteNew(
     int w,
     int h,
 
-    uint8_t fixed
+    uint8_t fixed,
+    SDL_RendererFlip flip
 ) {
     if (gbGfxSpriteCursors[layer] + 1 >= GB_GFX_MAX_SPRITES_PER_LAYER) {
         return 0;
@@ -136,6 +137,7 @@ gbSprite *gbGfxSpriteNew(
     newSprite->src.h = srcH;
 
     newSprite->texture = texture;
+    newSprite->flip = flip;
 
     gbGfxSprites[layer][gbGfxSpriteCursors[layer]++] = newSprite;
 
@@ -203,7 +205,7 @@ void gbGfxDraw() {
                 &dst,
                 0,
                 0,
-                SDL_FLIP_NONE
+                gbGfxSprites[l][s]->flip
             );
         }
     }

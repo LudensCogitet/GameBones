@@ -50,7 +50,7 @@ void gbRendererInit(char * caption, uint8_t filtered, uint8_t uncapFps) {
     if (filtered) {
         SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1");
     }
-    SDL_SetRenderDrawColor(gbMainRenderer, 0X0, 0X0, 0X0, 0x00);
+    SDL_SetRenderDrawColor(gbMainRenderer, 0X3C, 0X56, 0X5C, 0x00);
     //SDL_RenderSetLogicalSize(gbMainRenderer, GB_LOGICAL_SCREEN_WIDTH, GB_LOGICAL_SCREEN_WIDTH);
 }
 

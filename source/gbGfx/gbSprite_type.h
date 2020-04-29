@@ -15,6 +15,7 @@ typedef struct {
     gbPosition *pos;
     uint32_t width;
     uint32_t height;
+    SDL_RendererFlip flip;
 } gbSprite;
 
 #endif // GB_SPRITE_TYPE_H_INCLUDED

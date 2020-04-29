@@ -23,7 +23,8 @@ gbSprite *gbGfxSpriteNew(
     int w,
     int h,
 
-    uint8_t fixed
+    uint8_t fixed,
+    SDL_RendererFlip flip
 );
 
 void gbGfxMoveSprite(int32_t x, int32_t y, gbSprite *sprite);

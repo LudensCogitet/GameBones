@@ -41,8 +41,8 @@ unsigned int gbAnimationNew(
 
     gbAnimations[gbAnimationsCursor] = (gbAnimation *)malloc(sizeof(gbAnimation));
 
-    gbAnimations[gbAnimationsCursor]->initX = initX;
-    gbAnimations[gbAnimationsCursor]->initY = initY;
+    gbAnimations[gbAnimationsCursor]->initX = initX * dx;
+    gbAnimations[gbAnimationsCursor]->initY = initY * dy;
     gbAnimations[gbAnimationsCursor]->dx = dx;
     gbAnimations[gbAnimationsCursor]->dy = dy;
     gbAnimations[gbAnimationsCursor]->interval = 1 / fps;
@@ -66,13 +66,13 @@ void gbAnimationUnload(unsigned int index) {
     }
 }
 
-gbAnimationState gbAnimationStateNew(unsigned int animation) {
-    gbAnimationState state;
-    state.accumulator = 0;
-    state.direction = gbAnimations[animation]->initDirection;
-    state.currentFrame = gbAnimations[animation]->initDirection > 0 ? 0 : gbAnimations[animation]->frameCount - 1;
+void gbAnimationStateInit(unsigned int animation, SDL_Rect *src, gbAnimationState *state) {
+    state->accumulator = 0;
+    state->direction = gbAnimations[animation]->initDirection;
+    state->currentFrame = gbAnimations[animation]->initDirection > 0 ? 0 : gbAnimations[animation]->frameCount - 1;
 
-    return state;
+    if (gbAnimations[animation]->dx) src->x = gbAnimations[animation]->initX + (gbAnimations[animation]->dx * state->currentFrame);
+    if (gbAnimations[animation]->dy) src->y = gbAnimations[animation]->initY + (gbAnimations[animation]->dy * state->currentFrame);
 }
 
 uint8_t gbAnimationApply(SDL_Rect *src, double delta, gbAnimationState *state, unsigned int animation) {

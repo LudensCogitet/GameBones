@@ -3,6 +3,7 @@
 
 #include "./gbAnimation_type.h"
 #include "./gbAnimType_type.h"
+#include "../gbGfx/gbSprite_type.h"
 
 #define GB_ANIMATION_MAX_ANIMATIONS 100
 #define GB_ANIMATION_NO_ANIMATION GB_ANIMATION_MAX_ANIMATIONS + 1
@@ -27,7 +28,7 @@ unsigned int gbAnimationNew(
 
 void gbAnimationUnload(unsigned int index);
 
-gbAnimationState gbAnimationStateNew(unsigned int animation);
+void gbAnimationStateInit(unsigned int animation, SDL_Rect *src, gbAnimationState *state);
 
 uint8_t gbAnimationApply(SDL_Rect *src, double delta, gbAnimationState *state, unsigned int animation);
 
