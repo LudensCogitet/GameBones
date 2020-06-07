@@ -11,6 +11,7 @@
 #include "./gbAnimation/gbAnimation_sys.h"
 
 #include "./gbTexture/gbTexture_sys.h"
+#include "./gbSerializer/gbSerializer_sys.h"
 
 #include "./gbInput/gbInput_type.h"
 #include "./gbGfx/gbSprite_type.h"
@@ -18,15 +19,19 @@
 #include "./gbAnimation/gbAnimType_type.h"
 #include "./gbEntity/gbEntity_sys.h"
 
-#include "./entities/Dino/entityDino.h"
+#include "./gbSerializer/gbFile_type.h"
+
+#include "./entities/Guy/entityGuy.h"
 
 
 int main(int argc, char *argv[]) {
-    gbRendererInit("Test", 0, 1);
+    gbRendererInit("Test", 1, 1);
     gbInputInit();
     gbTextureInit();
     gbGfxInit();
     gbAnimationInit();
+
+    initGuy();
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -40,13 +45,36 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_MOVE_LEFT, SDLK_LEFT);
     gbInputSetKey(GB_INPUT_MOVE_RIGHT, SDLK_RIGHT);
     gbInputSetKey(GB_INPUT_QUIT_GAME, SDLK_q);
+    gbInputSetKey(GB_INPUT_MOUSE_SELECT, SDL_BUTTON_LEFT);
 
-    dinoNew(0, 300, SDL_FLIP_NONE);
+    Guy *guy;
+
+    gbFile *file = gbSerializerOpenFileRead("./gameSave.sav");
+
+    if (file) {
+        gbSerializerReadChunk(file, GB_FILE_CHUNK_SIZE_16);
+        guy = (Guy *)gbEntityDeserialize[GB_ENTITY_TYPE_GUY](file);
+        gbSerializerCloseFile(file);
+    } else {
+        SDL_ClearError();
+        guy = guyNew(GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3), SDL_FLIP_NONE)->entity;
+    }
 
     while (!done) {
         gbInputUpdate();
 
         done = gbInputCheckState(GB_INPUT_QUIT_GAME, GB_INPUT_RELEASED);
+
+        if(gbInputCheckState(GB_INPUT_MOUSE_SELECT, GB_INPUT_JUST_PRESSED)) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
+            if (x > -1 && y > -1) {
+                gbGfxGridSquareToWorldCoords(x, y, &x, &y);
+                guy->pos.x = x;
+                guy->pos.y = y;
+            }
+        }
 
         gbEntityAct(delta);
         gbGfxDraw();
@@ -59,12 +87,16 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-            printf("FPS: %d\n", fps);
+            //printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }
 
     }
+
+    file = gbSerializerOpenFileWrite("./gameSave.sav");
+    gbEntitySerialize[GB_ENTITY_TYPE_GUY](guy, file);
+    gbSerializerCloseFile(file);
 
     gbAnimationTeardown();
     gbGfxTeardown();

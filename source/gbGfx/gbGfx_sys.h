@@ -7,6 +7,14 @@
 #include "./gbSprite_type.h"
 #include "./gbGfxLayer_type.h"
 
+#define GB_GFX_GRID_WIDTH       20
+#define GB_GFX_GRID_HEIGHT      20
+
+#define GB_GFX_GRID_SIZE        (GB_LOGICAL_SCREEN_WIDTH / 40)
+
+#define GB_GFX_GRID_OFFSET_X    (GB_GFX_GRID_SIZE * 10)
+#define GB_GFX_GRID_OFFSET_Y    (GB_GFX_GRID_SIZE * 1.25)
+
 void gbGfxInit();
 void gbGfxTeardown();
 
@@ -47,6 +55,8 @@ void gb_gfx_get_camera_offset(int32_t *x, int32_t *y);
 void gb_gfx_camera_follow(double *x, double *y, uint32_t distance_x, uint32_t distance_y);
 void gb_gfx_camera_unfollow();
 
-void gb_gfx_screen_to_world_coords(int *x, int *y);
+void gbGfxScreenToWorldCoords(int *x, int *y);
+void gbGfxScreenCoordsToGridSquare(int x, int y, int *gridX, int *gridY);
+void gbGfxGridSquareToWorldCoords(int x, int y, int *worldX, int *worldY);
 
 #endif // GB_GFX_SYSTEM_H_INCLUDED

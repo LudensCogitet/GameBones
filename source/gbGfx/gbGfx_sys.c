@@ -27,6 +27,8 @@
 //static GB_GFX_COLOR gb_gfx_font_color;
 //static GB_GFX_LAYER gb_gfx_font_layer;
 
+uint8_t GB_GFX_DEBUG_FLAG = 1;
+
 static unsigned int gbGfxSpriteCursors[GB_GFX_LAYER_NUM_LAYERS];
 static gbSprite     *gbGfxSprites[GB_GFX_LAYER_NUM_LAYERS][GB_GFX_MAX_SPRITES_PER_LAYER];
 
@@ -169,6 +171,24 @@ void gbGfxDraw() {
     //gbGfxCameraUpdate();
 
     SDL_RenderClear(gbMainRenderer);
+
+    if (GB_GFX_DEBUG_FLAG) {
+        int maxX = (GB_GFX_GRID_OFFSET_X + ((GB_GFX_GRID_WIDTH) * GB_GFX_GRID_SIZE)) * gbScaleFactorX;
+        int maxY = (GB_GFX_GRID_OFFSET_Y + ((GB_GFX_GRID_HEIGHT) * GB_GFX_GRID_SIZE)) * gbScaleFactorY;
+
+        SDL_SetRenderDrawColor(gbMainRenderer, 0x00, 0x00, 0x00, 0xFF);
+
+        for (int x = GB_GFX_GRID_OFFSET_X * gbScaleFactorX; x <= maxX; x += GB_GFX_GRID_SIZE * gbScaleFactorX) {
+            SDL_RenderDrawLine(gbMainRenderer, x, GB_GFX_GRID_OFFSET_Y * gbScaleFactorY, x, maxY);
+        }
+
+        for (int y = GB_GFX_GRID_OFFSET_Y * gbScaleFactorY; y <= maxY; y += GB_GFX_GRID_SIZE * gbScaleFactorY) {
+            SDL_RenderDrawLine(gbMainRenderer, GB_GFX_GRID_OFFSET_X * gbScaleFactorX, y, maxX, y);
+        }
+
+        gbRendererResetDrawColor();
+    }
+
     static SDL_Rect dst;
     for (unsigned int l = 0; l < GB_GFX_LAYER_NUM_LAYERS; l++) {
         for (unsigned int s = 0; s < gbGfxSpriteCursors[l]; s++) {
@@ -211,6 +231,33 @@ void gbGfxDraw() {
     }
 
     SDL_RenderPresent(gbMainRenderer);
+}
+
+void gbGfxScreenToWorldCoords(int *x, int *y) {
+    *x /= gbScaleFactorX;
+    *y /= gbScaleFactorY;
+}
+
+void gbGfxScreenCoordsToGridSquare(int x, int y, int *gridX, int *gridY) {
+    gbGfxScreenToWorldCoords(&x, &y);
+
+    if (x < GB_GFX_GRID_OFFSET_X || x > GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE) ||
+        y < GB_GFX_GRID_OFFSET_Y || y > GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE)) {
+            *gridX = -1;
+            *gridY = -1;
+            return;
+        }
+    *gridX = x - GB_GFX_GRID_OFFSET_X;
+    *gridY = y - GB_GFX_GRID_OFFSET_Y;
+
+    *gridX /= GB_GFX_GRID_SIZE;
+    *gridY /= GB_GFX_GRID_SIZE;
+
+}
+
+void gbGfxGridSquareToWorldCoords(int x, int y, int *worldX, int *worldY) {
+    *worldX = GB_GFX_GRID_OFFSET_X + (x * GB_GFX_GRID_SIZE);
+    *worldY = GB_GFX_GRID_OFFSET_Y + (y * GB_GFX_GRID_SIZE);
 }
 
 /* FONTS */
@@ -359,8 +406,3 @@ void gbGfxDraw() {
 //        gb_gfx_camera_move(dx, dy);
 //    }
 //}
-
-void gb_gfx_screen_to_world_coords(int *x, int *y) {
-    *x /= gbScaleFactorX;
-    *y /= gbScaleFactorY;
-}

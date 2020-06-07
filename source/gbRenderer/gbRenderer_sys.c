@@ -6,8 +6,8 @@
 SDL_Window* gbMainWindow = 0;
 SDL_Renderer* gbMainRenderer = 0;
 
-uint32_t gbScreenWidth = 1280;
-uint32_t gbScreenHeight = 720;
+uint32_t gbScreenWidth = 1920;//1280;
+uint32_t gbScreenHeight = 1080;//720;
 
 float gbScaleFactorX;
 float gbScaleFactorY;
@@ -16,7 +16,6 @@ void gbRendererInit(char * caption, uint8_t filtered, uint8_t uncapFps) {
     gbScaleFactorX = (float)gbScreenWidth / (float)GB_LOGICAL_SCREEN_WIDTH;
     gbScaleFactorY = (float)gbScreenHeight / (float)GB_LOGICAL_SCREEN_HEIGHT;
 
-    printf("x: %f, y: %f\n", gbScaleFactorX, gbScaleFactorY);
     gbMainWindow = SDL_CreateWindow(
         caption,
         SDL_WINDOWPOS_CENTERED,
@@ -52,6 +51,10 @@ void gbRendererInit(char * caption, uint8_t filtered, uint8_t uncapFps) {
     }
     SDL_SetRenderDrawColor(gbMainRenderer, 0X3C, 0X56, 0X5C, 0x00);
     //SDL_RenderSetLogicalSize(gbMainRenderer, GB_LOGICAL_SCREEN_WIDTH, GB_LOGICAL_SCREEN_WIDTH);
+}
+
+void gbRendererResetDrawColor() {
+    SDL_SetRenderDrawColor(gbMainRenderer, 0X3C, 0X56, 0X5C, 0x00);
 }
 
 void gbRendererTeardown() {

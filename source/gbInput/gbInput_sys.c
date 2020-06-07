@@ -96,7 +96,7 @@ void gbInputClearState(GB_INPUT input) {
 
 //void gb_input_get_mouse_pos_screen(int *x, int *y) {
 //    SDL_GetMouseState(x, y);
-//    gb_gfx_screen_to_world_coords(x, y);
+//    gbGfxScreenToWorldCoords(x, y);
 //}
 //
 //void gb_input_get_mouse_pos_world(int *x, int *y) {
@@ -108,5 +108,5 @@ void gbInputClearState(GB_INPUT input) {
 //    *x += cx;
 //    *y += cy;
 //
-//    gb_gfx_screen_to_world_coords(x, y);
+//    gbGfxScreenToWorldCoords(x, y);
 //}

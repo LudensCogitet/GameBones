@@ -96,3 +96,17 @@ void gbEntityHandleMessage() {
     }
 }
 
+void gbEntityRegisterFuncs(
+                           GB_ENTITY_TYPE type,
+                           GB_ENTITY_THINK_FUNC_PARAM(think),
+                           GB_ENTITY_RESPOND_FUNC_PARAM(respond),
+                           GB_ENTITY_DISPOSE_FUNC_PARAM(dispose),
+                           GB_ENTITY_SERIALIZE_FUNC_PARAM(serialize),
+                           GB_ENTITY_DESERIALIZE_FUNC_PARAM(deserialize)
+                           ) {
+    gbEntityThink[type] = think;
+    gbEntityRespond[type] = respond;
+    gbEntityDispose[type] = dispose;
+    gbEntitySerialize[type] = serialize;
+    gbEntityDeserialize[type] = deserialize;
+}
