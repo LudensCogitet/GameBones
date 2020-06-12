@@ -8,6 +8,7 @@
 //#include <SDL2/SDL_ttf.h>
 
 #include "../gbRenderer/gbRenderer_sys.h"
+#include "../gbCollision/gbCollision_sys.h"
 #include "./gbGfx_sys.h"
 
 #include "../gbTexture/gbTexture_sys.h"
@@ -185,7 +186,7 @@ void gbGfxDraw() {
         for (int y = GB_GFX_GRID_OFFSET_Y * gbScaleFactorY; y <= maxY; y += GB_GFX_GRID_SIZE * gbScaleFactorY) {
             SDL_RenderDrawLine(gbMainRenderer, GB_GFX_GRID_OFFSET_X * gbScaleFactorX, y, maxX, y);
         }
-
+        gbCollisionDebugDraw();
         gbRendererResetDrawColor();
     }
 

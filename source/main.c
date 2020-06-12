@@ -66,7 +66,11 @@ int main(int argc, char *argv[]) {
     gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
     gbGfxGridSquareToWorldCoords(4, 4, &x2, &y2);
 
-    gbCollisionStaticRect * rect = gbCollisionStaticColliderNew(x1, y1, x2, y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
+    gbGfxGridSquareToWorldCoords(16, 0, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(20, 4, &x2, &y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     while (!done) {
         gbInputUpdate();

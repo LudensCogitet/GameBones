@@ -1,5 +1,8 @@
 #include <math.h>
 
+// Only used for debug mode
+#include "../gbRenderer/gbRenderer_sys.h"
+
 #include "./gbCollision_sys.h"
 #include "./gbCollisionDynamicRect_type.h"
 #include "./gbCollisionStaticRect_type.h"
@@ -104,7 +107,7 @@ uint8_t detectCollision(
         (x1A < x1B && x2A > x2B)    ||
         (x1A <= x2B && x2A >= x2B)  ||
         (x1A <= x1B && x2A >= x1B)) {
-            collData |= dx > 0 ? GB_COLLISION_X | GB_COLLISION_RIGHT : dx < 0 ? GB_COLLISION_X | GB_COLLISION_LEFT : GB_COLLISION_X;
+            collData |= dx > 0 ? GB_COLLISION_X | GB_COLLISION_LEFT : dx < 0 ? GB_COLLISION_X | GB_COLLISION_RIGHT : GB_COLLISION_X;
         }
 
     // If there is no collision on the x axis, there is no collision.
@@ -145,9 +148,9 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
             int xOverlap, yOverlap;
 
             if (data && GB_COLLISION_RIGHT) {
-                xOverlap = rect->x2 - x1A;
-            } else if (data && GB_COLLISION_LEFT) {
                 xOverlap = x2A - rect->x1;
+            } else if (data && GB_COLLISION_LEFT) {
+                xOverlap = rect->x2 - x1A;
             }
 
             if (data && GB_COLLISION_TOP) {
@@ -176,4 +179,19 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
 
     *collData = 0;
     return 0;
+}
+
+void gbCollisionDebugDraw() {
+    SDL_SetRenderDrawColor(gbMainRenderer, 0x00, 0xff, 0xff, 0xff);
+
+    SDL_Rect rect;
+    for (unsigned int i = 0; i < staticColliderCursor; i++) {
+        rect.x = staticColliders[i]->x1;
+        rect.y = staticColliders[i]->y1;
+        rect.w = staticColliders[i]->x2 - staticColliders[i]->x1;
+        rect.h = staticColliders[i]->y2 - staticColliders[i]->y1;
+        SDL_RenderDrawRect(gbMainRenderer, &rect);
+    }
+
+    gbRendererResetDrawColor();
 }

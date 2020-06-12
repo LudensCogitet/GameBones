@@ -26,4 +26,6 @@ gbCollisionDynamicRect *gbCollisionDynamicColliderNew(
 gbCollisionStaticRect *gbCollisionStaticColliderNew(int x1, int y1, int x2, int y2);
 unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData);
 
+void gbCollisionDebugDraw();
+
 #endif // GB_COLLISION_H_INCLUDED
