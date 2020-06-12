@@ -3,6 +3,7 @@
 
 #include "../../gbEntity/gbPosition_type.h"
 #include "../../gbGfx/gbSprite_type.h"
+#include "../../gbCollision/gbCollisionDynamicRect_type.h"
 #include "../../gbAnimation/gbAnimation_type.h"
 
 #include "../../gbEntity/gbEntityType_type.h"
@@ -17,6 +18,7 @@ typedef enum {
 typedef struct {
     gbSprite *sprite;
     gbEntity *entity;
+    gbCollisionDynamicRect *boundingBox;
 
     gbPosition pos;
     gbAnimationState animState;

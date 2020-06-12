@@ -9,6 +9,7 @@
 #include "./gbInput/gbInput_sys.h"
 #include "./gbGfx/gbGfx_sys.h"
 #include "./gbAnimation/gbAnimation_sys.h"
+#include "./gbCollision/gbCollision_sys.h"
 
 #include "./gbTexture/gbTexture_sys.h"
 #include "./gbSerializer/gbSerializer_sys.h"
@@ -30,6 +31,7 @@ int main(int argc, char *argv[]) {
     gbTextureInit();
     gbGfxInit();
     gbAnimationInit();
+    gbCollisionInit();
 
     initGuy();
 
@@ -60,6 +62,12 @@ int main(int argc, char *argv[]) {
         guy = guyNew(GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3), SDL_FLIP_NONE)->entity;
     }
 
+    int x1, y1, x2, y2;
+    gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(4, 4, &x2, &y2);
+
+    gbCollisionStaticRect * rect = gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
     while (!done) {
         gbInputUpdate();
 
@@ -87,7 +95,7 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-            //printf("FPS: %d\n", fps);
+            printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }
@@ -98,6 +106,7 @@ int main(int argc, char *argv[]) {
     gbEntitySerialize[GB_ENTITY_TYPE_GUY](guy, file);
     gbSerializerCloseFile(file);
 
+    gbCollisionTeardown();
     gbAnimationTeardown();
     gbGfxTeardown();
     gbTextureTeardown();

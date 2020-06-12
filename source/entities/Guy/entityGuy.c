@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <math.h>
 #include "./entityGuy.h"
+
 #include "../../gbRenderer/gbRenderer_sys.h"
+#include "../../gbCollision/gbCollision_sys.h"
 #include "../../gbGfx/gbGfx_sys.h"
+#include "../../gbCollision/gbCollisionDynamicRect_type.h"
+
 #include "../../gbEntity/gbPosition_type.h"
 #include "../../gbInput/gbInput_sys.h"
 #include "../../gbInput/gbInputState_type.h"
@@ -25,9 +29,9 @@ static unsigned int guyAnimations[GUY_STATE_NUM_STATES] = {
 static unsigned int guyCount = 0;
 
 // CONSTS
-static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 8;
-static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH;
-static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 8;
+static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
+static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
+static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
 
 // Forward declarations
 static void idle(Guy *guy);
@@ -60,6 +64,9 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &sprite->src, &guy->animState);
 
     guy->entity = gbEntityNew(GB_ENTITY_TYPE_GUY, guy, GB_ENTITY_PRIORITY_HIGH);
+
+    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 0, 27, 32);
+
     return guy->entity;
 }
 
@@ -93,15 +100,6 @@ void handleInput(Guy *guy) {
 }
 
 void guyThink(Guy *guy, double delta) {
-    switch (guy->state) {
-        case GUY_STATE_IDLE:
-            idle(guy);
-            break;
-        case GUY_STATE_WALK:
-            walk(guy);
-            break;
-    }
-
     double oldVelocity = guy->velocity;
     guy->velocity += (guy->acceleration * delta);
 
@@ -116,6 +114,15 @@ void guyThink(Guy *guy, double delta) {
 
     oldSign = !oldSign ? 1 : oldSign;
     newSign = !newSign ? 1 : newSign;
+
+    switch (guy->state) {
+        case GUY_STATE_IDLE:
+            idle(guy);
+            break;
+        case GUY_STATE_WALK:
+            walk(guy);
+            break;
+    }
 
     if (oldVelocity != 0 && guy->velocity != 0 && oldSign + newSign == 0) {
         guy->velocity = 0;
@@ -134,6 +141,7 @@ void guyRespond(Guy *guy, gbMessage *messages, uint16_t numMessages) {
 
 void guyDispose(Guy * guy) {
     guy->sprite->dispose = 1;
+    guy->boundingBox->dispose = 1;
 
     if(--guyCount == 0) {
         gbTextureUnload(guyTexture);
@@ -155,6 +163,11 @@ static void idle(Guy *guy) {
 
 static void walk(Guy *guy) {
     handleMoveKeyUp(guy);
+
+    unsigned int index = 0;
+    uint8_t collData;
+
+    while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->velocity, 0, &collData));
 }
 
 static void handleMoveKeyDown(Guy *guy) {

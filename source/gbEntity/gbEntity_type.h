@@ -3,6 +3,7 @@
 
 #define GB_ENTITY_MESSAGE_BOX_SIZE 10
 
+#include <stdint.h>
 #include "./gbEntityType_type.h"
 #include "./gbMessage_type.h"
 
