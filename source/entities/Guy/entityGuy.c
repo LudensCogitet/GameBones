@@ -32,6 +32,10 @@ static unsigned int guyCount = 0;
 static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
 static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
+static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 3;
+
+// for Debug need to add to entity
+static uint8_t grounded = 1;
 
 // Forward declarations
 static void idle(Guy *guy);
@@ -55,8 +59,11 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
                                       flip);
     guy->sprite = sprite;
 
-    guy->velocity = 0;
-    guy->acceleration = 0;
+    guy->dx = 0;
+    guy->dy = 0;
+    guy->ax = 0;
+    guy->ay = 0;
+
     guy->direction = 0;
     guy->moveKeysDown = 0;
 
@@ -65,7 +72,7 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
 
     guy->entity = gbEntityNew(GB_ENTITY_TYPE_GUY, guy, GB_ENTITY_PRIORITY_HIGH);
 
-    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 0, 27, 32);
+    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 1, 22, 30);
 
     return guy->entity;
 }
@@ -79,41 +86,57 @@ void handleInput(Guy *guy) {
                 guy->sprite->flip = 1;
                 guy->state = GUY_STATE_WALK;
                 gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
-                guy->acceleration = -walkAcceleration;
+                guy->ax = -walkAcceleration;
             } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) && !guy->moveKeysDown) {
                 guy->moveKeysDown = 1;
                 guy->sprite->flip = 0;
                 guy->state = GUY_STATE_WALK;
                 gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
-                guy->acceleration = walkAcceleration;
+                guy->ax = walkAcceleration;
             }
 
             if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
                 guy->moveKeysDown = 0;
-                guy->acceleration = stopAcceleration;
+                guy->ax = stopAcceleration;
             } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
                 guy->moveKeysDown = 0;
-                guy->acceleration = -stopAcceleration;
+                guy->ax = -stopAcceleration;
             }
         break;
     }
 }
 
 void guyThink(Guy *guy, double delta) {
-    double oldVelocity = guy->velocity;
-    guy->velocity += (guy->acceleration * delta);
+    double oldVelocity = guy->dx;
+    guy->dx += (guy->ax * delta);
 
-    if (guy->velocity > maxVelocity) {
-        guy->velocity = maxVelocity;
-    } else if (guy->velocity < -maxVelocity) {
-        guy->velocity = -maxVelocity;
+    if (guy->dx > maxVelocity) {
+        guy->dx = maxVelocity;
+    } else if (guy->dx < -maxVelocity) {
+        guy->dx = -maxVelocity;
     }
 
     int oldSign = (int)(oldVelocity > 0) - (oldVelocity < 0);
-    int newSign = (int)(guy->velocity > 0) - (guy->velocity < 0);
+    int newSign = (int)(guy->dx > 0) - (guy->dx < 0);
 
     oldSign = !oldSign ? 1 : oldSign;
     newSign = !newSign ? 1 : newSign;
+
+    if (oldVelocity != 0 && guy->dx != 0 && oldSign + newSign == 0) {
+        guy->dx = 0;
+        guy->ax = 0;
+        guy->state = GUY_STATE_IDLE;
+        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite->src, &guy->animState);
+    }
+
+    guy->pos.x += guy->dx * delta;
+    guy->pos.y += guy->dy * delta;
+
+    if (!grounded) {
+        guy->dy += dropVelocity * delta;
+    }
+
+    gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
 
     switch (guy->state) {
         case GUY_STATE_IDLE:
@@ -124,15 +147,24 @@ void guyThink(Guy *guy, double delta) {
             break;
     }
 
-    if (oldVelocity != 0 && guy->velocity != 0 && oldSign + newSign == 0) {
-        guy->velocity = 0;
-        guy->acceleration = 0;
-        guy->state = GUY_STATE_IDLE;
-        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite->src, &guy->animState);
+    if (grounded) {
+        if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_JUST_PRESSED)) {
+            grounded = 0;
+            guy->dy = -200;
+        }
     }
 
-    guy->pos.x += guy->velocity * delta;
-    gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
+    if (!grounded || guy->state == GUY_STATE_WALK) {
+        unsigned int index = 0;
+        uint8_t collData;
+
+        while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
+            if (collData & GB_COLLISION_TOP) {
+                grounded = 1;
+                guy->dy = 0;
+            }
+        }
+    }
 }
 
 void guyRespond(Guy *guy, gbMessage *messages, uint16_t numMessages) {
@@ -163,28 +195,23 @@ static void idle(Guy *guy) {
 
 static void walk(Guy *guy) {
     handleMoveKeyUp(guy);
-
-    unsigned int index = 0;
-    uint8_t collData;
-
-    while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->velocity, 0, &collData));
 }
 
 static void handleMoveKeyDown(Guy *guy) {
-    if (guy->velocity) {
+    if (guy->dx) {
         return;
     }
 
     if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_PRESSED)) {
         guy->direction = 1;
-        guy->acceleration = walkAcceleration;
+        guy->ax = walkAcceleration;
         guy->sprite->flip = SDL_FLIP_NONE;
         setState(guy, GUY_STATE_WALK);
     }
 
     if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED)) {
         guy->direction = -1;
-        guy->acceleration = -walkAcceleration;
+        guy->ax = -walkAcceleration;
         guy->sprite->flip = SDL_FLIP_HORIZONTAL;
         setState(guy, GUY_STATE_WALK);
     }
@@ -192,10 +219,10 @@ static void handleMoveKeyDown(Guy *guy) {
 
 static void handleMoveKeyUp(Guy *guy) {
     if (guy->direction == 1 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED)) {
-        guy->acceleration = -stopAcceleration;
+        guy->ax = -stopAcceleration;
         guy->direction = 0;
     } else if (guy->direction == -1 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED)) {
-        guy->acceleration = stopAcceleration;
+        guy->ax = stopAcceleration;
         guy->direction = 0;
     }
 }

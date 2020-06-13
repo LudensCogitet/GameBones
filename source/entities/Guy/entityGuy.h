@@ -25,8 +25,12 @@ typedef struct {
 
     GUY_STATE state;
 
-    double velocity;
-    double acceleration;
+    double dx;
+    double dy;
+
+    double ax;
+    double ay;
+
     int direction;
     unsigned int moveKeysDown;
 } Guy;

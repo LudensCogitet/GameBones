@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 
     gbInputSetKey(GB_INPUT_MOVE_LEFT, SDLK_LEFT);
     gbInputSetKey(GB_INPUT_MOVE_RIGHT, SDLK_RIGHT);
+    gbInputSetKey(GB_INPUT_JUMP, SDLK_SPACE);
     gbInputSetKey(GB_INPUT_QUIT_GAME, SDLK_q);
     gbInputSetKey(GB_INPUT_MOUSE_SELECT, SDL_BUTTON_LEFT);
 
@@ -63,13 +64,17 @@ int main(int argc, char *argv[]) {
     }
 
     int x1, y1, x2, y2;
-    gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(4, 4, &x2, &y2);
+    gbGfxGridSquareToWorldCoords(0, 8, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(10, 12, &x2, &y2);
 
     gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
-    gbGfxGridSquareToWorldCoords(16, 0, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(20, 4, &x2, &y2);
+    gbGfxGridSquareToWorldCoords(16, 8, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(20, 12, &x2, &y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
+    gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(4, 9, &x2, &y2);
     gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     while (!done) {
@@ -99,7 +104,7 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-            printf("FPS: %d\n", fps);
+            //printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }
