@@ -65,16 +65,28 @@ int main(int argc, char *argv[]) {
 
     int x1, y1, x2, y2;
     gbGfxGridSquareToWorldCoords(0, 8, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(10, 12, &x2, &y2);
+    gbGfxGridSquareToWorldCoords(10, 9, &x2, &y2);
 
     gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     gbGfxGridSquareToWorldCoords(16, 8, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(20, 12, &x2, &y2);
+    gbGfxGridSquareToWorldCoords(20, 9, &x2, &y2);
     gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(4, 9, &x2, &y2);
+    gbGfxGridSquareToWorldCoords(1, 9, &x2, &y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
+    gbGfxGridSquareToWorldCoords(19, 0, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(20, 9, &x2, &y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
+    gbGfxGridSquareToWorldCoords(0, 11, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(20, 12, &x2, &y2);
+    gbCollisionStaticColliderNew(x1, y1, x2, y2);
+
+    gbGfxGridSquareToWorldCoords(13, 9, &x1, &y1);
+    gbGfxGridSquareToWorldCoords(14, 12, &x2, &y2);
     gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     while (!done) {
@@ -104,7 +116,7 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-            //printf("FPS: %d\n", fps);
+            printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }

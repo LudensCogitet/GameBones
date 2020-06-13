@@ -98,27 +98,64 @@ uint8_t detectCollision(
                         int y2B,
 
                         double dx,
-                        double dy
+                        double dy,
+
+                        int *xOverlap,
+                        int *yOverlap
                         ) {
     uint8_t collData = 0;
     //printf("%d ", collData);
     // Check x axis
     if ((x1A > x1B && x2A < x2B)    ||
         (x1A < x1B && x2A > x2B)    ||
-        (x1A < x2B && x2A > x2B)  ||
+        (x1A < x2B && x2A > x2B)    ||
         (x1A < x1B && x2A > x1B)) {
-            collData |= dx > 0 ? GB_COLLISION_X | GB_COLLISION_LEFT : dx < 0 ? GB_COLLISION_X | GB_COLLISION_RIGHT : GB_COLLISION_X;
+            collData |= GB_COLLISION_X;
+            if (x1A < x2B && x2A > x2B)
+                collData |= GB_COLLISION_RIGHT;
+            else if (x1A < x1B && x2A > x1B)
+                collData |= GB_COLLISION_LEFT;
         }
 
     // If there is no overlap on the x axis, there is no collision.
     if ((y1A > y1B && y2A < y2B)    ||
         (y1A < y1B && y2A > y2B)    ||
-        (y1A < y2B && y2A > y2B)  ||
+        (y1A < y2B && y2A > y2B)    ||
         (y1A < y1B && y2A > y1B)) {
-        collData |= dy > 0 ? GB_COLLISION_Y | GB_COLLISION_TOP : dy < 0 ? GB_COLLISION_Y | GB_COLLISION_BOTTOM : GB_COLLISION_Y;
+        collData |= GB_COLLISION_Y;
+        if ((y1A < y2B && y2A > y2B))
+            collData |= GB_COLLISION_BOTTOM;
+        else if ((y1A < y1B && y2A > y1B))
+            collData |= GB_COLLISION_TOP;
     }
 
-    // If there is no overlap on the y axis, there is also no collision
+
+    if ((collData & GB_COLLISION_X) && (collData & GB_COLLISION_Y)) {
+        if (collData & GB_COLLISION_RIGHT) {
+            *xOverlap = x2B - x1A;
+        } else if (collData & GB_COLLISION_LEFT) {
+            *xOverlap = x1B- x2A;
+        }
+
+        if (collData & GB_COLLISION_TOP) {
+            *yOverlap = y1B - y2A;
+        } else if (collData & GB_COLLISION_BOTTOM) {
+            *yOverlap = y2B - y1A;
+        }
+
+        if (dx && dy) {
+            if (!(*yOverlap) || (abs(*xOverlap) <= abs(*yOverlap)))
+                collData |= GB_COLLISION_X_MARKED;
+
+            if (!(*xOverlap) || (abs(*yOverlap) <= abs(*xOverlap)))
+                collData |= GB_COLLISION_Y_MARKED;
+        } else if (dx) {
+            collData |= GB_COLLISION_X_MARKED;
+        } else if (dy) {
+            collData |= GB_COLLISION_Y_MARKED;
+        }
+    }
+
     return collData;
 }
 
@@ -128,6 +165,9 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
         int y1A = dynamicCollider->pos->y + dynamicCollider->offsetY;
         int x2A = x1A + dynamicCollider->width;
         int y2A = y1A + dynamicCollider->height;
+        int xOverlap = 0;
+        int yOverlap = 0;
+
         gbCollisionStaticRect *rect = staticColliders[index];
         uint8_t data = detectCollision(
                                     x1A,
@@ -141,36 +181,16 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
                                     rect->y2,
 
                                     dx,
-                                    dy
+                                    dy,
+
+                                    &xOverlap,
+                                    &yOverlap
                                     );
 
         if ((data & GB_COLLISION_X) && (data & GB_COLLISION_Y)) {
-            int xOverlap = 0;
-            int yOverlap = 0;
+            dynamicCollider->pos->x += xOverlap;
+            dynamicCollider->pos->y += yOverlap;
 
-            if (data & GB_COLLISION_RIGHT) {
-                xOverlap = rect->x2 - x1A;
-            } else if (data & GB_COLLISION_LEFT) {
-                xOverlap = rect->x1- x2A;
-            }
-
-            if (data & GB_COLLISION_TOP) {
-                yOverlap = rect->y1 - y2A;
-            } else if (data & GB_COLLISION_BOTTOM) {
-                yOverlap = rect->y2 - y1A;
-            }
-
-            if (dx && dy) {
-                if (abs(xOverlap) <= abs(yOverlap))
-                    dynamicCollider->pos->x += xOverlap;
-
-                if (abs(yOverlap) <= abs(xOverlap))
-                    dynamicCollider->pos->y += yOverlap;
-            } else if (dx) {
-                dynamicCollider->pos->x += xOverlap;
-            } else if (dy) {
-                dynamicCollider->pos->y += yOverlap;
-            }
 
             *collData = data;
 

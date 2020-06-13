@@ -32,7 +32,8 @@ static unsigned int guyCount = 0;
 static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
 static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
-static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 3;
+static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 2;
+static const uint8_t HIT_GROUND = GB_COLLISION_TOP | GB_COLLISION_Y_MARKED;
 
 // for Debug need to add to entity
 static uint8_t grounded = 1;
@@ -72,7 +73,7 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
 
     guy->entity = gbEntityNew(GB_ENTITY_TYPE_GUY, guy, GB_ENTITY_PRIORITY_HIGH);
 
-    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 1, 22, 30);
+    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 0, 22, 31);
 
     return guy->entity;
 }
@@ -150,7 +151,7 @@ void guyThink(Guy *guy, double delta) {
     if (grounded) {
         if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_JUST_PRESSED)) {
             grounded = 0;
-            guy->dy = -200;
+            guy->dy = -250;
         }
     }
 
@@ -159,7 +160,7 @@ void guyThink(Guy *guy, double delta) {
         uint8_t collData;
 
         while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-            if (collData & GB_COLLISION_TOP) {
+            if (collData & HIT_GROUND) {
                 grounded = 1;
                 guy->dy = 0;
             }

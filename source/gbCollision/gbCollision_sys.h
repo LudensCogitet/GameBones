@@ -10,6 +10,8 @@
 #define GB_COLLISION_RIGHT      8
 #define GB_COLLISION_X          16
 #define GB_COLLISION_Y          32
+#define GB_COLLISION_X_MARKED   64
+#define GB_COLLISION_Y_MARKED  128
 
 void gbCollisionInit();
 void gbCollisionTeardown();

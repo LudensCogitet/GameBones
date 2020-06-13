@@ -6,3 +6,4 @@
 *.dll
 *.txt
 cloc-1.84.exe
+*.out
