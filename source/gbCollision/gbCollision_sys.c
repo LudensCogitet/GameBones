@@ -16,6 +16,14 @@ static unsigned int staticColliderCursor = 0;
 static gbCollisionDynamicRect *dynamicColliders[GB_COLLISION_MAX_DYNAMIC_COLLIDERS];
 static unsigned int dynamicColliderCursor = 0;
 
+void binString(uint8_t value, char *buffer) {
+    buffer[8] = '\0';
+
+    for (unsigned int i = 7; i < 8; i--) {
+        buffer[7 - i] = '0' + ((value >> i) & 0x01);
+    }
+}
+
 void gbCollisionInit() {
     for (unsigned int i = 0; i < GB_COLLISION_MAX_STATIC_COLLIDERS; i++) {
         staticColliders[i] = 0;
@@ -106,8 +114,8 @@ uint8_t detectCollision(
     uint8_t collData = 0;
     //printf("%d ", collData);
     // Check x axis
-    if ((x1A > x1B && x2A < x2B)    ||
-        (x1A < x1B && x2A > x2B)    ||
+    if ((x1A >= x1B && x2A <= x2B)    ||
+        (x1A <= x1B && x2A >= x2B)    ||
         (x1A < x2B && x2A > x2B)    ||
         (x1A < x1B && x2A > x1B)) {
             collData |= GB_COLLISION_X;
@@ -118,8 +126,8 @@ uint8_t detectCollision(
         }
 
     // If there is no overlap on the x axis, there is no collision.
-    if ((y1A > y1B && y2A < y2B)    ||
-        (y1A < y1B && y2A > y2B)    ||
+    if ((y1A >= y1B && y2A <= y2B)    ||
+        (y1A <= y1B && y2A >= y2B)    ||
         (y1A < y2B && y2A > y2B)    ||
         (y1A < y1B && y2A > y1B)) {
         collData |= GB_COLLISION_Y;
@@ -131,29 +139,25 @@ uint8_t detectCollision(
 
 
     if ((collData & GB_COLLISION_X) && (collData & GB_COLLISION_Y)) {
-        if (collData & GB_COLLISION_RIGHT) {
-            *xOverlap = x2B - x1A;
-        } else if (collData & GB_COLLISION_LEFT) {
-            *xOverlap = x1B- x2A;
-        }
+        int xOverlap1 = x2B - x1A;
+        int xOverlap2 = x1B - x2A;
 
-        if (collData & GB_COLLISION_TOP) {
-            *yOverlap = y1B - y2A;
-        } else if (collData & GB_COLLISION_BOTTOM) {
-            *yOverlap = y2B - y1A;
-        }
+        *xOverlap = abs(xOverlap1) < abs(xOverlap2) ? xOverlap1 : xOverlap2;
 
-        if (dx && dy) {
-            if (!(*yOverlap) || (abs(*xOverlap) <= abs(*yOverlap)))
-                collData |= GB_COLLISION_X_MARKED;
+        int yOverlap1 = y1B - y2A;
+        int yOverlap2 = y2B - y1A;
 
-            if (!(*xOverlap) || (abs(*yOverlap) <= abs(*xOverlap)))
-                collData |= GB_COLLISION_Y_MARKED;
-        } else if (dx) {
+        *yOverlap = abs(yOverlap1) < abs(yOverlap2) ? yOverlap1 : yOverlap2;
+
+        if ((abs(*xOverlap) <= abs(*yOverlap)))
             collData |= GB_COLLISION_X_MARKED;
-        } else if (dy) {
+
+        if ((abs(*yOverlap) <= abs(*xOverlap)))
             collData |= GB_COLLISION_Y_MARKED;
-        }
+
+        char buffer[9];
+        binString(collData, &buffer);
+        printf("%s\n", buffer);
     }
 
     return collData;
@@ -188,8 +192,17 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
                                     );
 
         if ((data & GB_COLLISION_X) && (data & GB_COLLISION_Y)) {
-            dynamicCollider->pos->x += xOverlap;
-            dynamicCollider->pos->y += yOverlap;
+
+            if (data & GB_COLLISION_X_MARKED) {
+                dynamicCollider->pos->x += xOverlap;
+                //printf("X");
+            }
+            if (data & GB_COLLISION_Y_MARKED) {
+                dynamicCollider->pos->y += yOverlap;
+                //printf("Y");
+            }
+
+            //printf("\n");
 
 
             *collData = data;

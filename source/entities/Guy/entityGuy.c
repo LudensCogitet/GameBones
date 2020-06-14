@@ -133,9 +133,9 @@ void guyThink(Guy *guy, double delta) {
     guy->pos.x += guy->dx * delta;
     guy->pos.y += guy->dy * delta;
 
-    if (!grounded) {
-        guy->dy += dropVelocity * delta;
-    }
+
+    guy->dy += dropVelocity * delta;
+
 
     gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
 
@@ -155,15 +155,13 @@ void guyThink(Guy *guy, double delta) {
         }
     }
 
-    if (!grounded || guy->state == GUY_STATE_WALK) {
-        unsigned int index = 0;
-        uint8_t collData;
+    unsigned int index = 0;
+    uint8_t collData;
 
-        while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-            if (collData & HIT_GROUND) {
-                grounded = 1;
-                guy->dy = 0;
-            }
+    while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
+        if (collData & HIT_GROUND) {
+            guy->dy = 0;
+            grounded = 1;
         }
     }
 }
