@@ -179,7 +179,7 @@ void guyThink(Guy *guy, double delta) {
     uint8_t collData;
 
     while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-        if ((collData & HIT_GROUND) == HIT_GROUND) {
+        if ((collData & HIT_GROUND) == HIT_GROUND && guy->dy > 0) {
             guy->dy = 0;
             grounded = 1;
         }
