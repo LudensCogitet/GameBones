@@ -21,8 +21,6 @@
 #include "../../gbSerializer/gbFile_type.h"
 #include "../../gbSerializer/gbFileChunkSize_type.h"
 
-#define HIT_GROUND(x) ((x & GB_COLLISION_TOP) && (x & GB_COLLISION_Y_MARKED))
-
 static unsigned int guyTexture = GB_TEXTURE_NO_TEXTURE;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
@@ -37,16 +35,18 @@ static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
 static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 2;
+static const uint8_t HIT_GROUND = GB_COLLISION_TOP | GB_COLLISION_Y_MARKED;
 
 // for Debug need to add to entity
 static uint8_t grounded = 1;
 
 // Forward declarations
 static void idle(Guy *guy);
-static void walk(Guy *guy);
+static void walk(Guy *guy, double delta);
 static void handleInput(Guy *guy);
 static void handleMoveKeyDown(Guy *guy);
 static void handleMoveKeyUp(Guy *guy);
+static void setState(Guy *guy, GUY_STATE state);
 
 gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     printf("Guy count: %d\n", guyCount);
@@ -81,36 +81,57 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     return guy->entity;
 }
 
-void handleInput(Guy *guy) {
-    switch (guy->state) {
-        case GUY_STATE_WALK:
-        case GUY_STATE_IDLE:
-            if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_JUST_PRESSED) && !guy->moveKeysDown) {
-                guy->moveKeysDown = 1;
-                guy->sprite->flip = 1;
-                guy->state = GUY_STATE_WALK;
-                gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
-                guy->ax = -walkAcceleration;
-            } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) && !guy->moveKeysDown) {
-                guy->moveKeysDown = 1;
-                guy->sprite->flip = 0;
-                guy->state = GUY_STATE_WALK;
-                gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
-                guy->ax = walkAcceleration;
-            }
-
-            if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
-                guy->moveKeysDown = 0;
-                guy->ax = stopAcceleration;
-            } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
-                guy->moveKeysDown = 0;
-                guy->ax = -stopAcceleration;
-            }
-        break;
-    }
-}
+//void handleInput(Guy *guy) {
+//    switch (guy->state) {
+//        case GUY_STATE_WALK:
+//        case GUY_STATE_IDLE:
+//            if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_JUST_PRESSED) && !guy->moveKeysDown) {
+//                guy->moveKeysDown = 1;
+//                guy->sprite->flip = 1;
+//                guy->state = GUY_STATE_WALK;
+//                gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
+//                guy->ax = -walkAcceleration;
+//            } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) && !guy->moveKeysDown) {
+//                guy->moveKeysDown = 1;
+//                guy->sprite->flip = 0;
+//                guy->state = GUY_STATE_WALK;
+//                gbAnimationStateInit(guyAnimations[GUY_STATE_WALK], &guy->sprite->src, &guy->animState);
+//                guy->ax = walkAcceleration;
+//            }
+//
+//            if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
+//                guy->moveKeysDown = 0;
+//                guy->ax = stopAcceleration;
+//            } else if (gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED) && guy->moveKeysDown) {
+//                guy->moveKeysDown = 0;
+//                guy->ax = -stopAcceleration;
+//            }
+//        break;
+//    }
+//}
 
 void guyThink(Guy *guy, double delta) {
+    // INPUT
+    int xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_JUST_PRESSED) ? -1   :
+                gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) ? 1   :
+                0;
+
+    if (xMove) {
+        guy->sprite->flip = xMove < 0;
+        setState(guy, GUY_STATE_WALK);
+    } else {
+        xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED) ? -1   :
+                gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_PRESSED) ? 1   :
+                0;
+    }
+
+    if (xMove) {
+        guy->ax = xMove * walkAcceleration;
+    } else if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) || gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED)) {
+        guy->ax = guy->ax > 0 ? -stopAcceleration : stopAcceleration;
+    }
+
+    // MOVEMENT PHYSICS
     double oldVelocity = guy->dx;
     guy->dx += (guy->ax * delta);
 
@@ -126,30 +147,26 @@ void guyThink(Guy *guy, double delta) {
     oldSign = !oldSign ? 1 : oldSign;
     newSign = !newSign ? 1 : newSign;
 
-    if (oldVelocity != 0 && guy->dx != 0 && oldSign + newSign == 0) {
+    if (!xMove && oldVelocity != 0 && guy->dx != 0 && oldSign + newSign == 0) {
         guy->dx = 0;
         guy->ax = 0;
         guy->state = GUY_STATE_IDLE;
         gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite->src, &guy->animState);
     }
 
-    guy->pos.x += guy->dx * delta;
-    guy->pos.y += guy->dy * delta;
-
-
-    guy->dy += dropVelocity * delta;
-
-
-    gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
-
     switch (guy->state) {
         case GUY_STATE_IDLE:
             idle(guy);
             break;
         case GUY_STATE_WALK:
-            walk(guy);
+            walk(guy, delta);
             break;
     }
+
+    guy->pos.y += guy->dy * delta;
+    guy->dy += dropVelocity * delta;
+
+    gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
 
     if (grounded) {
         if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_JUST_PRESSED)) {
@@ -162,7 +179,7 @@ void guyThink(Guy *guy, double delta) {
     uint8_t collData;
 
     while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-        if (HIT_GROUND(collData)) {
+        if ((collData & HIT_GROUND) == HIT_GROUND) {
             guy->dy = 0;
             grounded = 1;
         }
@@ -186,48 +203,46 @@ void guyDispose(Guy * guy) {
 static void setState(Guy *guy, GUY_STATE state) {
     guy->state = state;
 
-    if (state == GUY_STATE_IDLE || state == GUY_STATE_WALK) {
-        gbAnimationStateInit(guyAnimations[state], &guy->sprite->src, &guy->animState);
-    }
+    gbAnimationStateInit(guyAnimations[state], &guy->sprite->src, &guy->animState);
 }
 
 static void idle(Guy *guy) {
-    handleMoveKeyDown(guy);
+    //handleMoveKeyDown(guy);
 }
 
-static void walk(Guy *guy) {
-    handleMoveKeyUp(guy);
+static void walk(Guy *guy, double delta) {
+   guy->pos.x += guy->dx * delta;
 }
 
-static void handleMoveKeyDown(Guy *guy) {
-    if (guy->dx) {
-        return;
-    }
-
-    if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_PRESSED)) {
-        guy->direction = 1;
-        guy->ax = walkAcceleration;
-        guy->sprite->flip = SDL_FLIP_NONE;
-        setState(guy, GUY_STATE_WALK);
-    }
-
-    if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED)) {
-        guy->direction = -1;
-        guy->ax = -walkAcceleration;
-        guy->sprite->flip = SDL_FLIP_HORIZONTAL;
-        setState(guy, GUY_STATE_WALK);
-    }
-}
-
-static void handleMoveKeyUp(Guy *guy) {
-    if (guy->direction == 1 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED)) {
-        guy->ax = -stopAcceleration;
-        guy->direction = 0;
-    } else if (guy->direction == -1 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED)) {
-        guy->ax = stopAcceleration;
-        guy->direction = 0;
-    }
-}
+//static void handleMoveKeyDown(Guy *guy) {
+//    if (guy->dx) {
+//        return;
+//    }
+//
+//    if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_PRESSED)) {
+//        guy->direction = 1;
+//        guy->ax = walkAcceleration;
+//        guy->sprite->flip = SDL_FLIP_NONE;
+//        setState(guy, GUY_STATE_WALK);
+//    }
+//
+//    if (guy->direction == 0 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED)) {
+//        guy->direction = -1;
+//        guy->ax = -walkAcceleration;
+//        guy->sprite->flip = SDL_FLIP_HORIZONTAL;
+//        setState(guy, GUY_STATE_WALK);
+//    }
+//}
+//
+//static void handleMoveKeyUp(Guy *guy) {
+//    if (guy->direction == 1 && gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED)) {
+//        guy->ax = -stopAcceleration;
+//        guy->direction = 0;
+//    } else if (guy->direction == -1 && gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED)) {
+//        guy->ax = stopAcceleration;
+//        guy->direction = 0;
+//    }
+//}
 
 void guySerialize(Guy * guy, gbFile *file) {
     // Write entity type

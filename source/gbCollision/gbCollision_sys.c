@@ -131,7 +131,7 @@ uint8_t detectCollision(
     }
 
 
-    if ((collData & GB_COLLISION_X) && (collData & GB_COLLISION_Y)) {
+    if ((collData & (GB_COLLISION_X | GB_COLLISION_Y)) == (GB_COLLISION_X | GB_COLLISION_Y)) {
         int xOverlap1 = x2B - x1A;
         int xOverlap2 = x1B - x2A;
 
