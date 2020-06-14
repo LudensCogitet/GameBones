@@ -2,6 +2,7 @@
 
 // Only used for debug mode
 #include "../gbRenderer/gbRenderer_sys.h"
+#include "../gbUtils/gbUtils.h"
 
 #include "./gbCollision_sys.h"
 #include "./gbCollisionDynamicRect_type.h"
@@ -15,14 +16,6 @@ static unsigned int staticColliderCursor = 0;
 
 static gbCollisionDynamicRect *dynamicColliders[GB_COLLISION_MAX_DYNAMIC_COLLIDERS];
 static unsigned int dynamicColliderCursor = 0;
-
-void binString(uint8_t value, char *buffer) {
-    buffer[8] = '\0';
-
-    for (unsigned int i = 7; i < 8; i--) {
-        buffer[7 - i] = '0' + ((value >> i) & 0x01);
-    }
-}
 
 void gbCollisionInit() {
     for (unsigned int i = 0; i < GB_COLLISION_MAX_STATIC_COLLIDERS; i++) {
@@ -156,7 +149,7 @@ uint8_t detectCollision(
             collData |= GB_COLLISION_Y_MARKED;
 
         char buffer[9];
-        binString(collData, &buffer);
+        binString(collData, &buffer, 9);
         printf("%s\n", buffer);
     }
 

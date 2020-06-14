@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-            printf("FPS: %d\n", fps);
+            //printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }

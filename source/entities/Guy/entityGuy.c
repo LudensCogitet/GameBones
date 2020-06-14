@@ -3,6 +3,8 @@
 #include <math.h>
 #include "./entityGuy.h"
 
+#include "../../gbUtils/gbUtils.h"
+
 #include "../../gbRenderer/gbRenderer_sys.h"
 #include "../../gbCollision/gbCollision_sys.h"
 #include "../../gbGfx/gbGfx_sys.h"
@@ -19,6 +21,8 @@
 #include "../../gbSerializer/gbFile_type.h"
 #include "../../gbSerializer/gbFileChunkSize_type.h"
 
+#define HIT_GROUND(x) ((x & GB_COLLISION_TOP) && (x & GB_COLLISION_Y_MARKED))
+
 static unsigned int guyTexture = GB_TEXTURE_NO_TEXTURE;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
@@ -33,7 +37,6 @@ static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
 static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 2;
-static const uint8_t HIT_GROUND = GB_COLLISION_TOP | GB_COLLISION_Y_MARKED;
 
 // for Debug need to add to entity
 static uint8_t grounded = 1;
@@ -159,7 +162,7 @@ void guyThink(Guy *guy, double delta) {
     uint8_t collData;
 
     while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-        if (collData & HIT_GROUND) {
+        if (HIT_GROUND(collData)) {
             guy->dy = 0;
             grounded = 1;
         }
