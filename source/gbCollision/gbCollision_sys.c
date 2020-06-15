@@ -88,24 +88,24 @@ gbCollisionStaticRect *gbCollisionStaticColliderNew(int x1, int y1, int x2, int 
 // Check collisions between A and B and return flags
 // Collision detection is performed from A's perspective
 uint8_t detectCollision(
-                        int x1A,
-                        int y1A,
-                        int x2A,
-                        int y2A,
+                        double x1A,
+                        double y1A,
+                        double x2A,
+                        double y2A,
 
-                        int x1B,
-                        int y1B,
-                        int x2B,
-                        int y2B,
+                        double x1B,
+                        double y1B,
+                        double x2B,
+                        double y2B,
 
                         double dx,
                         double dy,
 
-                        int *xOverlap,
-                        int *yOverlap
+                        double *xOverlap,
+                        double *yOverlap
                         ) {
     uint8_t collData = 0;
-    //printf("%d ", collData);
+
     // Check x axis
     if ((x1A >= x1B && x2A <= x2B)    ||
         (x1A <= x1B && x2A >= x2B)    ||
@@ -148,9 +148,6 @@ uint8_t detectCollision(
         if ((abs(*yOverlap) <= abs(*xOverlap)))
             collData |= GB_COLLISION_Y_MARKED;
 
-        char buffer[9];
-        binString(collData, &buffer, 9);
-        printf("%s\n", buffer);
     }
 
     return collData;
@@ -158,12 +155,12 @@ uint8_t detectCollision(
 
 unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData) {
     for (;index < staticColliderCursor; index++) {
-        int x1A = dynamicCollider->pos->x + dynamicCollider->offsetX;
-        int y1A = dynamicCollider->pos->y + dynamicCollider->offsetY;
-        int x2A = x1A + dynamicCollider->width;
-        int y2A = y1A + dynamicCollider->height;
-        int xOverlap = 0;
-        int yOverlap = 0;
+        double x1A = dynamicCollider->pos->x + dynamicCollider->offsetX;
+        double y1A = dynamicCollider->pos->y + dynamicCollider->offsetY;
+        double x2A = x1A + dynamicCollider->width;
+        double y2A = y1A + dynamicCollider->height;
+        double xOverlap = 0;
+        double yOverlap = 0;
 
         gbCollisionStaticRect *rect = staticColliders[index];
         uint8_t data = detectCollision(
@@ -188,18 +185,12 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
 
             if (data & GB_COLLISION_X_MARKED) {
                 dynamicCollider->pos->x += xOverlap;
-                //printf("X");
             }
             if (data & GB_COLLISION_Y_MARKED) {
                 dynamicCollider->pos->y += yOverlap;
-                //printf("Y");
             }
 
-            //printf("\n");
-
-
             *collData = data;
-
             return index + 1;
         }
     }

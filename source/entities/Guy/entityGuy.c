@@ -127,8 +127,24 @@ void guyThink(Guy *guy, double delta) {
 
     if (xMove) {
         guy->ax = xMove * walkAcceleration;
-    } else if (gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) || gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED)) {
-        guy->ax = guy->ax > 0 ? -stopAcceleration : stopAcceleration;
+    } else {
+        xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) ? -1 :
+                gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED) ? 1 :
+                0;
+
+        if (xMove) {
+            if ((xMove > 0) - (xMove < 0) != (guy->dx > 0) - (guy->dx < 0)) {
+                guy->ax = xMove > 0 ? stopAcceleration : -stopAcceleration;
+            } else {
+                guy->ax = xMove > 0 ? -stopAcceleration : stopAcceleration;
+            }
+        }
+    }
+
+    if (grounded) {
+        if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_PRESSED)) {
+            guy->dy = -250;
+        }
     }
 
     // MOVEMENT PHYSICS
@@ -168,20 +184,17 @@ void guyThink(Guy *guy, double delta) {
 
     gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
 
-    if (grounded) {
-        if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_JUST_PRESSED)) {
-            grounded = 0;
-            guy->dy = -250;
-        }
-    }
-
     unsigned int index = 0;
-    uint8_t collData;
+    uint8_t collData = 0;
+
+    grounded = 0;
 
     while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
-        if ((collData & HIT_GROUND) == HIT_GROUND && guy->dy > 0) {
-            guy->dy = 0;
-            grounded = 1;
+        if ((collData & HIT_GROUND) == HIT_GROUND) {
+            if (guy->dy > 0) {
+                guy->dy = 0;
+                grounded = 1;
+            }
         }
     }
 }
