@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "./gbUtils.h"
 
 void binString(uint64_t value, char *buffer, unsigned int bufferSize) {
@@ -10,6 +11,6 @@ void binString(uint64_t value, char *buffer, unsigned int bufferSize) {
 
 void printBinString(uint64_t value, unsigned int bitLength, const char *suffix) {
     char buffer[bitLength + 1];
-    binString(value, &buffer, bitLength + 1);
+    binString(value, buffer, bitLength + 1);
     printf("%s%s", buffer, suffix);
 }
