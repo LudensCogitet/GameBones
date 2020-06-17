@@ -27,6 +27,8 @@ gbCollisionDynamicRect *gbCollisionDynamicColliderNew(
 
 gbCollisionStaticRect *gbCollisionStaticColliderNew(int x1, int y1, int x2, int y2);
 unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData);
+unsigned int gbCollisionDetectPointCollisionStatic(int x, int y);
+void gbCollisionRemoveStaticCollider(unsigned int index);
 
 void gbCollisionDebugDraw();
 

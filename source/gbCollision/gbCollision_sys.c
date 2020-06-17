@@ -12,6 +12,8 @@
 #define GB_COLLISION_MAX_STATIC_COLLIDERS 100
 #define GB_COLLISION_MAX_DYNAMIC_COLLIDERS 100
 
+#define GB_COLLISION_NO_STATIC_COLLIDER (GB_COLLISION_MAX_STATIC_COLLIDERS + 1)
+
 static gbCollisionStaticRect *staticColliders[GB_COLLISION_MAX_STATIC_COLLIDERS];
 static unsigned int staticColliderCursor = 0;
 
@@ -198,6 +200,32 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
 
     *collData = 0;
     return 0;
+}
+
+unsigned int gbCollisionDetectPointCollisionStatic(int x, int y) {
+    for (unsigned int i = 0; i < staticColliderCursor; i++) {
+        if (x > staticColliders[i]->x1 && x < staticColliders[i]->x2 &&
+            y > staticColliders[i]->y1 && y < staticColliders[i]->y2) {
+                return i;
+            }
+    }
+
+    return GB_COLLISION_NO_STATIC_COLLIDER;
+}
+
+void gbCollisionRemoveStaticCollider(unsigned int index) {
+    if (staticColliderCursor <= index || index >= GB_COLLISION_NO_STATIC_COLLIDER) {
+        return;
+    }
+
+    free(staticColliders[index]);
+
+    if (--staticColliderCursor > index) {
+        staticColliders[index] = staticColliders[staticColliderCursor];
+        staticColliders[staticColliderCursor] = 0;
+    } else {
+        staticColliders[index] = 0;
+    }
 }
 
 void gbCollisionDebugDraw() {

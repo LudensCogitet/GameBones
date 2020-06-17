@@ -12,6 +12,7 @@
 #include "./gbGfx_sys.h"
 
 #include "../gbTexture/gbTexture_sys.h"
+#include "../editor/editor.h";
 
 #include "./gbGfxLayer_type.h"
 #include "./gbSprite_type.h"
@@ -188,6 +189,8 @@ void gbGfxDraw() {
         }
         gbCollisionDebugDraw();
         gbRendererResetDrawColor();
+
+        editorDebugRender();
     }
 
     static SDL_Rect dst;
@@ -242,12 +245,18 @@ void gbGfxScreenToWorldCoords(int *x, int *y) {
 void gbGfxScreenCoordsToGridSquare(int x, int y, int *gridX, int *gridY) {
     gbGfxScreenToWorldCoords(&x, &y);
 
-    if (x < GB_GFX_GRID_OFFSET_X || x > GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE) ||
-        y < GB_GFX_GRID_OFFSET_Y || y > GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE)) {
-            *gridX = -1;
-            *gridY = -1;
-            return;
-        }
+    if (x < GB_GFX_GRID_OFFSET_X) {
+        x = GB_GFX_GRID_OFFSET_X;
+    } else if (x > GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE)) {
+        x = GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
+    }
+
+    if (y < GB_GFX_GRID_OFFSET_Y) {
+        y = GB_GFX_GRID_OFFSET_Y;
+    } else if (y > GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE)) {
+        y = GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
+    }
+
     *gridX = x - GB_GFX_GRID_OFFSET_X;
     *gridY = y - GB_GFX_GRID_OFFSET_Y;
 

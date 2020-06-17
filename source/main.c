@@ -19,6 +19,7 @@
 #include "./gbAnimation/gbAnimation_type.h"
 #include "./gbAnimation/gbAnimType_type.h"
 #include "./gbEntity/gbEntity_sys.h"
+#include "./editor/editor.h";
 
 #include "./gbSerializer/gbFile_type.h"
 
@@ -49,6 +50,8 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_JUMP, SDLK_SPACE);
     gbInputSetKey(GB_INPUT_QUIT_GAME, SDLK_q);
     gbInputSetKey(GB_INPUT_MOUSE_SELECT, SDL_BUTTON_LEFT);
+    gbInputSetKey(GB_INPUT_MOUSE_ALT, SDL_BUTTON_RIGHT);
+    gbInputSetKey(GB_INPUT_TOGGLE_EDIT_MODE, SDLK_TAB);
 
     Guy *guy;
 
@@ -105,7 +108,11 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        gbEntityAct(delta);
+        if(gbInputCheckState(GB_INPUT_TOGGLE_EDIT_MODE, GB_INPUT_RELEASED))
+            editorEditModeOn = !editorEditModeOn;
+
+        editorUpdate();
+        if (!editorEditModeOn) gbEntityAct(delta);
         gbGfxDraw();
 
         SDL_Delay(0);
