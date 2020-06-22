@@ -19,7 +19,11 @@
 #include "./gbAnimation/gbAnimation_type.h"
 #include "./gbAnimation/gbAnimType_type.h"
 #include "./gbEntity/gbEntity_sys.h"
-#include "./editor/editor.h";
+#include "./editor/editor.h"
+
+#include "./gbGfx/gbFont_type.h"
+#include "./gbGfx/gbColor_type.h"
+#include "./gbGfx/gbText_type.h"
 
 #include "./gbSerializer/gbFile_type.h"
 
@@ -33,6 +37,7 @@ int main(int argc, char *argv[]) {
     gbGfxInit();
     gbAnimationInit();
     gbCollisionInit();
+    editorInit();
 
     initGuy();
 
@@ -51,68 +56,28 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_QUIT_GAME, SDLK_q);
     gbInputSetKey(GB_INPUT_MOUSE_SELECT, SDL_BUTTON_LEFT);
     gbInputSetKey(GB_INPUT_MOUSE_ALT, SDL_BUTTON_RIGHT);
-    gbInputSetKey(GB_INPUT_TOGGLE_EDIT_MODE, SDLK_TAB);
-
-    Guy *guy;
 
     gbFile *file = gbSerializerOpenFileRead("./gameSave.sav");
 
     if (file) {
         gbSerializerReadChunk(file, GB_FILE_CHUNK_SIZE_16);
-        guy = (Guy *)gbEntityDeserialize[GB_ENTITY_TYPE_GUY](file);
+        gbEntityDeserialize[GB_ENTITY_TYPE_GUY](file);
         gbSerializerCloseFile(file);
     } else {
         SDL_ClearError();
-        guy = guyNew(GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3), SDL_FLIP_NONE)->entity;
+        guyNew(GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3), SDL_FLIP_NONE)->entity;
     }
-
-    int x1, y1, x2, y2;
-    gbGfxGridSquareToWorldCoords(0, 8, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(10, 9, &x2, &y2);
-
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
-
-    gbGfxGridSquareToWorldCoords(16, 8, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(20, 9, &x2, &y2);
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
-
-    gbGfxGridSquareToWorldCoords(0, 0, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(1, 9, &x2, &y2);
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
-
-    gbGfxGridSquareToWorldCoords(19, 0, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(20, 9, &x2, &y2);
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
-
-    gbGfxGridSquareToWorldCoords(0, 11, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(20, 12, &x2, &y2);
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
-
-    gbGfxGridSquareToWorldCoords(13, 9, &x1, &y1);
-    gbGfxGridSquareToWorldCoords(14, 12, &x2, &y2);
-    gbCollisionStaticColliderNew(x1, y1, x2, y2);
 
     while (!done) {
         gbInputUpdate();
 
         done = gbInputCheckState(GB_INPUT_QUIT_GAME, GB_INPUT_RELEASED);
 
-        if(gbInputCheckState(GB_INPUT_MOUSE_SELECT, GB_INPUT_JUST_PRESSED)) {
-            int x, y;
-            SDL_GetMouseState(&x, &y);
-            gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
-            if (x > -1 && y > -1) {
-                gbGfxGridSquareToWorldCoords(x, y, &x, &y);
-                guy->pos.x = x;
-                guy->pos.y = y;
-            }
-        }
-
         if(gbInputCheckState(GB_INPUT_TOGGLE_EDIT_MODE, GB_INPUT_RELEASED))
             editorEditModeOn = !editorEditModeOn;
 
         editorUpdate();
-        if (!editorEditModeOn) gbEntityAct(delta);
+        gbEntityAct(delta);
         gbGfxDraw();
 
         SDL_Delay(0);
@@ -130,10 +95,15 @@ int main(int argc, char *argv[]) {
 
     }
 
-    file = gbSerializerOpenFileWrite("./gameSave.sav");
-    gbEntitySerialize[GB_ENTITY_TYPE_GUY](guy, file);
-    gbSerializerCloseFile(file);
+    gbEntity *guyEntity = gbEntityFindOfType(GB_ENTITY_TYPE_GUY);
 
+    if (guyEntity) {
+        file = gbSerializerOpenFileWrite("./gameSave.sav");
+        gbEntitySerialize[GB_ENTITY_TYPE_GUY](guyEntity->entity, file);
+        gbSerializerCloseFile(file);
+    }
+
+    editorTeardown();
     gbCollisionTeardown();
     gbAnimationTeardown();
     gbGfxTeardown();

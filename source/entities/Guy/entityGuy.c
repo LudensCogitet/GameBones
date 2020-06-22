@@ -21,7 +21,7 @@
 #include "../../gbSerializer/gbFile_type.h"
 #include "../../gbSerializer/gbFileChunkSize_type.h"
 
-static unsigned int guyTexture = GB_TEXTURE_NO_TEXTURE;
+static SDL_Texture *guyTexture = GB_TEXTURE_NO_TEXTURE;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
 static unsigned int guyAnimations[GUY_STATE_NUM_STATES] = {
@@ -49,6 +49,7 @@ static void handleMoveKeyUp(Guy *guy);
 static void setState(Guy *guy, GUY_STATE state);
 
 gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
+    guyCount++;
     printf("Guy count: %d\n", guyCount);
 
     Guy *guy = (Guy *)malloc(sizeof(Guy));
@@ -59,6 +60,7 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
                                       guyTexture,
                                       0, 0, 32, 32,
                                       &guy->pos, 32, 32,
+                                      1,
                                       0,
                                       flip);
     guy->sprite = sprite;
@@ -211,6 +213,8 @@ void guyDispose(Guy * guy) {
         gbTextureUnload(guyTexture);
         gbAnimationUnload(guyAnimationIdle);
     }
+
+    printf("guyCount: %d", guyCount);
 }
 
 static void setState(Guy *guy, GUY_STATE state) {
@@ -277,7 +281,7 @@ Guy *guyDeserialize(gbFile *file) {
 }
 
 void initGuy() {
-        guyTexture = gbTextureLoad("./assets/red_guy.png");
+        guyTexture = gbTextureLoadFromFile("./assets/red_guy.png");
         guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
         guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
 

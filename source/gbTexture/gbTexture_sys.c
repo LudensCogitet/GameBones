@@ -30,37 +30,52 @@ void gbTextureUnload(unsigned int index) {
         SDL_DestroyTexture(gbTextures[index]);
     }
 
-    if (--gbTexturesCursor > 0) {
-        gbTextures[index] = gbTextures[gbTexturesCursor];
-        gbTextures[gbTexturesCursor] = 0;
-    } else {
-        gbTextures[index] = 0;
+    gbTextures[index] = 0;
+}
+
+unsigned int gbTextureLoadFromSurface(SDL_Surface *surface) {
+    if (gbTexturesCursor >= GB_TEXTURE_MAX_TEXTURES) {
+        for (gbTexturesCursor = 0; gbTexturesCursor <= GB_TEXTURE_MAX_TEXTURES; gbTexturesCursor++) {
+            if (gbTextures[gbTexturesCursor] == 0) break;
+        }
+    }
+
+    if (gbTexturesCursor == GB_TEXTURE_MAX_TEXTURES) {
+        fprintf(stderr, "Failed to load texture: Texture limit reached");
+        return 0;
+    }
+
+    gbTextures[gbTexturesCursor] = SDL_CreateTextureFromSurface(gbMainRenderer, surface);
+
+    if (gbTextures[gbTexturesCursor] == 0) {
+        fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
+        return 0;
+    }
+
+    return gbTexturesCursor++;
+}
+
+void gbTextureLoadToIndexFromSurface(unsigned int index, SDL_Surface *surface) {
+    gbTextureUnload(index);
+    gbTextures[index] = SDL_CreateTextureFromSurface(gbMainRenderer, surface);
+
+    if (gbTextures[index] == 0) {
+        fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
+        return 0;
     }
 }
 
-unsigned int gbTextureLoad(const char* filename) {
-    SDL_Surface* tempSurface = IMG_Load(filename);
+unsigned int gbTextureLoadFromFile(const char* filename) {
+    SDL_Surface *tempSurface = IMG_Load(filename);
 
     if (tempSurface == 0) {
         fprintf(stderr, "Failed to load image from file: %s", IMG_GetError());
         return 0;
     }
 
-    if (gbTexturesCursor >= GB_TEXTURE_MAX_TEXTURES) {
-        fprintf(stderr, "Failed to load texture: Texture limit reached");
-        SDL_FreeSurface(tempSurface);
-        return 0;
-    }
-
-    gbTextures[gbTexturesCursor] = SDL_CreateTextureFromSurface(gbMainRenderer, tempSurface);
-
-    if (gbTextures[gbTexturesCursor] == 0) {
-        fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
-        SDL_FreeSurface(tempSurface);
-        return 0;
-    }
+    unsigned int index = gbTextureLoadFromSurface(tempSurface);
 
     SDL_FreeSurface(tempSurface);
 
-    return gbTexturesCursor++;
+    return index;
 }

@@ -37,6 +37,7 @@ void *(*gbEntityDeserialize[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(gbFile *);
 void gbEntityInit();
 void gbEntityTeardown();
 gbEntity *gbEntityNew(GB_ENTITY_TYPE type, void *entity, GB_ENTITY_PRIORITY priority);
+gbEntity *gbEntityFindOfType(GB_ENTITY_TYPE type);
 
 void gbEntitySendMessage(gbMessage message, gbEntity *entity);
 void gbEntityHandleMessage();

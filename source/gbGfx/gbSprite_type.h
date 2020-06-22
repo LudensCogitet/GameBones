@@ -8,6 +8,7 @@
 typedef struct {
     uint8_t dispose;
     uint8_t fixed;
+    uint8_t active;
 
     unsigned int texture;
     SDL_Rect src;

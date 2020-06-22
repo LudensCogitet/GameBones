@@ -1,0 +1,9 @@
+#ifndef GB_FONT_H_INCLUDED
+#define GB_FONT_H_INCLUDED
+
+typedef enum {
+    GB_FONT_MID_FREE_MONO,
+    GB_FONT_NUM_FONTS
+} GB_FONT;
+
+#endif // GB_FONT_H_INCLUDED

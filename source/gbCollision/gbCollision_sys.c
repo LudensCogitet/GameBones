@@ -71,7 +71,7 @@ gbCollisionDynamicRect *gbCollisionDynamicColliderNew(
     return rect;
 }
 
-gbCollisionStaticRect *gbCollisionStaticColliderNew(int x1, int y1, int x2, int y2) {
+unsigned int gbCollisionStaticColliderNew(int x1, int y1, int x2, int y2) {
     if (staticColliderCursor + 1 > GB_COLLISION_MAX_STATIC_COLLIDERS) {
         return 0;
     }
@@ -83,9 +83,9 @@ gbCollisionStaticRect *gbCollisionStaticColliderNew(int x1, int y1, int x2, int 
     rect->x2 = x2;
     rect->y2 = y2;
 
-    staticColliders[staticColliderCursor++] = rect;
+    staticColliders[staticColliderCursor] = rect;
 
-    return rect;
+    return staticColliderCursor++;
 }
 
 // Check collisions between A and B and return flags

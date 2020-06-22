@@ -6,6 +6,9 @@
 
 #include "./gbSprite_type.h"
 #include "./gbGfxLayer_type.h"
+#include "./gbText_type.h"
+#include "./gbFont_type.h"
+#include "./gbColor_type.h"
 
 #define GB_GFX_GRID_WIDTH       20
 #define GB_GFX_GRID_HEIGHT      20
@@ -30,33 +33,34 @@ gbSprite *gbGfxSpriteNew(
     gbPosition *pos,
     int w,
     int h,
-
+    uint8_t active,
     uint8_t fixed,
     SDL_RendererFlip flip
 );
 
 void gbGfxMoveSprite(int32_t x, int32_t y, gbSprite *sprite);
 void gbGfxDraw();
-//
-//void gb_gfx_font_load(char *ttfFile, GB_GFX_FONT font, uint16_t pt);
-//void gb_gfx_font_unload(GB_GFX_FONT font);
-//
-//void gb_gfx_font_set(GB_GFX_FONT font);
-//void gb_gfx_font_color_set(GB_GFX_COLOR color);
-//void gb_gfx_font_layer_set(GB_GFX_LAYER layer);
-//
-//gbSprite *gb_gfx_new_text(char *text, uint32_t wrapW, double x, double y, uint8_t anchor, uint8_t fixed);
-//void gb_gfx_text_change(gbSprite *sprite, char *text, uint32_t wrapW);
 
-void gb_gfx_camera_set(int32_t x, int32_t y);
-void gb_gfx_camera_move(int32_t dx, int32_t dy);
-void gb_gfx_camera_get_pos(int32_t *x, int32_t *y);
-void gb_gfx_get_camera_offset(int32_t *x, int32_t *y);
-void gb_gfx_camera_follow(double *x, double *y, uint32_t distance_x, uint32_t distance_y);
-void gb_gfx_camera_unfollow();
+gbText *gbGfxTextNew(const char *text,
+                       GB_FONT font,
+                       GB_COLOR color,
+                       GB_GFX_LAYER layer,
+                       double x,
+                       double y,
+                       uint8_t active,
+                       uint8_t fixed);
+void gbGfxTextDelete(gbText *text);
+void gbGfxTextChange(gbText *text, GB_FONT font, GB_COLOR color, const char *newText);
+
+//void gb_gfx_camera_set(int32_t x, int32_t y);
+//void gb_gfx_camera_move(int32_t dx, int32_t dy);
+//void gb_gfx_camera_get_pos(int32_t *x, int32_t *y);
+//void gb_gfx_get_camera_offset(int32_t *x, int32_t *y);
+//void gb_gfx_camera_follow(double *x, double *y, uint32_t distance_x, uint32_t distance_y);
+//void gb_gfx_camera_unfollow();
 
 void gbGfxScreenToWorldCoords(int *x, int *y);
-void gbGfxScreenCoordsToGridSquare(int x, int y, int *gridX, int *gridY);
-void gbGfxGridSquareToWorldCoords(int x, int y, int *worldX, int *worldY);
+uint8_t gbGfxScreenCoordsToGridSquare(int x, int y, int *gridX, int *gridY);
+void gbGfxGridSquareToWorldCoords(int x, int y, int *worldX, int *worldY, uint8_t bottomRight);
 
 #endif // GB_GFX_SYSTEM_H_INCLUDED

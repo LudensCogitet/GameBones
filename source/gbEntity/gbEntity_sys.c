@@ -48,6 +48,19 @@ gbEntity *gbEntityNew(GB_ENTITY_TYPE type, void *entity, GB_ENTITY_PRIORITY prio
     return entities[priority][entitiesCursors[priority]++];
 }
 
+gbEntity *gbEntityFindOfType(GB_ENTITY_TYPE type) {
+    for (unsigned int i = 0; i < GB_ENTITY_PRIORITY_NUM_PRIORITIES; i++) {
+        for (unsigned int j = 0; j < entitiesCursors[i]; j++) {
+
+            if (entities[i][j]->type == type) {
+                return entities[i][j];
+            }
+        }
+    }
+
+    return 0;
+}
+
 void gbEntityDestroy(GB_ENTITY_PRIORITY priority, unsigned int entityIndex) {
     gbEntityDispose[entities[priority][entityIndex]->type](entities[priority][entityIndex]->entity);
 
