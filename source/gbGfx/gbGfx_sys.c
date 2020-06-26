@@ -143,6 +143,8 @@ void gbGfxDraw() {
         gbRendererResetDrawColor();
     }
 
+    editorRender();
+
     static SDL_Rect dst;
     for (unsigned int l = 0; l < GB_GFX_LAYER_NUM_LAYERS; l++) {
         for (unsigned int s = 0; s < gbGfxSpriteCursors[l]; s++) {
@@ -185,8 +187,6 @@ void gbGfxDraw() {
             );
         }
     }
-
-    editorRender();
 
     SDL_RenderPresent(gbMainRenderer);
 }
@@ -293,6 +293,7 @@ gbText *gbGfxTextNew(const char *text,
 
 void gbGfxTextDelete(gbText *textGraphic) {
     textGraphic->sprite->dispose = 1;
+    gbTextureUnload(textGraphic->sprite->texture);
     free(textGraphic);
 }
 

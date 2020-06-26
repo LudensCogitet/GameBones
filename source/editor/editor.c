@@ -36,11 +36,17 @@ static int releaseY = -1;
 // Mode Button
 static gbText *modeButtonText[NUM_MODES];
 static unsigned int modeButtonHitboxId;
+static SDL_Rect modeButtonRect;
 
 void editorInit() {
+    modeButtonRect = (SDL_Rect){15, 15, 130, 35};
     modeButtonText[PLACE_STATIC_GEOMETRY] = gbGfxTextNew("Geometry", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 1, 1);
     modeButtonText[PLACE_PLAYER] = gbGfxTextNew("Player", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 0, 1);
-    modeButtonHitboxId = gbCollisionStaticColliderNew(15, 15, 140, 50);
+    modeButtonHitboxId = gbCollisionStaticColliderNew(
+                                                      modeButtonRect.x,
+                                                      modeButtonRect.y,
+                                                      modeButtonRect.x + modeButtonRect.w,
+                                                      modeButtonRect.y + modeButtonRect.h);
 }
 
 void editorTeardown() {
@@ -94,14 +100,16 @@ void editorUpdate() {
                 break;
             case PLACE_PLAYER: ;
                 gbEntity *player = gbEntityFindOfType(GB_ENTITY_TYPE_GUY);
-                if (player) player->dispose = 1;
+                if (!player) break;
 
                 int x, y;
                 SDL_GetMouseState(&x, &y);
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
                 gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                guyNew(x, y, SDL_FLIP_NONE);
+                Guy *guy = player->entity;
+                guy->pos.x = x;
+                guy->pos.y = y;
         }
     }
 
@@ -116,6 +124,9 @@ void editorUpdate() {
 }
 
 void editorRender() {
+    SDL_SetRenderDrawColor(gbMainRenderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(gbMainRenderer, &modeButtonRect);
+    gbRendererResetDrawColor();
     switch(mode) {
         case PLACE_STATIC_GEOMETRY:
             if (clickX < 0 || clickY < 0 || dragX < 0 || dragY < 0 || !clickInGrid) break;

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include "./gbEntity_sys.h"
 
@@ -36,21 +37,34 @@ void gbEntityTeardown() {
 }
 
 gbEntity *gbEntityNew(GB_ENTITY_TYPE type, void *entity, GB_ENTITY_PRIORITY priority) {
-    if (entitiesCursors[priority] >= GB_ENTITY_MAX_ENTITIES)
+    unsigned int index = entitiesCursors[priority];
+    if (index >= GB_ENTITY_MAX_ENTITIES)
+        for (index = 0; index <= GB_ENTITY_MAX_ENTITIES; index++) {
+            if (entities[priority][index] == 0) break;
+        }
+
+    if (index == GB_ENTITY_MAX_ENTITIES) {
+        fprintf(stderr, "Failed to generate entity: entity limit reached");
         return 0;
+    }
 
-    entities[priority][entitiesCursors[priority]] = (gbEntity *)malloc(sizeof(gbEntity));
-    entities[priority][entitiesCursors[priority]]->messageCursor = 0;
-    entities[priority][entitiesCursors[priority]]->type = type;
-    entities[priority][entitiesCursors[priority]]->entity = entity;
-    entities[priority][entitiesCursors[priority]]->dispose = 0;
+    entities[priority][index] = (gbEntity *)malloc(sizeof(gbEntity));
+    entities[priority][index]->messageCursor = 0;
+    entities[priority][index]->type = type;
+    entities[priority][index]->entity = entity;
+    entities[priority][index]->dispose = 0;
 
-    return entities[priority][entitiesCursors[priority]++];
+    if (index == entitiesCursors[priority]) {
+        entitiesCursors[priority]++;
+    }
+
+    return entities[priority][index];
 }
 
 gbEntity *gbEntityFindOfType(GB_ENTITY_TYPE type) {
     for (unsigned int i = 0; i < GB_ENTITY_PRIORITY_NUM_PRIORITIES; i++) {
         for (unsigned int j = 0; j < entitiesCursors[i]; j++) {
+            if (!entities[i][j]) continue;
 
             if (entities[i][j]->type == type) {
                 return entities[i][j];
@@ -66,21 +80,18 @@ void gbEntityDestroy(GB_ENTITY_PRIORITY priority, unsigned int entityIndex) {
 
     free(entities[priority][entityIndex]);
 
-    if (--entitiesCursors[priority] > 0) {
-        entities[priority][entityIndex] = entities[priority][entitiesCursors[priority]];
-    }
-
-    entities[priority][entitiesCursors[priority]] = 0;
+    entities[priority][entityIndex] = 0;
 }
 
 void gbEntityAct(double delta) {
     for (unsigned int j = 0; j < GB_ENTITY_PRIORITY_NUM_PRIORITIES; j++) {
         for (unsigned int i = 0; i < entitiesCursors[j]; i++) {
+            if (!entities[j][i]) continue;
+
             if (entities[j][i]->dispose) {
                 gbEntityDestroy(j, i);
+                continue;
             }
-
-            if (entities[j][i] == 0) break;
 
             gbEntityThink[entities[j][i]->type](entities[j][i]->entity, delta);
         }
