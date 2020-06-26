@@ -1,12 +1,19 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "./gbInput_type.h"
 #include "./gbInput_sys.h"
 
 static GbInputState *gbInputMap[GB_INPUT_NUM_INPUTS];
 
+static unsigned int inputBufferLen = 0;
+static uint8_t bufferRead = 0;
+static char inputBuffer[GB_INPUT_BUFFER_MAX_LEN];
+static unsigned int endInputModeKey = 0;
+
 int gbInputInit() {
+    SDL_StopTextInput();
     for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
         gbInputMap[i] = (GbInputState *)malloc(sizeof(GbInputState));
 
@@ -15,6 +22,9 @@ int gbInputInit() {
         gbInputMap[i]->last_state = 0;
         gbInputMap[i]->timestamp = 0;
     }
+
+    for (unsigned int i = 0; i < GB_INPUT_BUFFER_MAX_LEN; i++)
+        inputBuffer[i] = '\0';
 
     return 0;
 }
@@ -31,11 +41,28 @@ void gbInputUpdate() {
                 gbInputMap[GB_INPUT_QUIT_GAME]->state = GB_INPUT_JUST_PRESSED | GB_INPUT_SHIFT;
                 inputHandled[GB_INPUT_QUIT_GAME] = 1;
                 break;
-            case SDL_KEYDOWN:
+            case SDL_TEXTINPUT:
+                if (inputBufferLen == GB_INPUT_BUFFER_MAX_LEN) break;
+                inputBufferLen++;
+                bufferRead = 0;
+                strcat(inputBuffer, event.text.text);
+                break;
             case SDL_KEYUP:
+                if (SDL_IsTextInputActive()) {
+                    bufferRead = 0;
+                    if (event.key.keysym.sym == endInputModeKey) {
+                        SDL_StopTextInput();
+                    } else if (event.key.keysym.sym == SDLK_BACKSPACE) {
+                        if (inputBufferLen) {
+                            inputBuffer[--inputBufferLen] = '\0';
+                        }
+                    }
+                }
+            case SDL_KEYDOWN:
                 if (event.key.repeat) continue;
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
+                if (SDL_IsTextInputActive()) continue;
                 if (numHandled == GB_INPUT_NUM_INPUTS) continue;
 
                 for (uint8_t i = 0; i < GB_INPUT_NUM_INPUTS; i++) {
@@ -92,6 +119,31 @@ void gbInputClearState(GB_INPUT input) {
     gbInputMap[input]->last_state = gbInputMap[input]->state;
     gbInputMap[input]->timestamp = SDL_GetTicks();
     gbInputMap[input]->state = 0;
+}
+void gbInputStartTextInput(unsigned int endInputKey) {
+    bufferRead = 0;
+    SDL_StartTextInput();
+    endInputModeKey = endInputKey;
+}
+
+uint8_t gbInputReadTextInput(char *buffer) {
+    if (bufferRead) {
+        return GB_INPUT_BUFFER_READ;
+    } else {
+        strcpy(buffer, inputBuffer);
+        bufferRead = 1;
+        return SDL_IsTextInputActive() ? GB_INPUT_BUFFER_UNREAD : GB_INPUT_BUFFER_STOP;
+    }
+}
+
+void gbInputClearTextInput() {
+    for (unsigned int i = 0; i < inputBufferLen; i++) {
+        inputBuffer[i] = '\0';
+    }
+}
+
+void gbInputStopTextInput() {
+    SDL_StopTextInput();
 }
 
 //void gb_input_get_mouse_pos_screen(int *x, int *y) {

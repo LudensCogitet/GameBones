@@ -299,7 +299,7 @@ void gbGfxTextDelete(gbText *textGraphic) {
 
 void gbGfxTextChange(gbText *textGraphic, GB_FONT font, GB_COLOR color, const char *text) {
     gbSprite *textSprite = textGraphic->sprite;
-    SDL_Surface *temp = TTF_RenderText_Solid(fonts[font], text, colors[color]);
+    SDL_Surface *temp = TTF_RenderText_Solid(fonts[font], text[0] != '\0' ? text : " ", colors[color]);
 
     gbTextureLoadToIndexFromSurface(textSprite->texture, temp);
 

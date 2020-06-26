@@ -38,15 +38,31 @@ static gbText *modeButtonText[NUM_MODES];
 static unsigned int modeButtonHitboxId;
 static SDL_Rect modeButtonRect;
 
+// Input Field
+static gbText *inputFieldText;
+static unsigned int inputFieldHitBoxId;
+static SDL_Rect textInputFieldRect;
+static uint8_t textMode = 0;
+
+// Forward Declarations
+void handleTextInput();
+void addRectAndHitboxToText(gbText *text, unsigned int padding, SDL_Rect *rect, unsigned int *colRect);
+
 void editorInit() {
-    modeButtonRect = (SDL_Rect){15, 15, 130, 35};
     modeButtonText[PLACE_STATIC_GEOMETRY] = gbGfxTextNew("Geometry", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 1, 1);
     modeButtonText[PLACE_PLAYER] = gbGfxTextNew("Player", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 0, 1);
-    modeButtonHitboxId = gbCollisionStaticColliderNew(
-                                                      modeButtonRect.x,
-                                                      modeButtonRect.y,
-                                                      modeButtonRect.x + modeButtonRect.w,
-                                                      modeButtonRect.y + modeButtonRect.h);
+    addRectAndHitboxToText(
+                           modeButtonText[PLACE_STATIC_GEOMETRY],
+                           15,
+                           &modeButtonRect,
+                           &modeButtonHitboxId);
+
+    inputFieldText = gbGfxTextNew("Click to type", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 70, 1, 1);
+    addRectAndHitboxToText(
+                           inputFieldText,
+                           15,
+                           &textInputFieldRect,
+                           &inputFieldHitBoxId);
 }
 
 void editorTeardown() {
@@ -55,6 +71,8 @@ void editorTeardown() {
 }
 
 void editorUpdate() {
+    if (textMode) handleTextInput();
+
     if (gbInputCheckState(GB_INPUT_MOUSE_SELECT, GB_INPUT_JUST_PRESSED)) {
         SDL_GetMouseState(&clickX, &clickY);
         clickInGrid = gbGfxScreenCoordsToGridSquare(clickX, clickY, &clickX, &clickY);
@@ -72,11 +90,19 @@ void editorUpdate() {
         int x, y;
         SDL_GetMouseState(&x, &y);
         gbGfxScreenToWorldCoords(&x, &y);
-        if (gbCollisionDetectPointCollisionStatic(x, y) == modeButtonHitboxId) {
+        unsigned int colliderId = gbCollisionDetectPointCollisionStatic(x, y);
+        if (colliderId == modeButtonHitboxId) {
             modeButtonText[mode]->sprite->active = 0;
             if (++mode >= NUM_MODES) mode = 0;
             modeButtonText[mode]->sprite->active = 1;
             return;
+        }
+
+        if (colliderId == inputFieldHitBoxId) {
+            textMode = 1;
+            gbInputClearTextInput();
+            gbInputStartTextInput(SDLK_RETURN);
+            handleTextInput();
         }
 
         if (!clickInGrid) return;
@@ -125,6 +151,7 @@ void editorUpdate() {
 
 void editorRender() {
     SDL_SetRenderDrawColor(gbMainRenderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(gbMainRenderer, &textInputFieldRect);
     SDL_RenderFillRect(gbMainRenderer, &modeButtonRect);
     gbRendererResetDrawColor();
     switch(mode) {
@@ -150,4 +177,31 @@ void editorRender() {
             SDL_RenderDrawRect(gbMainRenderer, &rect);
             gbRendererResetDrawColor();
     }
+}
+
+void handleTextInput() {
+    char buffer[GB_INPUT_BUFFER_MAX_LEN];
+    uint8_t readStatus = gbInputReadTextInput(buffer);
+    if (readStatus != GB_INPUT_BUFFER_READ) {
+        gbGfxTextChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
+        if (readStatus == GB_INPUT_BUFFER_STOP) {
+            textMode = 0;
+            printf("%s", buffer);
+        }
+    }
+}
+void addRectAndHitboxToText(gbText *text, unsigned int padding, SDL_Rect *rect, unsigned int *colRect) {
+    SDL_Rect newRect = (SDL_Rect){
+        text->pos.x - padding,
+        text->pos.y - padding,
+        text->sprite->width + (padding * 2),
+        text->sprite->height + (padding * 2)
+        };
+
+    *rect = newRect;
+    *colRect = gbCollisionStaticColliderNew(
+                                            newRect.x,
+                                            newRect.y,
+                                            newRect.x + newRect.w,
+                                            newRect.y + newRect.h);
 }
