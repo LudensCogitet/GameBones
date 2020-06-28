@@ -4,11 +4,10 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 
-#include "./gbSprite_type.h"
-#include "./gbGfxLayer_type.h"
-#include "./gbText_type.h"
-#include "./gbFont_type.h"
-#include "./gbColor_type.h"
+#include "./gbSprite/gbSprite_type.h"
+#include "./gbText/gbText_type.h"
+#include "./gbFont.h"
+#include "./gbColor.h"
 
 #define GB_GFX_GRID_WIDTH       20
 #define GB_GFX_GRID_HEIGHT      20
@@ -21,36 +20,8 @@
 void gbGfxInit();
 void gbGfxTeardown();
 
-gbSprite *gbGfxSpriteNew(
-    GB_GFX_LAYER layer,
-    unsigned int texture,
-
-    int srcX,
-    int srcY,
-    int srcW,
-    int srcH,
-
-    gbPosition *pos,
-    int w,
-    int h,
-    uint8_t active,
-    uint8_t fixed,
-    SDL_RendererFlip flip
-);
-
 void gbGfxMoveSprite(int32_t x, int32_t y, gbSprite *sprite);
 void gbGfxDraw();
-
-gbText *gbGfxTextNew(const char *text,
-                       GB_FONT font,
-                       GB_COLOR color,
-                       GB_GFX_LAYER layer,
-                       double x,
-                       double y,
-                       uint8_t active,
-                       uint8_t fixed);
-void gbGfxTextDelete(gbText *text);
-void gbGfxTextChange(gbText *text, GB_FONT font, GB_COLOR color, const char *newText);
 
 //void gb_gfx_camera_set(int32_t x, int32_t y);
 //void gb_gfx_camera_move(int32_t dx, int32_t dy);

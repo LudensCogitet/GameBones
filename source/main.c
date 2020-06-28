@@ -15,15 +15,15 @@
 #include "./gbSerializer/gbSerializer_sys.h"
 
 #include "./gbInput/gbInput_type.h"
-#include "./gbGfx/gbSprite_type.h"
+#include "./gbGfx/gbSprite/gbSprite_type.h"
 #include "./gbAnimation/gbAnimation_type.h"
 #include "./gbAnimation/gbAnimType_type.h"
 #include "./gbEntity/gbEntity_sys.h"
 #include "./editor/editor.h"
 
-#include "./gbGfx/gbFont_type.h"
-#include "./gbGfx/gbColor_type.h"
-#include "./gbGfx/gbText_type.h"
+#include "./gbGfx/gbFont.h"
+#include "./gbGfx/gbColor.h"
+#include "./gbGfx/gbText/gbText_type.h"
 
 #include "./gbSerializer/gbFile_type.h"
 

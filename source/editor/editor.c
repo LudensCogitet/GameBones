@@ -49,15 +49,15 @@ void handleTextInput();
 void addRectAndHitboxToText(gbText *text, unsigned int padding, SDL_Rect *rect, unsigned int *colRect);
 
 void editorInit() {
-    modeButtonText[PLACE_STATIC_GEOMETRY] = gbGfxTextNew("Geometry", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 1, 1);
-    modeButtonText[PLACE_PLAYER] = gbGfxTextNew("Player", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 20, 0, 1);
+    modeButtonText[PLACE_STATIC_GEOMETRY] = gbTextNew("Geometry", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, 20, 20, 1, 1);
+    modeButtonText[PLACE_PLAYER] = gbTextNew("Player", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, 20, 20, 0, 1);
     addRectAndHitboxToText(
                            modeButtonText[PLACE_STATIC_GEOMETRY],
                            15,
                            &modeButtonRect,
                            &modeButtonHitboxId);
 
-    inputFieldText = gbGfxTextNew("Click to type", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_GFX_LAYER_FOREGROUND, 20, 70, 1, 1);
+    inputFieldText = gbTextNew("Click to type", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, 20, 70, 1, 1);
     addRectAndHitboxToText(
                            inputFieldText,
                            15,
@@ -67,7 +67,7 @@ void editorInit() {
 
 void editorTeardown() {
     for (unsigned int i = 0; i < NUM_MODES; i++)
-        gbGfxTextDelete(modeButtonText[i]);
+        gbTextDelete(modeButtonText[i]);
 }
 
 void editorUpdate() {
@@ -183,7 +183,7 @@ void handleTextInput() {
     char buffer[GB_INPUT_BUFFER_MAX_LEN];
     uint8_t readStatus = gbInputReadTextInput(buffer);
     if (readStatus != GB_INPUT_BUFFER_READ) {
-        gbGfxTextChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
+        gbTextChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
         if (readStatus == GB_INPUT_BUFFER_STOP) {
             textMode = 0;
             printf("%s", buffer);

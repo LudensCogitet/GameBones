@@ -2,14 +2,15 @@
 #include "SDL2/SDL.h"
 #include <SDL2/SDL_image.h>
 
+#include "../gbResourceManagement/gbResManagement.h"
 #include "../gbRenderer/gbRenderer_sys.h"
 #include "./gbTexture_sys.h"
 
-static unsigned int gbTexturesCursor;
+static unsigned int cursor;
 SDL_Texture *gbTextures[GB_TEXTURE_MAX_TEXTURES];
 
 void gbTextureInit() {
-    gbTexturesCursor = 0;
+    cursor = 0;
 
     for (unsigned int i = 0; i < GB_TEXTURE_MAX_TEXTURES; i++) {
         gbTextures[i] = 0;
@@ -22,7 +23,7 @@ void gbTextureTeardown() {
         gbTextures[i] = 0;
     }
 
-    gbTexturesCursor = 0;
+    cursor = 0;
 }
 
 void gbTextureUnload(unsigned int index) {
@@ -34,25 +35,20 @@ void gbTextureUnload(unsigned int index) {
 }
 
 unsigned int gbTextureLoadFromSurface(SDL_Surface *surface) {
-    if (gbTexturesCursor >= GB_TEXTURE_MAX_TEXTURES) {
-        for (gbTexturesCursor = 0; gbTexturesCursor <= GB_TEXTURE_MAX_TEXTURES; gbTexturesCursor++) {
-            if (gbTextures[gbTexturesCursor] == 0) break;
-        }
-    }
-
-    if (gbTexturesCursor == GB_TEXTURE_MAX_TEXTURES) {
+    cursor = gbNextEmpty(gbTextures, cursor, GB_TEXTURE_MAX_TEXTURES);
+    if (cursor == GB_TEXTURE_MAX_TEXTURES) {
         fprintf(stderr, "Failed to load texture: Texture limit reached");
         return 0;
     }
 
-    gbTextures[gbTexturesCursor] = SDL_CreateTextureFromSurface(gbMainRenderer, surface);
+    gbTextures[cursor] = SDL_CreateTextureFromSurface(gbMainRenderer, surface);
 
-    if (gbTextures[gbTexturesCursor] == 0) {
+    if (gbTextures[cursor] == 0) {
         fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
         return 0;
     }
 
-    return gbTexturesCursor++;
+    return cursor;
 }
 
 void gbTextureLoadToIndexFromSurface(unsigned int index, SDL_Surface *surface) {

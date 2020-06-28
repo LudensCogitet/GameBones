@@ -29,8 +29,6 @@
 void (*gbEntityThink[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(void *entity, double delta);
 void (*gbEntityRespond[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(void *entity, gbMessage *messages, uint16_t numMessages);
 void (*gbEntityDispose[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(void *entity);
-
-// TODO: Need to change this signature for actual functionality.
 void (*gbEntitySerialize[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(void *, gbFile *);
 void *(*gbEntityDeserialize[GB_ENTITY_TYPE_NUM_ENTITY_TYPES])(gbFile *);
 

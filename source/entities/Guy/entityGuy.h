@@ -2,7 +2,7 @@
 #define GUY_ENTITY_H_INCLUDED
 
 #include "../../gbEntity/gbPosition_type.h"
-#include "../../gbGfx/gbSprite_type.h"
+#include "../../gbGfx/gbSprite/gbSprite_type.h"
 #include "../../gbCollision/gbCollisionDynamicRect_type.h"
 #include "../../gbAnimation/gbAnimation_type.h"
 

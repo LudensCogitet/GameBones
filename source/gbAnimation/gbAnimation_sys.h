@@ -3,12 +3,10 @@
 
 #include "./gbAnimation_type.h"
 #include "./gbAnimType_type.h"
-#include "../gbGfx/gbSprite_type.h"
+#include "../gbGfx/gbSprite/gbSprite_type.h"
 
 #define GB_ANIMATION_MAX_ANIMATIONS 100
 #define GB_ANIMATION_NO_ANIMATION GB_ANIMATION_MAX_ANIMATIONS + 1
-
-gbAnimation *gbAnimations[GB_ANIMATION_MAX_ANIMATIONS];
 
 void gbAnimationInit();
 void gbAnimationTeardown();

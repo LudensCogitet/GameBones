@@ -6,7 +6,7 @@
 #define GB_TEXTURE_MAX_TEXTURES 100
 #define GB_TEXTURE_NO_TEXTURE GB_TEXTURE_MAX_TEXTURES + 1
 
-SDL_Texture *gbTextures[GB_TEXTURE_MAX_TEXTURES];
+extern SDL_Texture *gbTextures[GB_TEXTURE_MAX_TEXTURES];
 
 void gbTextureInit();
 void gbTextureTeardown();

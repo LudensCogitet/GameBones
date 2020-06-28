@@ -14,41 +14,23 @@
 #include "../gbTexture/gbTexture_sys.h"
 #include "../editor/editor.h"
 
-#include "./gbGfxLayer_type.h"
-#include "./gbSprite_type.h"
+#include "./gbSprite/gbSprite_type.h"
 #include "../gbEntity/gbPosition_type.h"
-#include "./gbColor_type.h"
-#include "./gbFont_type.h"
-#include "./gbText_type.h"
-
-#define GB_GFX_MAX_SPRITES_PER_LAYER 1000
-
-static TTF_Font *fonts[GB_FONT_NUM_FONTS];
-static SDL_Color colors[GB_COLOR_NUM_COLORS];
+#include "./gbColor.h"
+#include "./gbFont.h"
+#include "./gbText/gbText_type.h"
 
 uint8_t GB_GFX_DEBUG_FLAG = 1;
-
-static unsigned int gbGfxSpriteCursors[GB_GFX_LAYER_NUM_LAYERS];
-static gbSprite     *gbGfxSprites[GB_GFX_LAYER_NUM_LAYERS][GB_GFX_MAX_SPRITES_PER_LAYER];
 
 static int32_t gbGfxCameraOffsetX = 0;
 static int32_t gbGfxCameraOffsetY = 0;
 
 // Forward Declarations
-
 void gbGfxFontUnload(GB_FONT font);
 void gbGfxFontLoad(char *ttfFile, GB_FONT font, uint16_t pt);
 
 void gbGfxInit() {
-    for (unsigned int l = 0; l < GB_GFX_LAYER_NUM_LAYERS; l++) {
-        for (unsigned int s = 0; s < GB_GFX_MAX_SPRITES_PER_LAYER; s++) {
-            gbGfxSprites[l][s] = 0;
-        }
-    }
-
-    for (unsigned int i = 0; i < GB_GFX_LAYER_NUM_LAYERS; i++) {
-        gbGfxSpriteCursors[i] = 0;
-    }
+    gbSpriteInit();
 
     colors[GB_COLOR_WHITE] = (SDL_Color){ 255, 255, 255, 255 };
     colors[GB_COLOR_BLACK] = (SDL_Color){ 0, 0, 0, 255 };
@@ -60,64 +42,13 @@ void gbGfxInit() {
 
 
 void gbGfxTeardown() {
-    for (unsigned int l = 0; l < GB_GFX_LAYER_NUM_LAYERS; l++) {
-        for (unsigned int s = 0; s < gbGfxSpriteCursors[l]; s++) {
-            free(gbGfxSprites[l][s]);
-            gbGfxSprites[l][s] = 0;
-        }
-        gbGfxSpriteCursors[l] = 0;
-    }
+    gbSpriteTeardown();
 
     for (unsigned int i = 0; i < GB_FONT_NUM_FONTS; i++) {
         gbGfxFontUnload(i);
     }
 
     TTF_Quit();
-}
-
-/* SPRITES */
-
-gbSprite *gbGfxSpriteNew(
-    GB_GFX_LAYER layer,
-    unsigned int texture,
-
-    int srcX,
-    int srcY,
-    int srcW,
-    int srcH,
-
-    gbPosition *pos,
-    int w,
-    int h,
-    uint8_t active,
-    uint8_t fixed,
-    SDL_RendererFlip flip
-) {
-    if (gbGfxSpriteCursors[layer] + 1 >= GB_GFX_MAX_SPRITES_PER_LAYER) {
-        return 0;
-    }
-
-    gbSprite *newSprite = (gbSprite *)malloc(sizeof(gbSprite));
-
-    newSprite->dispose = 0;
-    newSprite->active = active;
-
-    newSprite->width    = w;
-    newSprite->height   = h;
-
-    newSprite->pos = pos;
-
-    newSprite->src.x = srcX;
-    newSprite->src.y = srcY;
-    newSprite->src.w = srcW;
-    newSprite->src.h = srcH;
-
-    newSprite->texture = texture;
-    newSprite->flip = flip;
-
-    gbGfxSprites[layer][gbGfxSpriteCursors[layer]++] = newSprite;
-
-    return newSprite;
 }
 
 //void gbGfxCameraUpdate();
@@ -144,49 +75,7 @@ void gbGfxDraw() {
     }
 
     editorRender();
-
-    static SDL_Rect dst;
-    for (unsigned int l = 0; l < GB_GFX_LAYER_NUM_LAYERS; l++) {
-        for (unsigned int s = 0; s < gbGfxSpriteCursors[l]; s++) {
-            if (gbGfxSprites[l][s]->dispose) {
-//                if (gbGfxSprites[l][s]->texture >= GFX_TEXTURE_DYNAMIC_FIRST) {
-//                    gb_gfx_texture_dynamic_unload(gbGfxSprites[l][s]->texture);
-//                }
-
-                free(gbGfxSprites[l][s]);
-
-                if (--gbGfxSpriteCursors[l] > 0) {
-                    gbGfxSprites[l][s] = gbGfxSprites[l][gbGfxSpriteCursors[l]];
-                }
-
-                gbGfxSprites[l][gbGfxSpriteCursors[l]] = 0;
-
-                if (gbGfxSprites[l][s] == 0) break;
-            }
-
-            if (!gbGfxSprites[l][s]->active) continue;
-
-            dst.x = gbGfxSprites[l][s]->pos->x * gbScaleFactorX;
-            dst.y = gbGfxSprites[l][s]->pos->y * gbScaleFactorY;
-            dst.w = gbGfxSprites[l][s]->width * gbScaleFactorX;
-            dst.h = gbGfxSprites[l][s]->height * gbScaleFactorY;
-
-            if (!gbGfxSprites[l][s]->fixed) {
-                dst.x -= gbGfxCameraOffsetX * gbScaleFactorX;
-                dst.y -= gbGfxCameraOffsetY * gbScaleFactorY;
-            }
-
-            SDL_RenderCopyEx(
-                gbMainRenderer,
-                gbTextures[gbGfxSprites[l][s]->texture],
-                &gbGfxSprites[l][s]->src,
-                &dst,
-                0,
-                0,
-                gbGfxSprites[l][s]->flip
-            );
-        }
-    }
+    gbSpriteDrawSprites();
 
     SDL_RenderPresent(gbMainRenderer);
 }
@@ -254,61 +143,6 @@ void gbGfxFontLoad(char *ttfFile, GB_FONT font, uint16_t pt) {
     if (!fonts[font]) {
         printf("Error loading font: %s", TTF_GetError());
     }
-}
-
-///* TEXT */
-//
-gbText *gbGfxTextNew(const char *text,
-                       GB_FONT font,
-                       GB_COLOR color,
-                       GB_GFX_LAYER layer,
-                       double x,
-                       double y,
-                       uint8_t active,
-                       uint8_t fixed) {
-
-    SDL_Surface *temp = TTF_RenderText_Solid(fonts[font], text, colors[color]);
-
-    unsigned int textureIndex = gbTextureLoadFromSurface(temp);
-    SDL_FreeSurface(temp);
-
-    int w, h;
-    SDL_QueryTexture(gbTextures[textureIndex], 0, 0, &w, &h);
-
-    gbText *textGraphic = (gbText *)malloc(sizeof(gbText));
-    textGraphic->pos = (gbPosition){ x, y };
-
-    textGraphic->sprite = gbGfxSpriteNew(
-                                         layer,
-                                         textureIndex,
-                                         0, 0, w, h,
-                                         &textGraphic->pos,
-                                         w / gbScaleFactorX,
-                                         h / gbScaleFactorY,
-                                         active,
-                                         fixed,
-                                         SDL_FLIP_NONE);
-    return textGraphic;
-}
-
-void gbGfxTextDelete(gbText *textGraphic) {
-    textGraphic->sprite->dispose = 1;
-    gbTextureUnload(textGraphic->sprite->texture);
-    free(textGraphic);
-}
-
-void gbGfxTextChange(gbText *textGraphic, GB_FONT font, GB_COLOR color, const char *text) {
-    gbSprite *textSprite = textGraphic->sprite;
-    SDL_Surface *temp = TTF_RenderText_Solid(fonts[font], text[0] != '\0' ? text : " ", colors[color]);
-
-    gbTextureLoadToIndexFromSurface(textSprite->texture, temp);
-
-    SDL_FreeSurface(temp);
-
-    SDL_QueryTexture(gbTextures[textSprite->texture], 0, 0, &textSprite->src.w, &textSprite->src.h);
-
-    textSprite->width = textSprite->src.w;
-    textSprite->height = textSprite->src.h;
 }
 
 /* CAMERA */

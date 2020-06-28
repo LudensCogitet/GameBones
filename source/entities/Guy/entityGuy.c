@@ -55,14 +55,14 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     Guy *guy = (Guy *)malloc(sizeof(Guy));
     guy->pos = (gbPosition){x, y};
 
-    gbSprite *sprite = gbGfxSpriteNew(
-                                      GB_GFX_LAYER_MIDGROUND,
-                                      guyTexture,
-                                      0, 0, 32, 32,
-                                      &guy->pos, 32, 32,
-                                      1,
-                                      0,
-                                      flip);
+    gbSprite *sprite = gbSpriteNew(
+                                  GB_SPRITE_LAYER_MIDGROUND,
+                                  guyTexture,
+                                  0, 0, 32, 32,
+                                  &guy->pos, 32, 32,
+                                  1,
+                                  0,
+                                  flip);
     guy->sprite = sprite;
 
     guy->dx = 0;
