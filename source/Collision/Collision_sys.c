@@ -29,7 +29,6 @@ void collisionInit() {
 }
 void collisionTeardown() {
     for (unsigned i = 0; i < staticColliderCursor; i++) {
-        free(staticColliders[i]);
         staticColliders[i] = 0;
     }
 

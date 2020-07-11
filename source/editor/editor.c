@@ -55,8 +55,8 @@ static const unsigned int buttonSrcWidth = 176;
 static const unsigned int buttonSrcHeight = 64;
 
 // Mode Button
-static Position modeButtonPosition = (Position) {20, 20};
-static unsigned int buttonX[NUM_MODES] = { 0, buttonSrcWidth };
+static Position modeButtonPosition;
+static unsigned int buttonX[NUM_MODES];
 static Sprite *modeButtonSprite;
 static CollisionStaticRect *modeButtonHitbox;
 
@@ -75,6 +75,10 @@ void handleTextInput();
 void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect);
 
 void editorInit() {
+    modeButtonPosition = (Position) {20, 20};
+    buttonX[PLACE_STATIC_GEOMETRY] = 0;
+    buttonX[PLACE_PLAYER] = buttonSrcWidth;
+
     staticColliderCursor = 0;
     for (unsigned int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
         staticColliders[i] = 0;
@@ -127,8 +131,10 @@ void editorTeardown() {
     inputFieldText = 0;
 
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
-        free(staticColliders[i]);
-        staticColliders[i] = 0;
+        if (staticColliders[i]) {
+            free(staticColliders[i]);
+            staticColliders[i] = 0;
+        }
     }
 
     modeButtonHitbox = 0;

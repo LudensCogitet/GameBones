@@ -30,8 +30,10 @@ void dynamicEntityInit() {
 
 void dynamicEntityTeardown() {
     for (unsigned int i = 0; i < cursor; i++) {
-        free(entities[i]);
-        entities[i] = 0;
+        if(entities[i]) {
+            free(entities[i]);
+            entities[i] = 0;
+        }
     }
     cursor = 0;
 }
@@ -56,7 +58,7 @@ DynamicEntity *dynamicEntityNew(DYNAMIC_ENTITY_TYPE type) {
 void dynamicEntityRemove(unsigned int id) {
     unsigned int index = 0;
     for (; index < cursor; index++) {
-        if (entities[index]->id == id) {
+        if (entities[index] && entities[index]->id == id) {
             free(entities[index]);
         }
     }
