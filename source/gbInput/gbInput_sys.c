@@ -50,7 +50,7 @@ void gbInputUpdate() {
             case SDL_KEYUP:
                 if (SDL_IsTextInputActive()) {
                     bufferRead = 0;
-                    if (event.key.keysym.sym == endInputModeKey) {
+                    if (endInputModeKey && event.key.keysym.sym == endInputModeKey) {
                         SDL_StopTextInput();
                     } else if (event.key.keysym.sym == SDLK_BACKSPACE) {
                         if (inputBufferLen) {
@@ -140,6 +140,7 @@ void gbInputClearTextInput() {
     for (unsigned int i = 0; i < inputBufferLen; i++) {
         inputBuffer[i] = '\0';
     }
+    inputBufferLen = 0;
 }
 
 void gbInputStopTextInput() {

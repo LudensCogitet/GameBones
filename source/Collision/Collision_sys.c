@@ -5,22 +5,20 @@
 #include "../gbRenderer/gbRenderer_sys.h"
 #include "../gbUtils/gbUtils.h"
 
-#include "./gbCollision_sys.h"
-#include "./gbCollisionDynamicRect_type.h"
-#include "./gbCollisionStaticRect_type.h"
+#include "Collision_sys.h"
+#include "CollisionDynamicRect_type.h"
+#include "CollisionStaticRect_type.h"
 
-#define COLLISION_MAX_STATIC_COLLIDERS 100
-#define COLLISION_MAX_DYNAMIC_COLLIDERS 100
+static CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
+static unsigned int staticColliderCursor;
 
-#define COLLISION_NO_STATIC_COLLIDER (COLLISION_MAX_STATIC_COLLIDERS + 1)
+static CollisionDynamicRect *dynamicColliders[COLLISION_MAX_DYNAMIC_COLLIDERS];
+static unsigned int dynamicColliderCursor;
 
-static gbCollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
-static unsigned int staticColliderCursor = 0;
+void collisionInit() {
+    staticColliderCursor = 0;
+    dynamicColliderCursor = 0;
 
-static gbCollisionDynamicRect *dynamicColliders[COLLISION_MAX_DYNAMIC_COLLIDERS];
-static unsigned int dynamicColliderCursor = 0;
-
-void gbCollisionInit() {
     for (unsigned int i = 0; i < COLLISION_MAX_STATIC_COLLIDERS; i++) {
         staticColliders[i] = 0;
     }
@@ -29,63 +27,86 @@ void gbCollisionInit() {
         dynamicColliders[i] = 0;
     }
 }
-void gbCollisionTeardown() {
+void collisionTeardown() {
     for (unsigned i = 0; i < staticColliderCursor; i++) {
         free(staticColliders[i]);
         staticColliders[i] = 0;
     }
 
     for (unsigned i = 0; i < dynamicColliderCursor; i++) {
-        free(dynamicColliders[i]);
         dynamicColliders[i] = 0;
     }
 }
 
-gbCollisionDynamicRect *gbCollisionDynamicColliderNew(
-                                               gbPosition *pos,
-                                               gbEntity *entity,
-                                               int offsetX,
-                                               int offsetY,
-                                               unsigned int width,
-                                               unsigned int height
-                                               ) {
-    if (dynamicColliderCursor + 1 > COLLISION_MAX_DYNAMIC_COLLIDERS) {
-        return 0;
-    }
-
-    gbCollisionDynamicRect *rect = (gbCollisionDynamicRect *)malloc(sizeof(gbCollisionDynamicRect));
+void collisionDynamicRectSet(
+                             CollisionDynamicRect *rect,
+                             Position *pos,
+                             unsigned int entityId,
+                             int offsetX,
+                             int offsetY,
+                             unsigned int width,
+                             unsigned int height
+                             ) {
+    rect->pos = pos;
+    rect->entityId = entityId;
 
     rect->active = 1;
-    rect->dispose = 0;
-
-    rect->pos = pos;
-    rect->entity = entity;
-
-    rect->offsetX   = offsetX;
-    rect->offsetY   = offsetY;
-    rect->width     = width;
-    rect->height    = height;
-
-    dynamicColliders[dynamicColliderCursor++] = rect;
-
-    return rect;
+    rect->offsetX = offsetX;
+    rect->offsetY = offsetY;
+    rect->width = width;
+    rect->height = height;
 }
 
-unsigned int gbCollisionStaticColliderNew(int x1, int y1, int x2, int y2) {
-    if (staticColliderCursor + 1 > COLLISION_MAX_STATIC_COLLIDERS) {
-        return 0;
+void collisionDynamicRectRegister(CollisionDynamicRect *rect) {
+    if (dynamicColliderCursor >= COLLISION_MAX_DYNAMIC_COLLIDERS)
+        return;
+
+    dynamicColliders[dynamicColliderCursor] = rect;
+    dynamicColliderCursor++;
+}
+
+void collisionDynamicRectUnregister(CollisionDynamicRect *rect) {
+    unsigned int index = 0;
+    for (; index < dynamicColliderCursor; index++) {
+        if (dynamicColliders[index] == rect) break;
     }
 
-    gbCollisionStaticRect *rect = (gbCollisionStaticRect *)malloc(sizeof(gbCollisionStaticRect));
+    dynamicColliders[index] = 0;
 
+    if (--dynamicColliderCursor > 0) {
+        dynamicColliders[index] = dynamicColliders[dynamicColliderCursor];
+    }
+
+    dynamicColliders[dynamicColliderCursor] = 0;
+}
+
+void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2) {
     rect->x1 = x1;
     rect->y1 = y1;
     rect->x2 = x2;
     rect->y2 = y2;
+}
 
-    staticColliders[staticColliderCursor] = rect;
+void collisionStaticRectRegister(CollisionStaticRect *rect) {
+    if (staticColliderCursor >= COLLISION_MAX_STATIC_COLLIDERS)
+        return;
 
-    return staticColliderCursor++;
+    staticColliders[staticColliderCursor++] = rect;
+}
+
+void collisionStaticRectUnregister(CollisionStaticRect *rect) {
+    unsigned int index = 0;
+    for (; index < staticColliderCursor; index++) {
+        if (staticColliders[index] == rect) break;
+    }
+
+    staticColliders[index] = 0;
+
+    if (--staticColliderCursor > 0) {
+        staticColliders[index] = staticColliders[staticColliderCursor];
+    }
+
+    staticColliders[staticColliderCursor] = 0;
 }
 
 // Check collisions between A and B and return flags
@@ -155,17 +176,18 @@ uint8_t detectCollision(
 
     return collData;
 }
+unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData) {
+    Position *dynamicPosition = dynamicCollider->pos;
 
-unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData) {
     for (;index < staticColliderCursor; index++) {
-        double x1A = dynamicCollider->pos->x + dynamicCollider->offsetX;
-        double y1A = dynamicCollider->pos->y + dynamicCollider->offsetY;
+        double x1A = dynamicPosition->x + dynamicCollider->offsetX;
+        double y1A = dynamicPosition->y + dynamicCollider->offsetY;
         double x2A = x1A + dynamicCollider->width;
         double y2A = y1A + dynamicCollider->height;
         double xOverlap = 0;
         double yOverlap = 0;
 
-        gbCollisionStaticRect *rect = staticColliders[index];
+        CollisionStaticRect *rect = staticColliders[index];
         uint8_t data = detectCollision(
                                     x1A,
                                     y1A,
@@ -187,10 +209,10 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
         if ((data & COLLISION_X) && (data & COLLISION_Y)) {
 
             if (data & COLLISION_X_MARKED) {
-                dynamicCollider->pos->x += xOverlap;
+                dynamicPosition->x += xOverlap;
             }
             if (data & COLLISION_Y_MARKED) {
-                dynamicCollider->pos->y += yOverlap;
+                dynamicPosition->y += yOverlap;
             }
 
             *collData = data;
@@ -202,33 +224,18 @@ unsigned int gbCollisionResolveStaticCollisions(unsigned int index, gbCollisionD
     return 0;
 }
 
-unsigned int gbCollisionDetectPointCollisionStatic(int x, int y) {
+CollisionStaticRect *collisionDetectPointCollisionStatic(int x, int y) {
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
         if (x > staticColliders[i]->x1 && x < staticColliders[i]->x2 &&
             y > staticColliders[i]->y1 && y < staticColliders[i]->y2) {
-                return i;
+                return staticColliders[i];
             }
     }
 
-    return COLLISION_NO_STATIC_COLLIDER;
+    return 0;
 }
 
-void gbCollisionRemoveStaticCollider(unsigned int index) {
-    if (staticColliderCursor <= index || index >= COLLISION_NO_STATIC_COLLIDER) {
-        return;
-    }
-
-    free(staticColliders[index]);
-
-    if (--staticColliderCursor > index) {
-        staticColliders[index] = staticColliders[staticColliderCursor];
-        staticColliders[staticColliderCursor] = 0;
-    } else {
-        staticColliders[index] = 0;
-    }
-}
-
-void gbCollisionDebugDraw() {
+void collisionDebugDraw() {
     SDL_SetRenderDrawColor(gbMainRenderer, 0x00, 0xff, 0xff, 0xff);
 
     SDL_Rect rect;

@@ -4,14 +4,14 @@
 #include "./gbCollisionDynamicRect_type.h"
 #include "./gbCollisionStaticRect_type.h"
 
-#define GB_COLLISION_TOP        1
-#define GB_COLLISION_BOTTOM     2
-#define GB_COLLISION_LEFT       4
-#define GB_COLLISION_RIGHT      8
-#define GB_COLLISION_X          16
-#define GB_COLLISION_Y          32
-#define GB_COLLISION_X_MARKED   64
-#define GB_COLLISION_Y_MARKED  128
+#define COLLISION_TOP        1
+#define COLLISION_BOTTOM     2
+#define COLLISION_LEFT       4
+#define COLLISION_RIGHT      8
+#define COLLISION_X          16
+#define COLLISION_Y          32
+#define COLLISION_X_MARKED   64
+#define COLLISION_Y_MARKED  128
 
 void gbCollisionInit();
 void gbCollisionTeardown();

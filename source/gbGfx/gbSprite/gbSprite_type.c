@@ -1,14 +1,14 @@
 #include "./gbSprite_type.h"
 #include "./gbSpriteLayer_enum.h"
 #include "../../gbRenderer/gbRenderer_sys.h"
-#define GB_SPRITE_MAX_PER_LAYER 1000
+#define SPRITE_MAX_PER_LAYER 1000
 
-static unsigned int cursors[GB_SPRITE_MAX_PER_LAYER];
-static gbSprite     *sprites[GB_SPRITE_MAX_PER_LAYER][GB_SPRITE_MAX_PER_LAYER];
+static unsigned int cursors[SPRITE_MAX_PER_LAYER];
+static gbSprite     *sprites[SPRITE_MAX_PER_LAYER][SPRITE_MAX_PER_LAYER];
 
 void gbSpriteInit() {
     for (unsigned int l = 0; l < GB_SPRITE_LAYER_NUM_LAYERS; l++) {
-        for (unsigned int s = 0; s < GB_SPRITE_MAX_PER_LAYER; s++) {
+        for (unsigned int s = 0; s < SPRITE_MAX_PER_LAYER; s++) {
             sprites[l][s] = 0;
         }
     }
@@ -44,7 +44,7 @@ gbSprite *gbSpriteNew(
     uint8_t fixed,
     SDL_RendererFlip flip
 ) {
-    if (cursors[layer] + 1 >= GB_SPRITE_MAX_PER_LAYER) {
+    if (cursors[layer] + 1 >= SPRITE_MAX_PER_LAYER) {
         return 0;
     }
 
@@ -73,7 +73,7 @@ gbSprite *gbSpriteNew(
 
 void gbSpriteDrawSprites() {
     static SDL_Rect dst;
-    for (unsigned int l = 0; l < GB_SPRITE_MAX_PER_LAYER; l++) {
+    for (unsigned int l = 0; l < SPRITE_MAX_PER_LAYER; l++) {
         for (unsigned int s = 0; s < cursors[l]; s++) {
             if (sprites[l][s]->dispose) {
                 free(sprites[l][s]);

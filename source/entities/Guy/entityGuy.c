@@ -6,22 +6,21 @@
 #include "../../gbUtils/gbUtils.h"
 
 #include "../../gbRenderer/gbRenderer_sys.h"
-#include "../../gbCollision/gbCollision_sys.h"
+#include "../../Collision/Collision_sys.h"
 #include "../../gbGfx/gbGfx_sys.h"
-#include "../../gbCollision/gbCollisionDynamicRect_type.h"
+#include "../../Collision/CollisionDynamicRect_type.h"
 
-#include "../../gbEntity/gbPosition_type.h"
+#include "../../Position_type.h"
 #include "../../gbInput/gbInput_sys.h"
 #include "../../gbInput/gbInputState_type.h"
 #include "../../gbAnimation/gbAnimation_sys.h"
 #include "../../gbAnimation/gbAnimation_type.h"
 #include "../../gbAnimation/gbAnimType_type.h"
 
-#include "../../gbSerializer/gbSerializer_sys.h"
-#include "../../gbSerializer/gbFile_type.h"
-#include "../../gbSerializer/gbFileChunkSize_type.h"
+#include "../../DynamicEntity/DynamicEntityState_union.h"
+#include "../../DynamicEntity/DynamicEntity_sys.h"
 
-static SDL_Texture *guyTexture = GB_TEXTURE_NO_TEXTURE;
+static int guyTexture = -1;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
 static unsigned int guyAnimations[GUY_STATE_NUM_STATES] = {
@@ -35,52 +34,44 @@ static const double walkAcceleration = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double stopAcceleration = GB_LOGICAL_SCREEN_WIDTH / 5;
 static const double maxVelocity = GB_LOGICAL_SCREEN_WIDTH / 10;
 static const double dropVelocity = GB_LOGICAL_SCREEN_HEIGHT / 2;
-static const uint8_t HIT_GROUND = GB_COLLISION_TOP | GB_COLLISION_Y_MARKED;
+static const uint8_t HIT_GROUND = COLLISION_TOP | COLLISION_Y_MARKED;
 
 // for Debug need to add to entity
 static uint8_t grounded = 1;
 
 // Forward declarations
-static void idle(Guy *guy);
-static void walk(Guy *guy, double delta);
-static void handleInput(Guy *guy);
-static void handleMoveKeyDown(Guy *guy);
-static void handleMoveKeyUp(Guy *guy);
-static void setState(Guy *guy, GUY_STATE state);
+static void idle(DynamicEntity *guy);
+static void walk(DynamicEntity *guy, double delta);
+static void handleInput(DynamicEntity *guy);
+static void handleMoveKeyDown(DynamicEntity *guy);
+static void handleMoveKeyUp(DynamicEntity *guy);
+static void setState(DynamicEntity *guy, GUY_STATE state);
 
-gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
+DynamicEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     guyCount++;
     printf("Guy count: %d\n", guyCount);
 
-    Guy *guy = (Guy *)malloc(sizeof(Guy));
-    guy->pos = (gbPosition){x, y};
+    DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
+    guy->pos = (Position){x, y};
 
-    gbSprite *sprite = gbSpriteNew(
-                                  GB_SPRITE_LAYER_MIDGROUND,
-                                  guyTexture,
-                                  0, 0, 32, 32,
-                                  &guy->pos, 32, 32,
-                                  1,
-                                  0,
-                                  flip);
-    guy->sprite = sprite;
+    spriteSet(&guy->sprite, guyTexture, 0, 0, 32, 32, 32, 32, 1, 0, flip);
+    spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
 
     guy->dx = 0;
     guy->dy = 0;
     guy->ax = 0;
     guy->ay = 0;
 
-    guy->direction = 0;
-    guy->moveKeysDown = 0;
+    guy->state.guy.direction = 0;
+    guy->state.guy.moveKeysDown = 0;
 
-    guy->state = GUY_STATE_IDLE;
-    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &sprite->src, &guy->animState);
+    guy->state.guy.state = GUY_STATE_IDLE;
+    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
 
-    guy->entity = gbEntityNew(GB_ENTITY_TYPE_GUY, guy, GB_ENTITY_PRIORITY_HIGH);
+    collisionDynamicRectSet(&guy->boundingBox, &guy->pos, guy->id, 5, 0, 22, 31);
+    collisionDynamicRectRegister(&guy->boundingBox);
 
-    guy->boundingBox = gbCollisionDynamicColliderNew(&guy->pos, guy->entity, 5, 0, 22, 31);
-
-    return guy->entity;
+    return guy;
 }
 
 //void handleInput(Guy *guy) {
@@ -112,14 +103,14 @@ gbEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
 //    }
 //}
 
-void guyThink(Guy *guy, double delta) {
+void guyThink(DynamicEntity *guy, double delta) {
     // INPUT
     int xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_JUST_PRESSED) ? -1   :
                 gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) ? 1   :
                 0;
 
     if (xMove) {
-        guy->sprite->flip = xMove < 0;
+        guy->sprite.flip = xMove < 0;
         setState(guy, GUY_STATE_WALK);
     } else {
         xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED) ? -1   :
@@ -168,11 +159,11 @@ void guyThink(Guy *guy, double delta) {
     if (!xMove && oldVelocity != 0 && guy->dx != 0 && oldSign + newSign == 0) {
         guy->dx = 0;
         guy->ax = 0;
-        guy->state = GUY_STATE_IDLE;
-        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite->src, &guy->animState);
+        guy->state.guy.state = GUY_STATE_IDLE;
+        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
     }
 
-    switch (guy->state) {
+    switch (guy->state.guy.state) {
         case GUY_STATE_IDLE:
             idle(guy);
             break;
@@ -184,14 +175,14 @@ void guyThink(Guy *guy, double delta) {
     guy->pos.y += guy->dy * delta;
     guy->dy += dropVelocity * delta;
 
-    gbAnimationApply(&guy->sprite->src, delta, &guy->animState, guyAnimations[guy->state]);
+    gbAnimationApply(&guy->sprite.src, delta, &guy->animState, guyAnimations[guy->state.guy.state]);
 
     unsigned int index = 0;
     uint8_t collData = 0;
 
     grounded = 0;
 
-    while (index = gbCollisionResolveStaticCollisions(index, guy->boundingBox, guy->dx, guy->dy, &collData)) {
+    while (index = collisionResolveStaticCollisions(index, &guy->boundingBox, guy->dx, guy->dy, &collData)) {
         if ((collData & HIT_GROUND) == HIT_GROUND) {
             if (guy->dy > 0) {
                 guy->dy = 0;
@@ -201,33 +192,33 @@ void guyThink(Guy *guy, double delta) {
     }
 }
 
-void guyRespond(Guy *guy, gbMessage *messages, uint16_t numMessages) {
+void guyRespond(DynamicEntity *guy, double delta) {
 
 }
 
-void guyDispose(Guy * guy) {
-    guy->sprite->dispose = 1;
-    guy->boundingBox->dispose = 1;
+//void guyDispose(DynamicEntity * guy) {
+//    guy->sprite->dispose = 1;
+//    guy->boundingBox->dispose = 1;
+//
+//    if(--guyCount == 0) {
+//        gbTextureUnload(guyTexture);
+//        gbAnimationUnload(guyAnimationIdle);
+//    }
+//
+//    printf("guyCount: %d", guyCount);
+//}
 
-    if(--guyCount == 0) {
-        gbTextureUnload(guyTexture);
-        gbAnimationUnload(guyAnimationIdle);
-    }
+static void setState(DynamicEntity *guy, GUY_STATE state) {
+    guy->state.guy.state = state;
 
-    printf("guyCount: %d", guyCount);
+    gbAnimationStateInit(guyAnimations[state], &guy->sprite.src, &guy->animState);
 }
 
-static void setState(Guy *guy, GUY_STATE state) {
-    guy->state = state;
-
-    gbAnimationStateInit(guyAnimations[state], &guy->sprite->src, &guy->animState);
-}
-
-static void idle(Guy *guy) {
+static void idle(DynamicEntity *guy) {
     //handleMoveKeyDown(guy);
 }
 
-static void walk(Guy *guy, double delta) {
+static void walk(DynamicEntity *guy, double delta) {
    guy->pos.x += guy->dx * delta;
 }
 
@@ -261,36 +252,15 @@ static void walk(Guy *guy, double delta) {
 //    }
 //}
 
-void guySerialize(Guy * guy, gbFile *file) {
-    // Write entity type
-    gbSerializerWriteChunk(file, GB_FILE_CHUNK_SIZE_16, GB_ENTITY_TYPE_GUY);
-
-    // Write x and y coordinates
-    gbSerializerWriteChunk(file, GB_FILE_CHUNK_SIZE_64, guy->pos.x);
-    gbSerializerWriteChunk(file, GB_FILE_CHUNK_SIZE_64, guy->pos.y);
-
-    // Write flipped
-    gbSerializerWriteChunk(file, GB_FILE_CHUNK_SIZE_8, guy->sprite->flip);
-}
-Guy *guyDeserialize(gbFile *file) {
-    double x = gbSerializerReadChunk(file, GB_FILE_CHUNK_SIZE_64);
-    double y = gbSerializerReadChunk(file, GB_FILE_CHUNK_SIZE_64);
-    uint8_t flip = gbSerializerReadChunk(file, GB_FILE_CHUNK_SIZE_8);
-
-    return guyNew(x, y, flip)->entity;
-}
 
 void initGuy() {
         guyTexture = gbTextureLoadFromFile("./assets/red_guy.png");
         guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
         guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
 
-        gbEntityRegisterFuncs(
-                              GB_ENTITY_TYPE_GUY,
-                              (GB_ENTITY_THINK_FUNC)&guyThink,
-                              (GB_ENTITY_RESPOND_FUNC)&guyRespond,
-                              (GB_ENTITY_DISPOSE_FUNC)&guyDispose,
-                              (GB_ENTITY_SERIALIZE_FUNC)&guySerialize,
-                              (GB_ENTITY_DESERIALIZE_FUNC)&guyDeserialize
+        dynamicEntityRegisterFuncs(
+                              DYNAMIC_ENTITY_TYPE_GUY,
+                              (DYNAMIC_ENTITY_THINK_FUNC)&guyThink,
+                              (DYNAMIC_ENTITY_RESPOND_FUNC)&guyRespond
                               );
 }

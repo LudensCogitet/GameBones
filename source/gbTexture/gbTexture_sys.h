@@ -11,9 +11,9 @@ extern SDL_Texture *gbTextures[GB_TEXTURE_MAX_TEXTURES];
 void gbTextureInit();
 void gbTextureTeardown();
 
-unsigned int gbTextureLoadFromFile(const char *filename);
-unsigned int gbTextureLoadFromSurface(SDL_Surface *surface);
-void gbTextureLoadToIndexFromSurface(unsigned int index, SDL_Surface *surface);
+int gbTextureLoadFromFile(const char *filename);
+int gbTextureLoadFromSurface(SDL_Surface *surface);
+int gbTextureLoadToIndexFromSurface(unsigned int index, SDL_Surface *surface);
 void gbTextureUnload(unsigned int index);
 
 #endif // TEXTURE_RESOURCE_H_INCLUDED

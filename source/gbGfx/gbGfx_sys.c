@@ -14,8 +14,8 @@
 #include "../gbTexture/gbTexture_sys.h"
 #include "../editor/editor.h"
 
-#include "./gbSprite/gbSprite_type.h"
-#include "../gbEntity/gbPosition_type.h"
+#include "../Sprite/Sprite_type.h"
+#include "../Position_type.h"
 #include "./gbColor.h"
 #include "./gbFont.h"
 #include "./gbText/gbText_type.h"
@@ -30,19 +30,19 @@ void gbGfxFontUnload(GB_FONT font);
 void gbGfxFontLoad(char *ttfFile, GB_FONT font, uint16_t pt);
 
 void gbGfxInit() {
-    gbSpriteInit();
+    spriteInit();
 
     colors[GB_COLOR_WHITE] = (SDL_Color){ 255, 255, 255, 255 };
     colors[GB_COLOR_BLACK] = (SDL_Color){ 0, 0, 0, 255 };
 
     TTF_Init();
-    gbGfxFontLoad("./assets/FreeMono.ttf", GB_FONT_MID_FREE_MONO, 22);
-    TTF_SetFontStyle(fonts[GB_FONT_MID_FREE_MONO], TTF_STYLE_BOLD);
+    gbGfxFontLoad("./assets/FreeMono.ttf", GB_FONT_MID_FREE_MONO, 30);
+    //TTF_SetFontStyle(fonts[GB_FONT_MID_FREE_MONO], TTF_STYLE_BOLD);
 }
 
 
 void gbGfxTeardown() {
-    gbSpriteTeardown();
+    spriteTeardown();
 
     for (unsigned int i = 0; i < GB_FONT_NUM_FONTS; i++) {
         gbGfxFontUnload(i);
@@ -56,7 +56,7 @@ void gbGfxDraw() {
     //gbGfxCameraUpdate();
 
     SDL_RenderClear(gbMainRenderer);
-
+    spriteDraw();
     if (GB_GFX_DEBUG_FLAG) {
         int maxX = (GB_GFX_GRID_OFFSET_X + ((GB_GFX_GRID_WIDTH) * GB_GFX_GRID_SIZE)) * gbScaleFactorX;
         int maxY = (GB_GFX_GRID_OFFSET_Y + ((GB_GFX_GRID_HEIGHT) * GB_GFX_GRID_SIZE)) * gbScaleFactorY;
@@ -70,12 +70,13 @@ void gbGfxDraw() {
         for (int y = GB_GFX_GRID_OFFSET_Y * gbScaleFactorY; y <= maxY; y += GB_GFX_GRID_SIZE * gbScaleFactorY) {
             SDL_RenderDrawLine(gbMainRenderer, GB_GFX_GRID_OFFSET_X * gbScaleFactorX, y, maxX, y);
         }
-        gbCollisionDebugDraw();
+        collisionDebugDraw();
         gbRendererResetDrawColor();
+
+        editorRender();
     }
 
-    editorRender();
-    gbSpriteDrawSprites();
+
 
     SDL_RenderPresent(gbMainRenderer);
 }

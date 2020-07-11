@@ -4,6 +4,7 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 
+#include "../gbRenderer/gbRenderer_sys.h"
 #include "./gbSprite/gbSprite_type.h"
 #include "./gbText/gbText_type.h"
 #include "./gbFont.h"
@@ -16,6 +17,8 @@
 
 #define GB_GFX_GRID_OFFSET_X    (GB_GFX_GRID_SIZE * 10)
 #define GB_GFX_GRID_OFFSET_Y    (GB_GFX_GRID_SIZE * 1.25)
+
+extern uint8_t GB_GFX_DEBUG_FLAG;
 
 void gbGfxInit();
 void gbGfxTeardown();
