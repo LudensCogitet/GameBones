@@ -6,6 +6,7 @@
 #include "CollisionDynamicRect_type.h"
 #include "CollisionStaticRect_type.h"
 
+#define COLLISION_MAX_PASSIVE_COLLIDERS 50
 #define COLLISION_MAX_STATIC_COLLIDERS 100
 #define COLLISION_MAX_DYNAMIC_COLLIDERS 100
 
@@ -35,12 +36,15 @@ void collisionDynamicRectSet(
 void collisionDynamicRectRegister(CollisionDynamicRect *rect);
 void collisionDynamicRectUnregister(CollisionDynamicRect *rect);
 
-void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2);
+void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2, uint8_t active);
 void collisionStaticRectRegister(CollisionStaticRect *rect);
 void collisionStaticRectUnregister(CollisionStaticRect *rect);
+void collisionStaticRectPassiveRegister(CollisionStaticRect *rect);
+void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect);
 
 unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData);
-CollisionStaticRect *collisionDetectPointCollisionStatic(int x, int y);
+CollisionStaticRect *collisionDetectPointCollision(int x, int y);
+CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y);
 
 void collisionDebugDraw();
 

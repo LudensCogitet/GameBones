@@ -9,31 +9,44 @@
 #include "CollisionDynamicRect_type.h"
 #include "CollisionStaticRect_type.h"
 
-static CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
-static unsigned int staticColliderCursor;
-
 static CollisionDynamicRect *dynamicColliders[COLLISION_MAX_DYNAMIC_COLLIDERS];
 static unsigned int dynamicColliderCursor;
 
+static CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
+static unsigned int staticColliderCursor;
+
+static CollisionStaticRect *passiveColliders[COLLISION_MAX_PASSIVE_COLLIDERS];
+static unsigned int passiveColliderCursor;
+
 void collisionInit() {
-    staticColliderCursor = 0;
     dynamicColliderCursor = 0;
+    staticColliderCursor = 0;
+    passiveColliderCursor = 0;
+
+    for (unsigned int i = 0; i < COLLISION_MAX_DYNAMIC_COLLIDERS; i++) {
+        dynamicColliders[i] = 0;
+    }
 
     for (unsigned int i = 0; i < COLLISION_MAX_STATIC_COLLIDERS; i++) {
         staticColliders[i] = 0;
     }
 
-    for (unsigned int i = 0; i < COLLISION_MAX_DYNAMIC_COLLIDERS; i++) {
-        dynamicColliders[i] = 0;
+    for (unsigned int i = 0; i < COLLISION_MAX_PASSIVE_COLLIDERS; i++) {
+        passiveColliders[i] = 0;
     }
 }
+
 void collisionTeardown() {
+    for (unsigned i = 0; i < dynamicColliderCursor; i++) {
+        dynamicColliders[i] = 0;
+    }
+
     for (unsigned i = 0; i < staticColliderCursor; i++) {
         staticColliders[i] = 0;
     }
 
-    for (unsigned i = 0; i < dynamicColliderCursor; i++) {
-        dynamicColliders[i] = 0;
+    for (unsigned i = 0; i < passiveColliderCursor; i++) {
+        passiveColliders[i] = 0;
     }
 }
 
@@ -79,7 +92,8 @@ void collisionDynamicRectUnregister(CollisionDynamicRect *rect) {
     dynamicColliders[dynamicColliderCursor] = 0;
 }
 
-void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2) {
+void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2, uint8_t active) {
+    rect->active = active;
     rect->x1 = x1;
     rect->y1 = y1;
     rect->x2 = x2;
@@ -106,6 +120,28 @@ void collisionStaticRectUnregister(CollisionStaticRect *rect) {
     }
 
     staticColliders[staticColliderCursor] = 0;
+}
+
+void collisionStaticRectPassiveRegister(CollisionStaticRect *rect) {
+    if (passiveColliderCursor >= COLLISION_MAX_PASSIVE_COLLIDERS)
+        return;
+
+    passiveColliders[passiveColliderCursor++] = rect;
+}
+
+void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect) {
+    unsigned int index = 0;
+    for (; index < passiveColliderCursor; index++) {
+        if (passiveColliders[index] == rect) break;
+    }
+
+    passiveColliders[index] = 0;
+
+    if (--passiveColliderCursor > 0) {
+        passiveColliders[index] = passiveColliders[passiveColliderCursor];
+    }
+
+    passiveColliders[passiveColliderCursor] = 0;
 }
 
 // Check collisions between A and B and return flags
@@ -175,6 +211,7 @@ uint8_t detectCollision(
 
     return collData;
 }
+
 unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData) {
     Position *dynamicPosition = dynamicCollider->pos;
 
@@ -223,11 +260,22 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
     return 0;
 }
 
-CollisionStaticRect *collisionDetectPointCollisionStatic(int x, int y) {
+CollisionStaticRect *collisionDetectPointCollision(int x, int y) {
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
         if (x > staticColliders[i]->x1 && x < staticColliders[i]->x2 &&
             y > staticColliders[i]->y1 && y < staticColliders[i]->y2) {
                 return staticColliders[i];
+            }
+    }
+
+    return 0;
+}
+
+CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y) {
+    for (unsigned int i = 0; i < passiveColliderCursor; i++) {
+        if (x > passiveColliders[i]->x1 && x < passiveColliders[i]->x2 &&
+            y > passiveColliders[i]->y1 && y < passiveColliders[i]->y2) {
+                return passiveColliders[i];
             }
     }
 

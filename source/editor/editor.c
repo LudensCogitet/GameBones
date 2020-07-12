@@ -132,6 +132,7 @@ void editorTeardown() {
 
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
         if (staticColliders[i]) {
+            collisionStaticRectPassiveUnregister(staticColliders[i]);
             free(staticColliders[i]);
             staticColliders[i] = 0;
         }
@@ -164,7 +165,7 @@ void editorUpdate() {
         int x, y;
         SDL_GetMouseState(&x, &y);
         gbGfxScreenToWorldCoords(&x, &y);
-        CollisionStaticRect *collider = collisionDetectPointCollisionStatic(x, y);
+        CollisionStaticRect *collider = collisionDetectPointCollisionPassive(x, y);
         if (collider == modeButtonHitbox) {
             if (++mode >= NUM_MODES) mode = 0;
             modeButtonSprite->src.x = buttonX[mode];
@@ -198,7 +199,7 @@ void editorUpdate() {
                 CollisionStaticRect *rect = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
                 staticColliders[staticColliderCursor++] = rect;
 
-                collisionStaticRectSet(rect, x1 < x2 ? x1 : x2, y1 < y2 ? y1 : y2, x2 > x1 ? x2 : x1, y2 > y1 ? y2 : y1);
+                collisionStaticRectSet(rect, x1 < x2 ? x1 : x2, y1 < y2 ? y1 : y2, x2 > x1 ? x2 : x1, y2 > y1 ? y2 : y1, 1);
                 collisionStaticRectRegister(rect);
 
                 break;
@@ -221,7 +222,7 @@ void editorUpdate() {
             int x, y;
             case PLACE_STATIC_GEOMETRY:
                 SDL_GetMouseState(&x, &y);
-                unsigned int collider = collisionDetectPointCollisionStatic(x, y);
+                CollisionStaticRect *collider = collisionDetectPointCollision(x, y);
                 if (!collider) break;
 
                 for (unsigned int i = 0; i < staticColliderCursor; i++) {
@@ -287,8 +288,9 @@ void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colR
     collisionStaticRectSet(*colRect, pos->x,
                                      pos->y,
                                      pos->x + button->width,
-                                     pos->y + button->height);
-    collisionStaticRectRegister(*colRect);
+                                     pos->y + button->height,
+                                     1);
+    collisionStaticRectPassiveRegister(*colRect);
 
     staticColliders[staticColliderCursor++] = *colRect;
 }
