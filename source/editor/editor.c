@@ -26,6 +26,14 @@
 #define EDITOR_MAX_STATIC_COLLIDERS 100
 
 typedef enum {
+    NEW_ROOM,
+    SAVE_ROOM,
+    LOAD_ROOM,
+    LOAD_BG,
+    NUM_MENU_ITEMS
+} MENU_ITEM;
+
+typedef enum {
     PLACE_STATIC_GEOMETRY,
     PLACE_PLAYER,
     NUM_MODES
@@ -101,9 +109,6 @@ void editorInit() {
                       modeButtonSprite,
                       &modeButtonHitbox);
 
-    inputFieldText = (Text*)malloc(sizeof(Text));
-    textNew(inputFieldText, "Click to type", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, 40, 110, 1, 1);
-
     inputFieldBackground = (Sprite *)malloc(sizeof(Sprite));
     spriteSet(
               inputFieldBackground,
@@ -113,6 +118,10 @@ void editorInit() {
               inputFieldSrcWidth, inputFieldSrcHeight,
               1, 1, SDL_FLIP_NONE);
     spriteRegister(inputFieldBackground, &inputFieldPosition, SPRITE_LAYER_MIDGROUND);
+
+    inputFieldText = (Text*)malloc(sizeof(Text));
+    textNew(inputFieldText, " ", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, inputFieldPosition.x + 10, inputFieldPosition.y + 15, 1, 1);
+
     addHitboxToButton(
                       &inputFieldPosition,
                       inputFieldBackground,

@@ -113,6 +113,9 @@ void collisionStaticRectUnregister(CollisionStaticRect *rect) {
         if (staticColliders[index] == rect) break;
     }
 
+    if (index == staticColliderCursor)
+        return;
+
     staticColliders[index] = 0;
 
     if (--staticColliderCursor > 0) {
@@ -134,6 +137,9 @@ void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect) {
     for (; index < passiveColliderCursor; index++) {
         if (passiveColliders[index] == rect) break;
     }
+
+    if (index == passiveColliderCursor)
+        return;
 
     passiveColliders[index] = 0;
 
