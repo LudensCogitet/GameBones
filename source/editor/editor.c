@@ -62,6 +62,11 @@ static int uiTexture;
 static const unsigned int buttonSrcWidth = 176;
 static const unsigned int buttonSrcHeight = 64;
 
+// Menu
+static Sprite *menuSprites[NUM_MENU_ITEMS];
+static CollisionStaticRect *menuHitboxes;
+static Position *menuPositions[NUM_MENU_ITEMS];
+
 // Mode Button
 static Position modeButtonPosition;
 static unsigned int buttonX[NUM_MODES];
@@ -94,6 +99,21 @@ void editorInit() {
 
     uiTexture = gbTextureLoadFromFile("./assets/UIButtons-sheet.png");
 
+    for (int i = 0; i < NUM_MENU_ITEMS; i++) {
+        menuSprites[i] = (Sprite *)malloc(sizeof(Sprite));
+        spriteSet(menuSprites[i],
+                  uiTexture,
+                  i * buttonSrcWidth, 0,
+                  buttonSrcWidth, buttonSrcHeight,
+                  (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0,
+                  1, 1, SDL_FLIP_NONE);
+        menuPositions[i] = (Position *)malloc(sizeof(Position));
+        menuPositions[i]->x = 0;
+        menuPositions[i]->y = i * GB_LOGICAL_SCREEN_HEIGHT / 11.25;
+        spriteRegister(menuSprites[i], menuPositions[i], SPRITE_LAYER_FOREGROUND);
+        //addHitboxToButton(menuPositions[i], menuSprites[i], &(menuHitboxes[i]));
+    }
+
     modeButtonSprite = (Sprite *)malloc(sizeof(Sprite));
     spriteSet(
               modeButtonSprite,
@@ -115,7 +135,7 @@ void editorInit() {
               uiTexture,
               inputFieldSrcPosition.x, inputFieldSrcPosition.y,
               inputFieldSrcWidth, inputFieldSrcHeight,
-              inputFieldSrcWidth, inputFieldSrcHeight,
+              GB_LOGICAL_SCREEN_WIDTH / 2 , GB_LOGICAL_SCREEN_HEIGHT / 11.25,
               1, 1, SDL_FLIP_NONE);
     spriteRegister(inputFieldBackground, &inputFieldPosition, SPRITE_LAYER_MIDGROUND);
 
