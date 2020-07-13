@@ -56,7 +56,7 @@ void gbGfxDraw() {
     //gbGfxCameraUpdate();
 
     SDL_RenderClear(gbMainRenderer);
-    spriteDraw();
+
     if (GB_GFX_DEBUG_FLAG) {
         int maxX = (GB_GFX_GRID_OFFSET_X + ((GB_GFX_GRID_WIDTH) * GB_GFX_GRID_SIZE)) * gbScaleFactorX;
         int maxY = (GB_GFX_GRID_OFFSET_Y + ((GB_GFX_GRID_HEIGHT) * GB_GFX_GRID_SIZE)) * gbScaleFactorY;
@@ -70,12 +70,15 @@ void gbGfxDraw() {
         for (int y = GB_GFX_GRID_OFFSET_Y * gbScaleFactorY; y <= maxY; y += GB_GFX_GRID_SIZE * gbScaleFactorY) {
             SDL_RenderDrawLine(gbMainRenderer, GB_GFX_GRID_OFFSET_X * gbScaleFactorX, y, maxX, y);
         }
-        collisionDebugDraw();
         gbRendererResetDrawColor();
-
-        editorRender();
     }
 
+    spriteDraw();
+
+    if (GB_GFX_DEBUG_FLAG) {
+        collisionDebugDraw();
+        editorRender();
+    }
 
 
     SDL_RenderPresent(gbMainRenderer);

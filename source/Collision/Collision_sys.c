@@ -230,6 +230,9 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
         double yOverlap = 0;
 
         CollisionStaticRect *rect = staticColliders[index];
+
+        if (!rect->active) continue;
+
         uint8_t data = detectCollision(
                                     x1A,
                                     y1A,
@@ -268,6 +271,8 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
 
 CollisionStaticRect *collisionDetectPointCollision(int x, int y) {
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
+        if (!staticColliders[i]->active) continue;
+
         if (x > staticColliders[i]->x1 && x < staticColliders[i]->x2 &&
             y > staticColliders[i]->y1 && y < staticColliders[i]->y2) {
                 return staticColliders[i];
@@ -279,6 +284,8 @@ CollisionStaticRect *collisionDetectPointCollision(int x, int y) {
 
 CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y) {
     for (unsigned int i = 0; i < passiveColliderCursor; i++) {
+        if (!passiveColliders[i]->active) continue;
+
         if (x > passiveColliders[i]->x1 && x < passiveColliders[i]->x2 &&
             y > passiveColliders[i]->y1 && y < passiveColliders[i]->y2) {
                 return passiveColliders[i];

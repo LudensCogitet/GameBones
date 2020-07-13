@@ -27,8 +27,8 @@
 
 typedef enum {
     NEW_ROOM,
-    SAVE_ROOM,
     LOAD_ROOM,
+    SAVE_ROOM,
     LOAD_BG,
     NUM_MENU_ITEMS
 } MENU_ITEM;
@@ -64,7 +64,7 @@ static const unsigned int buttonSrcHeight = 64;
 
 // Menu
 static Sprite *menuSprites[NUM_MENU_ITEMS];
-static CollisionStaticRect *menuHitboxes;
+static CollisionStaticRect *menuHitboxes[NUM_MENU_ITEMS];
 static Position *menuPositions[NUM_MENU_ITEMS];
 
 // Mode Button
@@ -85,10 +85,10 @@ static uint8_t textMode = 0;
 
 // Forward Declarations
 void handleTextInput();
-void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect);
+void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect, uint8_t active);
 
 void editorInit() {
-    modeButtonPosition = (Position) {20, 20};
+    modeButtonPosition = (Position) {GB_LOGICAL_SCREEN_WIDTH - (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0};
     buttonX[PLACE_STATIC_GEOMETRY] = 0;
     buttonX[PLACE_PLAYER] = buttonSrcWidth;
 
@@ -105,20 +105,20 @@ void editorInit() {
                   uiTexture,
                   i * buttonSrcWidth, 0,
                   buttonSrcWidth, buttonSrcHeight,
-                  (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0,
+                  (GB_LOGICAL_SCREEN_WIDTH / 7.27), (GB_LOGICAL_SCREEN_HEIGHT / 11.25),
                   1, 1, SDL_FLIP_NONE);
         menuPositions[i] = (Position *)malloc(sizeof(Position));
         menuPositions[i]->x = 0;
         menuPositions[i]->y = i * GB_LOGICAL_SCREEN_HEIGHT / 11.25;
         spriteRegister(menuSprites[i], menuPositions[i], SPRITE_LAYER_FOREGROUND);
-        //addHitboxToButton(menuPositions[i], menuSprites[i], &(menuHitboxes[i]));
+        addHitboxToButton(menuPositions[i], menuSprites[i], menuHitboxes + i, 1);
     }
 
     modeButtonSprite = (Sprite *)malloc(sizeof(Sprite));
     spriteSet(
               modeButtonSprite,
               uiTexture,
-              buttonX[mode], 0,
+              buttonX[mode], buttonSrcHeight,
               buttonSrcWidth, buttonSrcHeight,
               buttonSrcWidth, buttonSrcHeight,
               1, 1, SDL_FLIP_NONE);
@@ -127,7 +127,8 @@ void editorInit() {
     addHitboxToButton(
                       &modeButtonPosition,
                       modeButtonSprite,
-                      &modeButtonHitbox);
+                      &modeButtonHitbox,
+                      1);
 
     inputFieldBackground = (Sprite *)malloc(sizeof(Sprite));
     spriteSet(
@@ -136,7 +137,7 @@ void editorInit() {
               inputFieldSrcPosition.x, inputFieldSrcPosition.y,
               inputFieldSrcWidth, inputFieldSrcHeight,
               GB_LOGICAL_SCREEN_WIDTH / 2 , GB_LOGICAL_SCREEN_HEIGHT / 11.25,
-              1, 1, SDL_FLIP_NONE);
+              0, 1, SDL_FLIP_NONE);
     spriteRegister(inputFieldBackground, &inputFieldPosition, SPRITE_LAYER_MIDGROUND);
 
     inputFieldText = (Text*)malloc(sizeof(Text));
@@ -145,7 +146,8 @@ void editorInit() {
     addHitboxToButton(
                       &inputFieldPosition,
                       inputFieldBackground,
-                      &inputFieldHitbox);
+                      &inputFieldHitbox,
+                      0);
 }
 
 void editorTeardown() {
@@ -201,11 +203,28 @@ void editorUpdate() {
             return;
         }
 
-        if (collider == inputFieldHitbox) {
-            textMode = 1;
-            gbInputClearTextInput();
-            gbInputStartTextInput(SDLK_RETURN);
-            handleTextInput();
+        for (int i = 0; i < NUM_MENU_ITEMS; i++) {
+            if (menuHitboxes[i] == collider) {
+                switch (i) {
+                    case NEW_ROOM:
+                        printf("New Room %d %d %f\n", i, NEW_ROOM, menuPositions[i]->y);
+                        break;
+                    case SAVE_ROOM:
+                        printf("Save Room %d, %d %f\n", i, SAVE_ROOM, menuPositions[i]->y);
+                        break;
+                    case LOAD_ROOM:
+                        printf("Load Room %d %d %f\n", i, LOAD_ROOM, menuPositions[i]->y);
+                        break;
+                    case LOAD_BG:
+                        inputFieldHitbox->active = 1;
+                        inputFieldBackground->active = 1;
+                        inputFieldText->sprite.active = 1;
+                        textMode = 1;
+                        gbInputStartTextInput(SDLK_RETURN);
+                        handleTextInput();
+                        break;
+                }
+            }
         }
 
         if (!clickInGrid) return;
@@ -303,6 +322,9 @@ void handleTextInput() {
         textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
         if (readStatus == GB_INPUT_BUFFER_STOP) {
             textMode = 0;
+            inputFieldHitbox->active = 0;
+            inputFieldBackground->active = 0;
+            inputFieldText->sprite.active = 0;
             if (!loadBackground(buffer)) {
                 sprintf(buffer, "Failed to load background image.");
                 textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
@@ -311,14 +333,14 @@ void handleTextInput() {
     }
 }
 
-void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colRect) {
+void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colRect, uint8_t active) {
     *colRect = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
 
     collisionStaticRectSet(*colRect, pos->x,
                                      pos->y,
                                      pos->x + button->width,
                                      pos->y + button->height,
-                                     1);
+                                     active);
     collisionStaticRectPassiveRegister(*colRect);
 
     staticColliders[staticColliderCursor++] = *colRect;
