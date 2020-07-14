@@ -20,6 +20,8 @@
 #include "../../DynamicEntity/DynamicEntityState_union.h"
 #include "../../DynamicEntity/DynamicEntity_sys.h"
 
+#include "../../gbTexture/gbTextureName_enum.h"
+
 static int guyTexture = -1;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
@@ -54,7 +56,7 @@ DynamicEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
     guy->pos = (Position){x, y};
 
-    spriteSet(&guy->sprite, guyTexture, 0, 0, 32, 32, 32, 32, 1, 0, flip);
+    spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, flip);
     spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
 
     guy->dx = 0;
@@ -254,7 +256,7 @@ static void walk(DynamicEntity *guy, double delta) {
 
 
 void initGuy() {
-        guyTexture = gbTextureLoadFromFile("./assets/red_guy.png");
+        guyTexture = gbTextureLoadNamed(GB_TEXTURE_NAME_GUY);
         guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
         guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
 

@@ -6,11 +6,13 @@
 #include "../gbRenderer/gbRenderer_sys.h"
 #include "./gbTexture_sys.h"
 
+#include "gbTextureFilePaths.h"
+
 static unsigned int cursor;
 SDL_Texture *gbTextures[GB_TEXTURE_MAX_TEXTURES];
 
 void gbTextureInit() {
-    cursor = 0;
+    cursor = GB_TEXTURE_DYNAMIC_TEXTURE_START;
 
     for (unsigned int i = 0; i < GB_TEXTURE_MAX_TEXTURES; i++) {
         gbTextures[i] = 0;
@@ -19,11 +21,13 @@ void gbTextureInit() {
 
 void gbTextureTeardown() {
     for (unsigned int i = 0; i < GB_TEXTURE_MAX_TEXTURES; i++) {
+        if (!gbTextures[i]) continue;
+
         SDL_DestroyTexture(gbTextures[i]);
         gbTextures[i] = 0;
     }
 
-    cursor = 0;
+    cursor = GB_TEXTURE_DYNAMIC_TEXTURE_START;
 }
 
 void gbTextureUnload(unsigned int index) {
@@ -74,4 +78,28 @@ int gbTextureLoadFromFile(const char* filename) {
     SDL_FreeSurface(tempSurface);
 
     return index;
+}
+
+int gbTextureLoadNamed(GB_TEXTURE_NAME name) {
+    if (gbTextures[name]) {
+        return;
+    }
+
+    SDL_Surface *tempSurface = IMG_Load(gbTextureFilePaths[name]);
+
+    if (tempSurface == 0) {
+        fprintf(stderr, "Failed to load image from file: %s", IMG_GetError());
+        return -1;
+    }
+
+    gbTextures[name] = SDL_CreateTextureFromSurface(gbMainRenderer, tempSurface);
+
+    if (gbTextures[name] == 0) {
+        fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
+        return -1;
+    }
+
+    SDL_FreeSurface(tempSurface);
+
+    return name;
 }
