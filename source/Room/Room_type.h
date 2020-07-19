@@ -8,13 +8,18 @@
 #include "../DynamicEntity/DynamicEntity_type.h"
 
 typedef struct {
-    unsigned int x;
-    unsigned int y;
+    Position pos;
+    uint32_t type;
+} DynamicEntityData;
 
-    char roomFilename[50];
-    char imageFilename[50];
+typedef struct {
+    uint16_t x;
+    uint16_t y;
+
+    uint8_t roomFilename[50];
+    uint8_t backgroundFilename[50];
     CollisionStaticRect staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
-    DynamicEntity entities[DYNAMIC_ENTITY_MAX_ENTITIES];
+    DynamicEntityData entities[DYNAMIC_ENTITY_MAX_ENTITIES];
 } Room;
 
 #endif // ROOM_TYPE_H_INCLUDED

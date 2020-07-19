@@ -4,10 +4,11 @@
 #include "../Position_type.h"
 
 typedef struct {
-    Position *pos;
+    unsigned int index;
 
     unsigned int entityId;
     uint8_t active;
+    uint8_t solid;
 
     int offsetX;
     int offsetY;

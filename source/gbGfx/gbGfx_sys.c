@@ -15,10 +15,12 @@
 #include "../editor/editor.h"
 
 #include "../Sprite/Sprite_type.h"
+#include "../Sprite/Sprite_sys.h"
 #include "../Position_type.h"
 #include "./gbColor.h"
 #include "./gbFont.h"
 #include "./gbText/gbText_type.h"
+#include "../Collision/Collision_sys.h"
 
 uint8_t GB_GFX_DEBUG_FLAG = 1;
 

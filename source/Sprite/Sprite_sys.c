@@ -61,7 +61,7 @@ void spriteSet(Sprite *sprite,
     sprite->flip = flip;
 }
 
-void spriteRegister(Sprite *sprite, Position *pos, SPRITE_LAYER layer) {
+int spriteRegister(Sprite *sprite, Position *pos, SPRITE_LAYER layer) {
     if (cursors[layer] >= SPRITE_MAX_PER_LAYER) {
         return 0;
     }
@@ -72,7 +72,7 @@ void spriteRegister(Sprite *sprite, Position *pos, SPRITE_LAYER layer) {
     positions[layer][cursors[layer]] = pos;
     sprites[layer][cursors[layer]] = sprite;
 
-    cursors[layer]++;
+    return cursors[layer]++;
 }
 
 void spriteUnregister(Sprite *sprite) {

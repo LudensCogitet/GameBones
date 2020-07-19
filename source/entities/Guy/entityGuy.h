@@ -4,8 +4,11 @@
 #include "SDL2/SDL.h"
 #include "../../DynamicEntity/DynamicEntity_type.h"
 
-void initGuy();
-DynamicEntity *guyNew(double x, double y, SDL_RendererFlip flip);
+void guyInit();
+void guyTeardown();
+
+DynamicEntity *guyNew(double x, double y);
+
 void guyThink(DynamicEntity *guy, double delta);
 void guyRespond(DynamicEntity *guy, double delta);
 

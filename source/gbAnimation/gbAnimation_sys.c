@@ -39,7 +39,7 @@ unsigned int gbAnimationNew(
                                 int8_t direction,
                                 GB_ANIM_TYPE type) {
 
-    cursor = gbNextEmpty(animations, cursor, GB_ANIMATION_MAX_ANIMATIONS);
+    cursor = gbNextEmpty((void **)animations, cursor, GB_ANIMATION_MAX_ANIMATIONS);
     if (cursor == GB_ANIMATION_MAX_ANIMATIONS) { return 0; }
 
     animations[cursor] = (gbAnimation *)malloc(sizeof(gbAnimation));

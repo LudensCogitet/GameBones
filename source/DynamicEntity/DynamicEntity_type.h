@@ -13,10 +13,10 @@
 #define DYNAMIC_ENTITY_INBOX_SIZE 5
 
 typedef struct {
-    unsigned int id;
+    uint32_t id;
     DYNAMIC_ENTITY_TYPE type;
 
-    uint8_t active;
+    _Bool active;
 
     DynamicEntityState state;
 
@@ -27,7 +27,7 @@ typedef struct {
 
     gbAnimationState animState;
 
-    unsigned int inboxCursor;
+    uint8_t inboxCursor;
     Message inbox[DYNAMIC_ENTITY_INBOX_SIZE];
 
     double dx;

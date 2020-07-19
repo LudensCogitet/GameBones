@@ -21,6 +21,7 @@
 #include "../Text/Text_type.h"
 #include "../Text/Text_sys.h"
 
+#include "../Room/Room_type.h"
 #include "../Room/Room_sys.h"
 
 #define EDITOR_MAX_STATIC_COLLIDERS 100
@@ -57,6 +58,8 @@ static int releaseY = -1;
 static unsigned int staticColliderCursor;
 static CollisionStaticRect *staticColliders[EDITOR_MAX_STATIC_COLLIDERS];
 
+Room currentRoom;
+
 // **UI**
 static int uiTexture;
 static const unsigned int buttonSrcWidth = 176;
@@ -66,6 +69,7 @@ static const unsigned int buttonSrcHeight = 64;
 static Sprite *menuSprites[NUM_MENU_ITEMS];
 static CollisionStaticRect *menuHitboxes[NUM_MENU_ITEMS];
 static Position *menuPositions[NUM_MENU_ITEMS];
+static MENU_ITEM selectedMenuItem = NEW_ROOM;
 
 // Mode Button
 static Position modeButtonPosition;
@@ -74,8 +78,8 @@ static Sprite *modeButtonSprite;
 static CollisionStaticRect *modeButtonHitbox;
 
 // Input Field
-static const inputFieldSrcWidth = 640;
-static const inputFieldSrcHeight = 64;
+static const int inputFieldSrcWidth = 640;
+static const int inputFieldSrcHeight = 64;
 static Position inputFieldSrcPosition = (Position) {0, 128};
 static Position inputFieldPosition = (Position) {GB_LOGICAL_SCREEN_WIDTH * 0.25, (GB_LOGICAL_SCREEN_HEIGHT * 0.5) - 32};
 static Text *inputFieldText;
@@ -210,12 +214,13 @@ void editorUpdate() {
                         printf("New Room %d %d %f\n", i, NEW_ROOM, menuPositions[i]->y);
                         break;
                     case SAVE_ROOM:
-                        printf("Save Room %d, %d %f\n", i, SAVE_ROOM, menuPositions[i]->y);
-                        break;
                     case LOAD_ROOM:
-                        printf("Load Room %d %d %f\n", i, LOAD_ROOM, menuPositions[i]->y);
-                        break;
                     case LOAD_BG:
+                        if (selectedMenuItem != i) {
+                            gbInputClearTextInput();
+                            textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, "");
+                        }
+                        selectedMenuItem = i;
                         inputFieldHitbox->active = 1;
                         inputFieldBackground->active = 1;
                         inputFieldText->sprite.active = 1;
@@ -325,10 +330,23 @@ void handleTextInput() {
             inputFieldHitbox->active = 0;
             inputFieldBackground->active = 0;
             inputFieldText->sprite.active = 0;
-            if (!loadBackground(buffer)) {
-                sprintf(buffer, "Failed to load background image.");
-                textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
+            switch (selectedMenuItem) {
+                case SAVE_ROOM:
+                    serializeRoom(&buffer);
+                break;
+                case LOAD_ROOM:
+                    deserializeRoom(&buffer);
+                break;
+                case LOAD_BG:
+                    if (!loadBackground(buffer)) {
+                        sprintf(buffer, "Failed to load background image.");
+                        textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
+                    } else {
+                        sprintf(&currentRoom.backgroundFilename, buffer);
+                    }
+                break;
             }
+
         }
     }
 }
@@ -344,4 +362,35 @@ void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colR
     collisionStaticRectPassiveRegister(*colRect);
 
     staticColliders[staticColliderCursor++] = *colRect;
+}
+
+void serializeRoom(char *filepath) {
+    uint8_t *buffer;
+    uint16_t numStaticRects = serializeStaticCollisionRects(buffer);
+
+    SDL_RWops *file = SDL_RWFromFile(filepath, "w");
+    SDL_RWwrite(file, &numStaticRects, sizeof(uint8_t), 2);
+    SDL_RWwrite(file, buffer, sizeof(uint8_t) * numStaticRects, 1);
+    SDL_RWclose(file);
+}
+
+void deserializeRoom(char *filepath) {
+    uint16_t numRects;
+    CollisionStaticRect *buffer;
+
+    SDL_RWops *file = SDL_RWFromFile(filepath, "r");
+    SDL_RWread(file, &numRects, sizeof(uint8_t), 2);
+
+    buffer = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect) * numRects);
+
+    SDL_RWread(file, buffer, sizeof(CollisionStaticRect), numRects);
+    SDL_RWclose(file);
+
+    for (unsigned int i = 0; i < numRects; i++) {
+        staticColliders[staticColliderCursor] = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
+        memcpy(staticColliders[staticColliderCursor], buffer + i, sizeof(CollisionStaticRect));
+
+        collisionStaticRectRegister(staticColliders[staticColliderCursor]);
+        staticColliderCursor++;
+    }
 }

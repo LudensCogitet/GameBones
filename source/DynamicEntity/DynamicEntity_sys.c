@@ -6,8 +6,18 @@
 #include "./DynamicEntityType_enum.h"
 #include "./DynamicEntityState_union.h"
 
-void (*dynamicEntityThink[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
-void (*dynamicEntityRespond[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
+#include "../Collision/Collision_sys.h"
+#include "../Sprite/Sprite_sys.h"
+
+#include "EntityFunctions.h"
+
+void (*dynamicEntityInits[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
+void (*dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
+
+DynamicEntity *(*dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(double x, double y);
+
+void (*dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
+void (*dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
 
 static unsigned int nextId;
 
@@ -21,11 +31,7 @@ void dynamicEntityInit() {
     for (unsigned int i = 0; i < DYNAMIC_ENTITY_MAX_ENTITIES; i++)
         entities[i] = 0;
 
-
-    for (unsigned int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++) {
-        dynamicEntityThink[i] = 0;
-        dynamicEntityRespond[i] = 0;
-    }
+    initEntityFunctions();
 }
 
 void dynamicEntityTeardown() {
@@ -39,21 +45,29 @@ void dynamicEntityTeardown() {
 }
 
 DynamicEntity *dynamicEntityNew(DYNAMIC_ENTITY_TYPE type) {
-    if (cursor >= DYNAMIC_ENTITY_MAX_ENTITIES) {
-        return 0;
-    }
-
     DynamicEntity *entity = (DynamicEntity *)malloc(sizeof(DynamicEntity));
     entity->id = nextId++;
     entity->inboxCursor = 0;
     entity->type = type;
     entity->active = 1;
 
-    entities[cursor++] = entity;
-
     return entity;
 }
 
+int dynamicEntityRegister(DynamicEntity *entity) {
+    if (cursor >= DYNAMIC_ENTITY_MAX_ENTITIES) {
+        return 0;
+    }
+
+    if (nextId < entity->id)
+        nextId = entity->id + 1;
+
+    entities[cursor] = entity;
+    spriteRegister(&entity->sprite, &entity->pos, entity->sprite.layer);
+    collisionDynamicRectRegister(&entity->boundingBox, &entity->pos);
+
+    return cursor++;
+}
 
 void dynamicEntityRemove(unsigned int id) {
     unsigned int index = 0;
@@ -93,7 +107,7 @@ void dynamicEntityAct(double delta) {
     for (unsigned int i = 0; i < cursor; i++) {
         if (!entities[i] || !entities[i]->active) continue;
 
-        dynamicEntityThink[entities[i]->type](entities[i], delta);
+        dynamicEntityThinks[entities[i]->type](entities[i], delta);
     }
 }
 
@@ -111,17 +125,8 @@ void dynamicEntityHandleMessages(double delta) {
     for (unsigned int i = 0; i < cursor; i++) {
         if (!entities[i]->inboxCursor) continue;
 
-        dynamicEntityRespond[entities[i]->type](entities[i], delta);
+        dynamicEntityResponds[entities[i]->type](entities[i], delta);
 
         entities[i]->inboxCursor = 0;
     }
-}
-
-void dynamicEntityRegisterFuncs(
-                           DYNAMIC_ENTITY_TYPE type,
-                           DYNAMIC_ENTITY_THINK_FUNC_PARAM(think),
-                           DYNAMIC_ENTITY_RESPOND_FUNC_PARAM(respond)
-                           ) {
-    dynamicEntityThink[type] = think;
-    dynamicEntityRespond[type] = respond;
 }

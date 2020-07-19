@@ -1,0 +1,6 @@
+#ifndef ENTITY_FUNCTIONS_H_INCLUDED
+#define ENTITY_FUNCTIONS_H_INCLUDED
+
+void initEntityFunctions();
+
+#endif // ENTITY_FUNCTIONS_H_INCLUDED

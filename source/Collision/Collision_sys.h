@@ -26,14 +26,13 @@ void collisionTeardown();
 
 void collisionDynamicRectSet(
                              CollisionDynamicRect *rect,
-                             Position *pos,
                              unsigned int entityId,
                              int offsetX,
                              int offsetY,
                              unsigned int width,
                              unsigned int height
                              );
-void collisionDynamicRectRegister(CollisionDynamicRect *rect);
+void collisionDynamicRectRegister(CollisionDynamicRect *rect, Position *pos);
 void collisionDynamicRectUnregister(CollisionDynamicRect *rect);
 
 void collisionStaticRectSet(CollisionStaticRect * rect, int x1, int y1, int x2, int y2, uint8_t active);
@@ -46,6 +45,7 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
 CollisionStaticRect *collisionDetectPointCollision(int x, int y);
 CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y);
 
+unsigned int serializeStaticCollisionRects(uint8_t *buffer);
 void collisionDebugDraw();
 
 #endif // COLLISION_SYS_H_INCLUDED

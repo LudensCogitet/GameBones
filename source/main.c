@@ -29,19 +29,17 @@
 
 #include "Sprite/Sprite_sys.h"
 
-#include "./entities/Guy/entityGuy.h"
-
-
 int main(int argc, char *argv[]) {
     gbRendererInit("Test", 1, 1);
     gbInputInit();
     gbTextureInit();
     gbGfxInit();
     gbAnimationInit();
+    dynamicEntityInit();
     collisionInit();
     editorInit();
 
-    initGuy();
+    dynamicEntityInits[DYNAMIC_ENTITY_TYPE_GUY]();
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -60,7 +58,19 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_MOUSE_ALT, SDL_BUTTON_RIGHT);
     gbInputSetKey(GB_INPUT_TOGGLE_EDIT_MODE, SDLK_TAB);
 
-    guyNew(GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3), SDL_FLIP_NONE);
+    DynamicEntity *guy;
+
+    SDL_RWops *file = SDL_RWFromFile("./player", "r");
+    if (file) {
+        guy = (DynamicEntity *)malloc(sizeof(DynamicEntity));
+        SDL_RWread(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
+        SDL_RWclose(file);
+        file = 0;
+
+        dynamicEntityRegister(guy);
+    } else {
+        guy = dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_GUY](GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3));
+    }
 
     while (!done) {
         gbInputUpdate();
@@ -87,6 +97,13 @@ int main(int argc, char *argv[]) {
             secondCounter = 0;
         }
 
+    }
+
+    file = SDL_RWFromFile("./player", "w");
+    if (file) {
+        SDL_RWwrite(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
+        SDL_RWclose(file);
+        file = 0;
     }
 
     editorTeardown();

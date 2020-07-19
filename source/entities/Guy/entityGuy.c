@@ -20,6 +20,8 @@
 #include "../../DynamicEntity/DynamicEntityState_union.h"
 #include "../../DynamicEntity/DynamicEntity_sys.h"
 
+#include "../../Sprite/Sprite_sys.h"
+
 #include "../../gbTexture/gbTextureName_enum.h"
 
 static int guyTexture = -1;
@@ -49,14 +51,15 @@ static void handleMoveKeyDown(DynamicEntity *guy);
 static void handleMoveKeyUp(DynamicEntity *guy);
 static void setState(DynamicEntity *guy, GUY_STATE state);
 
-DynamicEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
+DynamicEntity *guyNew(double x, double y) {
     guyCount++;
     printf("Guy count: %d\n", guyCount);
 
     DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
+    dynamicEntityRegister(guy);
     guy->pos = (Position){x, y};
 
-    spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, flip);
+    spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
     spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
 
     guy->dx = 0;
@@ -70,8 +73,8 @@ DynamicEntity *guyNew(double x, double y, SDL_RendererFlip flip) {
     guy->state.guy.state = GUY_STATE_IDLE;
     gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
 
-    collisionDynamicRectSet(&guy->boundingBox, &guy->pos, guy->id, 5, 0, 22, 31);
-    collisionDynamicRectRegister(&guy->boundingBox);
+    collisionDynamicRectSet(&guy->boundingBox, guy->id, 5, 0, 22, 31);
+    collisionDynamicRectRegister(&guy->boundingBox, &guy->pos);
 
     return guy;
 }
@@ -255,14 +258,14 @@ static void walk(DynamicEntity *guy, double delta) {
 //}
 
 
-void initGuy() {
+void guyInit() {
         guyTexture = gbTextureLoadNamed(GB_TEXTURE_NAME_GUY);
         guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
         guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
+}
 
-        dynamicEntityRegisterFuncs(
-                              DYNAMIC_ENTITY_TYPE_GUY,
-                              (DYNAMIC_ENTITY_THINK_FUNC)&guyThink,
-                              (DYNAMIC_ENTITY_RESPOND_FUNC)&guyRespond
-                              );
+void guyTeardown() {
+    gbTextureUnload(GB_TEXTURE_NAME_GUY);
+    gbAnimationUnload(guyAnimations[GUY_STATE_IDLE]);
+    gbAnimationUnload(guyAnimations[GUY_STATE_WALK]);
 }

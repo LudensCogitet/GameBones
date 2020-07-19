@@ -1,6 +1,8 @@
 #include "Room_sys.h"
 #include "Room_type.h"
 
+#include <stdlib.h>
+
 #include "../gbGfx/gbGfx_sys.h"
 #include "../Sprite/Sprite_sys.h"
 

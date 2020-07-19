@@ -39,7 +39,7 @@ void gbTextureUnload(unsigned int index) {
 }
 
 int gbTextureLoadFromSurface(SDL_Surface *surface) {
-    cursor = gbNextEmpty(gbTextures, cursor, GB_TEXTURE_MAX_TEXTURES);
+    cursor = gbNextEmpty((void **)gbTextures, cursor, GB_TEXTURE_MAX_TEXTURES);
     if (cursor == GB_TEXTURE_MAX_TEXTURES) {
         fprintf(stderr, "Failed to load texture: Texture limit reached");
         return -1;
@@ -63,6 +63,8 @@ int gbTextureLoadToIndexFromSurface(unsigned int index, SDL_Surface *surface) {
         fprintf(stderr, "Failed to generate texture from surface: %s", IMG_GetError());
         return -1;
     }
+
+    return index;
 }
 
 int gbTextureLoadFromFile(const char* filename) {
@@ -82,7 +84,7 @@ int gbTextureLoadFromFile(const char* filename) {
 
 int gbTextureLoadNamed(GB_TEXTURE_NAME name) {
     if (gbTextures[name]) {
-        return;
+        return name;
     }
 
     SDL_Surface *tempSurface = IMG_Load(gbTextureFilePaths[name]);
