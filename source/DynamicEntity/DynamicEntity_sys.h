@@ -36,6 +36,9 @@ void dynamicEntityRemove(unsigned int id);
 DynamicEntity *dynamicEntityFindById(unsigned int id);
 DynamicEntity *dynamicEntityFindOfType(DYNAMIC_ENTITY_TYPE type);
 
+void dynamicEntitySerializeAll(SDL_RWops *file);
+DynamicEntity *dynamicEntityDeserialize(SDL_RWops *file);
+
 void dynamicEntitySendMessage(Message message, unsigned int entityId);
 
 #endif // DYNAMIC_ENTITY_SYSTEM_H_INCLUDED

@@ -24,6 +24,8 @@
 #include "../Room/Room_type.h"
 #include "../Room/Room_sys.h"
 
+#include "../entities/Guy/entityGuy.h"
+
 #define EDITOR_MAX_STATIC_COLLIDERS 100
 
 typedef enum {
@@ -65,7 +67,9 @@ static int releaseY = -1;
 static unsigned int staticColliderCursor;
 static CollisionStaticRect *staticColliders[EDITOR_MAX_STATIC_COLLIDERS];
 
-Room currentRoom;
+static Room currentRoom;
+
+static DynamicEntity *guy = 0;
 
 // **UI**
 static int uiTexture;
@@ -97,6 +101,8 @@ static uint8_t textMode = 0;
 // Forward Declarations
 void handleTextInput();
 void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect, uint8_t active);
+void serializeRoom(char *filepath);
+void deserializeRoom(char *filepath);
 
 void editorInit() {
     modeButtonPosition = (Position) {GB_LOGICAL_SCREEN_WIDTH - (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0};
@@ -264,16 +270,19 @@ void editorUpdate() {
 
                 break;
             case PLACE_PLAYER: ;
-                DynamicEntity *player = dynamicEntityFindOfType(DYNAMIC_ENTITY_TYPE_GUY);
-                if (!player) break;
-
                 int x, y;
                 SDL_GetMouseState(&x, &y);
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
                 gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                player->pos.x = x;
-                player->pos.y = y;
+                if (!guy) {
+                    guyInit();
+                    guy = guyNew(x, y);
+                    dynamicEntityRegister(guy);
+                } else {
+                    guy->pos.x = x;
+                    guy->pos.y = y;
+                }
         }
     }
 
@@ -396,6 +405,13 @@ void serializeRoom(char *filepath) {
     // Write static colliders
     serializeStaticCollisionRects(file);
 
+    // SERIALIZE DYNAMIC ENTITIES
+    // Write signal
+    SDL_WriteBE16(file, SERIALIZE_DYNAMIC_ENTITIES);
+
+    // Write dynamic entities
+    dynamicEntitySerializeAll(file);
+
     // Write end signal
     SDL_WriteBE16(file, SERIALIZE_END);
 
@@ -428,6 +444,19 @@ void deserializeRoom(char *filepath) {
                         rect = deserializeStaticCollisionRect(file);
                         staticColliders[staticColliderCursor++] = rect;
                         collisionStaticRectRegister(rect);
+                    }
+                }
+            break;
+            case SERIALIZE_DYNAMIC_ENTITIES:
+                {
+                    uint16_t numEntities = SDL_ReadBE16(file);
+                    currentRoom.numEntities = numEntities;
+                    for (int i = 0; i < numEntities; i++) {
+                        DynamicEntity *entity = dynamicEntityDeserialize(file);
+                        currentRoom.entities[i] = entity;
+                        dynamicEntityRegister(entity);
+                        if (entity->type == DYNAMIC_ENTITY_TYPE_GUY)
+                            guy = entity;
                     }
                 }
             break;

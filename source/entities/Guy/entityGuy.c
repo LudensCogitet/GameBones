@@ -24,6 +24,7 @@
 
 #include "../../gbTexture/gbTextureName_enum.h"
 
+static int initialized = 0;
 static int guyTexture = -1;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
 
@@ -60,8 +61,6 @@ DynamicEntity *guyNew(double x, double y) {
 
     spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
     spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
-
-    dynamicEntityRegister(guy);
 
     guy->dx = 0;
     guy->dy = 0;
@@ -260,13 +259,17 @@ static void walk(DynamicEntity *guy, double delta) {
 
 
 void guyInit() {
-        guyTexture = gbTextureLoadNamed(GB_TEXTURE_NAME_GUY);
-        guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
-        guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
+    if (initialized) return;
+
+    guyTexture = gbTextureLoadNamed(GB_TEXTURE_NAME_GUY);
+    guyAnimations[GUY_STATE_IDLE] = gbAnimationNew(0, 0, 32, 0, 8, 1, 1, GB_ANIM_TYPE_LOOP);
+    guyAnimations[GUY_STATE_WALK] = gbAnimationNew(0, 0, 32, 0, 8, 8, 1, GB_ANIM_TYPE_LOOP);
+    initialized = 1;
 }
 
 void guyTeardown() {
     gbTextureUnload(GB_TEXTURE_NAME_GUY);
     gbAnimationUnload(guyAnimations[GUY_STATE_IDLE]);
     gbAnimationUnload(guyAnimations[GUY_STATE_WALK]);
+    initialized = 0;
 }

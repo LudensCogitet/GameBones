@@ -130,3 +130,41 @@ void dynamicEntityHandleMessages(double delta) {
         entities[i]->inboxCursor = 0;
     }
 }
+
+int getEntityCount() {
+    return cursor;
+}
+
+void dynamicEntitySerializeAll(SDL_RWops *file) {
+    if (!cursor) {
+        SDL_WriteBE16(file, 0);
+        return;
+    }
+
+    // Write number of entities
+    SDL_WriteBE16(file, cursor);
+
+    // Write each entity's data
+    for (int i = 0; i < cursor; i++) {
+        DynamicEntity *entity = entities[i];
+        SDL_WriteBE16(file, entity->type);
+        SDL_WriteBE64(file, entity->pos.x);
+        SDL_WriteBE64(file, entity->pos.y);
+        SDL_WriteBE32(file, entity->id);
+    }
+}
+
+DynamicEntity *dynamicEntityDeserialize(SDL_RWops *file) {
+    DYNAMIC_ENTITY_TYPE type = SDL_ReadBE16(file);
+    double x = SDL_ReadBE64(file);
+    double y = SDL_ReadBE64(file);
+    uint32_t id = SDL_ReadBE32(file);
+
+    dynamicEntityInits[type]();
+    DynamicEntity *entity = dynamicEntitySetups[type](x, y);
+    entity->id = id;
+
+    if (nextId <= id) nextId = id + 1;
+
+    return entity;
+}

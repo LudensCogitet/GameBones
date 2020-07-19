@@ -58,20 +58,6 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_MOUSE_ALT, SDL_BUTTON_RIGHT);
     gbInputSetKey(GB_INPUT_TOGGLE_EDIT_MODE, SDLK_TAB);
 
-    DynamicEntity *guy;
-
-//    SDL_RWops *file = SDL_RWFromFile("./player", "r");
-//    if (file) {
-//        guy = (DynamicEntity *)malloc(sizeof(DynamicEntity));
-//        SDL_RWread(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
-//        SDL_RWclose(file);
-//        file = 0;
-//
-//        dynamicEntityRegister(guy);
-//    } else {
-        guy = dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_GUY](GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3));
-//    }
-
     while (!done) {
         gbInputUpdate();
 
@@ -92,7 +78,7 @@ int main(int argc, char *argv[]) {
         secondCounter += delta;
         fps++;
         if (secondCounter > 1) {
-//            printf("FPS: %d\n", fps);
+            printf("FPS: %d\n", fps);
             fps = 0;
             secondCounter = 0;
         }
