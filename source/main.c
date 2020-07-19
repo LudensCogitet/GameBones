@@ -60,17 +60,17 @@ int main(int argc, char *argv[]) {
 
     DynamicEntity *guy;
 
-    SDL_RWops *file = SDL_RWFromFile("./player", "r");
-    if (file) {
-        guy = (DynamicEntity *)malloc(sizeof(DynamicEntity));
-        SDL_RWread(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
-        SDL_RWclose(file);
-        file = 0;
-
-        dynamicEntityRegister(guy);
-    } else {
+//    SDL_RWops *file = SDL_RWFromFile("./player", "r");
+//    if (file) {
+//        guy = (DynamicEntity *)malloc(sizeof(DynamicEntity));
+//        SDL_RWread(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
+//        SDL_RWclose(file);
+//        file = 0;
+//
+//        dynamicEntityRegister(guy);
+//    } else {
         guy = dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_GUY](GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * 3), GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * 3));
-    }
+//    }
 
     while (!done) {
         gbInputUpdate();
@@ -99,12 +99,12 @@ int main(int argc, char *argv[]) {
 
     }
 
-    file = SDL_RWFromFile("./player", "w");
-    if (file) {
-        SDL_RWwrite(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
-        SDL_RWclose(file);
-        file = 0;
-    }
+//    file = SDL_RWFromFile("./player", "w");
+//    if (file) {
+//        SDL_RWwrite(file, guy, sizeof(uint8_t), sizeof(DynamicEntity));
+//        SDL_RWclose(file);
+//        file = 0;
+//    }
 
     editorTeardown();
     collisionTeardown();

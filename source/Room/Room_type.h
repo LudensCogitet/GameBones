@@ -16,8 +16,8 @@ typedef struct {
     uint16_t x;
     uint16_t y;
 
-    uint8_t roomFilename[50];
-    uint8_t backgroundFilename[50];
+    char roomFilename[50];
+    char backgroundFilename[50];
     CollisionStaticRect staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
     DynamicEntityData entities[DYNAMIC_ENTITY_MAX_ENTITIES];
 } Room;

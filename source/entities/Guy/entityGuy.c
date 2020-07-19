@@ -56,11 +56,12 @@ DynamicEntity *guyNew(double x, double y) {
     printf("Guy count: %d\n", guyCount);
 
     DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
-    dynamicEntityRegister(guy);
     guy->pos = (Position){x, y};
 
     spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
     spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
+
+    dynamicEntityRegister(guy);
 
     guy->dx = 0;
     guy->dy = 0;

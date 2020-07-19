@@ -315,13 +315,36 @@ void collisionDebugDraw() {
     gbRendererResetDrawColor();
 }
 
-unsigned int serializeStaticCollisionRects(uint8_t *buffer) {
-    if (!staticColliderCursor) return 0;
-
-    buffer = (uint8_t *)malloc((sizeof(CollisionStaticRect) / sizeof(uint8_t)) * staticColliderCursor);
-    for (unsigned int i = 0; i < staticColliderCursor; i++) {
-        memcpy(buffer + i, (uint8_t *)staticColliders[i], sizeof(CollisionStaticRect) / sizeof(uint8_t));
+void serializeStaticCollisionRects(SDL_RWops *file) {
+    if (!staticColliderCursor) {
+        SDL_WriteBE16(file, 0);
+        return;
     }
 
-    return staticColliderCursor;
+    // Write number of colliders
+    SDL_WriteBE16(file, staticColliderCursor);
+
+    // Write each collider info
+    CollisionStaticRect *rect;
+    for (int i = 0; i < staticColliderCursor; i++) {
+        rect = staticColliders[i];
+
+        SDL_WriteU8(file, rect->active);
+        SDL_WriteBE64(file, rect->x1);
+        SDL_WriteBE64(file, rect->y1);
+        SDL_WriteBE64(file, rect->x2);
+        SDL_WriteBE64(file, rect->y2);
+    }
+}
+
+CollisionStaticRect *deserializeStaticCollisionRect(SDL_RWops *file) {
+    CollisionStaticRect *rect = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
+
+    rect->active = SDL_ReadU8(file);
+    rect->x1 = SDL_ReadBE64(file);
+    rect->y1 = SDL_ReadBE64(file);
+    rect->x2 = SDL_ReadBE64(file);
+    rect->y2 = SDL_ReadBE64(file);
+
+    return rect;
 }

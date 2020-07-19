@@ -27,6 +27,13 @@
 #define EDITOR_MAX_STATIC_COLLIDERS 100
 
 typedef enum {
+    SERIALIZE_STATIC_COLLIDERS,
+    SERIALIZE_DYNAMIC_ENTITIES,
+    SERIALIZE_BACKGROUND_NAME,
+    SERIALIZE_END
+} SERIALIZE_SIGNAL;
+
+typedef enum {
     NEW_ROOM,
     LOAD_ROOM,
     SAVE_ROOM,
@@ -365,32 +372,67 @@ void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colR
 }
 
 void serializeRoom(char *filepath) {
-    uint8_t *buffer;
-    uint16_t numStaticRects = serializeStaticCollisionRects(buffer);
+    SDL_RWops *file = SDL_RWFromFile(filepath, "wb");
 
-    SDL_RWops *file = SDL_RWFromFile(filepath, "w");
-    SDL_RWwrite(file, &numStaticRects, sizeof(uint8_t), 2);
-    SDL_RWwrite(file, buffer, sizeof(uint8_t) * numStaticRects, 1);
+    // SERIALIZE BACKGROUND FILEPATH
+    // Write signal
+    SDL_WriteBE16(file, SERIALIZE_BACKGROUND_NAME);
+
+    // Count filepath length
+    int charCount = 0;
+    while (currentRoom.backgroundFilename[charCount++] != '\0');
+
+    // Write filepath length
+    SDL_WriteBE16(file, charCount);
+
+    // Write filepath
+    for (int i = 0; i < charCount; i++)
+        SDL_WriteU8(file, (uint8_t)currentRoom.backgroundFilename[i]);
+
+    // SERIALIZE STATIC COLLIDERS
+    // Write signal
+    SDL_WriteBE16(file, SERIALIZE_STATIC_COLLIDERS);
+
+    // Write static colliders
+    serializeStaticCollisionRects(file);
+
+    // Write end signal
+    SDL_WriteBE16(file, SERIALIZE_END);
+
     SDL_RWclose(file);
 }
 
 void deserializeRoom(char *filepath) {
-    uint16_t numRects;
-    CollisionStaticRect *buffer;
-
     SDL_RWops *file = SDL_RWFromFile(filepath, "r");
-    SDL_RWread(file, &numRects, sizeof(uint8_t), 2);
+    uint16_t signal;
+    do {
+        signal = SDL_ReadBE16(file);
 
-    buffer = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect) * numRects);
+        switch (signal) {
+            case SERIALIZE_BACKGROUND_NAME:
+                {
+                    uint16_t filenameLength = SDL_ReadBE16(file);
+                    int i = 0;
+                    for (; i < filenameLength; i++)
+                        currentRoom.backgroundFilename[i] = SDL_ReadU8(file);
+                    currentRoom.backgroundFilename[i] = '\0';
 
-    SDL_RWread(file, buffer, sizeof(CollisionStaticRect), numRects);
+                    loadBackground(currentRoom.backgroundFilename);
+                }
+            break;
+            case SERIALIZE_STATIC_COLLIDERS:
+                {
+                    uint16_t numColliders = SDL_ReadBE16(file);
+                    CollisionStaticRect *rect;
+                    for (int i = 0; i < numColliders; i++) {
+                        rect = deserializeStaticCollisionRect(file);
+                        staticColliders[staticColliderCursor++] = rect;
+                        collisionStaticRectRegister(rect);
+                    }
+                }
+            break;
+        }
+    } while (signal != SERIALIZE_END);
+
     SDL_RWclose(file);
-
-    for (unsigned int i = 0; i < numRects; i++) {
-        staticColliders[staticColliderCursor] = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
-        memcpy(staticColliders[staticColliderCursor], buffer + i, sizeof(CollisionStaticRect));
-
-        collisionStaticRectRegister(staticColliders[staticColliderCursor]);
-        staticColliderCursor++;
-    }
 }

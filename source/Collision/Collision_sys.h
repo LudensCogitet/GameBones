@@ -45,7 +45,8 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
 CollisionStaticRect *collisionDetectPointCollision(int x, int y);
 CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y);
 
-unsigned int serializeStaticCollisionRects(uint8_t *buffer);
+void serializeStaticCollisionRects(SDL_RWops *file);
+CollisionStaticRect *deserializeStaticCollisionRect(SDL_RWops *file);
 void collisionDebugDraw();
 
 #endif // COLLISION_SYS_H_INCLUDED
