@@ -9,7 +9,7 @@ void guyTeardown();
 
 DynamicEntity *guyNew(double x, double y);
 
-void guyThink(DynamicEntity *guy, double delta);
-void guyRespond(DynamicEntity *guy, double delta);
+void guyThink(DynamicEntity *player, double delta);
+void guyRespond(DynamicEntity *player, double delta);
 
 #endif // GUY_ENTITY_H_INCLUDED

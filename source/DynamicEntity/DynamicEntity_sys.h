@@ -31,7 +31,7 @@ void dynamicEntityHandleMessages(double delta);
 
 DynamicEntity *dynamicEntityNew(DYNAMIC_ENTITY_TYPE type);
 int dynamicEntityRegister(DynamicEntity *entity);
-void dynamicEntityRemove(unsigned int id);
+void dynamicEntityUnregister(unsigned int id);
 
 DynamicEntity *dynamicEntityFindById(unsigned int id);
 DynamicEntity *dynamicEntityFindOfType(DYNAMIC_ENTITY_TYPE type);

@@ -45,38 +45,36 @@ static const uint8_t HIT_GROUND = COLLISION_TOP | COLLISION_Y_MARKED;
 static uint8_t grounded = 1;
 
 // Forward declarations
-static void idle(DynamicEntity *guy);
-static void walk(DynamicEntity *guy, double delta);
-static void handleInput(DynamicEntity *guy);
-static void handleMoveKeyDown(DynamicEntity *guy);
-static void handleMoveKeyUp(DynamicEntity *guy);
-static void setState(DynamicEntity *guy, GUY_STATE state);
+static void idle(DynamicEntity *player);
+static void walk(DynamicEntity *player, double delta);
+static void handleInput(DynamicEntity *player);
+static void handleMoveKeyDown(DynamicEntity *player);
+static void handleMoveKeyUp(DynamicEntity *player);
+static void setState(DynamicEntity *player, GUY_STATE state);
 
 DynamicEntity *guyNew(double x, double y) {
     guyCount++;
     printf("Guy count: %d\n", guyCount);
 
-    DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
-    guy->pos = (Position){x, y};
+    DynamicEntity *player = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
+    player->pos = (Position){x, y};
 
-    spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
-    spriteRegister(&guy->sprite, &guy->pos, SPRITE_LAYER_MIDGROUND);
+    spriteSet(&player->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
 
-    guy->dx = 0;
-    guy->dy = 0;
-    guy->ax = 0;
-    guy->ay = 0;
+    player->dx = 0;
+    player->dy = 0;
+    player->ax = 0;
+    player->ay = 0;
 
-    guy->state.guy.direction = 0;
-    guy->state.guy.moveKeysDown = 0;
+    player->state.guy.direction = 0;
+    player->state.guy.moveKeysDown = 0;
 
-    guy->state.guy.state = GUY_STATE_IDLE;
-    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
+    player->state.guy.state = GUY_STATE_IDLE;
+    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &player->sprite.src, &player->animState);
 
-    collisionDynamicRectSet(&guy->boundingBox, guy->id, 5, 0, 22, 31);
-    collisionDynamicRectRegister(&guy->boundingBox, &guy->pos);
+    collisionDynamicRectSet(&player->boundingBox, player->id, 5, 0, 22, 31);
 
-    return guy;
+    return player;
 }
 
 //void handleInput(Guy *guy) {
@@ -108,15 +106,15 @@ DynamicEntity *guyNew(double x, double y) {
 //    }
 //}
 
-void guyThink(DynamicEntity *guy, double delta) {
+void guyThink(DynamicEntity *player, double delta) {
     // INPUT
     int xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_JUST_PRESSED) ? -1   :
                 gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_JUST_PRESSED) ? 1   :
                 0;
 
     if (xMove) {
-        guy->sprite.flip = xMove < 0;
-        setState(guy, GUY_STATE_WALK);
+        player->sprite.flip = xMove < 0;
+        setState(player, GUY_STATE_WALK);
     } else {
         xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_PRESSED) ? -1   :
                 gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_PRESSED) ? 1   :
@@ -124,80 +122,80 @@ void guyThink(DynamicEntity *guy, double delta) {
     }
 
     if (xMove) {
-        guy->ax = xMove * walkAcceleration;
+        player->ax = xMove * walkAcceleration;
     } else {
         xMove = gbInputCheckState(GB_INPUT_MOVE_LEFT, GB_INPUT_RELEASED) ? -1 :
                 gbInputCheckState(GB_INPUT_MOVE_RIGHT, GB_INPUT_RELEASED) ? 1 :
                 0;
 
         if (xMove) {
-            if ((xMove > 0) - (xMove < 0) != (guy->dx > 0) - (guy->dx < 0)) {
-                guy->ax = xMove > 0 ? stopAcceleration : -stopAcceleration;
+            if ((xMove > 0) - (xMove < 0) != (player->dx > 0) - (player->dx < 0)) {
+                player->ax = xMove > 0 ? stopAcceleration : -stopAcceleration;
             } else {
-                guy->ax = xMove > 0 ? -stopAcceleration : stopAcceleration;
+                player->ax = xMove > 0 ? -stopAcceleration : stopAcceleration;
             }
         }
     }
 
     if (grounded) {
         if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_PRESSED)) {
-            guy->dy = -250;
+            player->dy = -250;
         }
     }
 
     // MOVEMENT PHYSICS
-    double oldVelocity = guy->dx;
-    guy->dx += (guy->ax * delta);
+    double oldVelocity = player->dx;
+    player->dx += (player->ax * delta);
 
-    if (guy->dx > maxVelocity) {
-        guy->dx = maxVelocity;
-    } else if (guy->dx < -maxVelocity) {
-        guy->dx = -maxVelocity;
+    if (player->dx > maxVelocity) {
+        player->dx = maxVelocity;
+    } else if (player->dx < -maxVelocity) {
+        player->dx = -maxVelocity;
     }
 
     int oldSign = (int)(oldVelocity > 0) - (oldVelocity < 0);
-    int newSign = (int)(guy->dx > 0) - (guy->dx < 0);
+    int newSign = (int)(player->dx > 0) - (player->dx < 0);
 
     oldSign = !oldSign ? 1 : oldSign;
     newSign = !newSign ? 1 : newSign;
 
-    if (!xMove && oldVelocity != 0 && guy->dx != 0 && oldSign + newSign == 0) {
-        guy->dx = 0;
-        guy->ax = 0;
-        guy->state.guy.state = GUY_STATE_IDLE;
-        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
+    if (!xMove && oldVelocity != 0 && player->dx != 0 && oldSign + newSign == 0) {
+        player->dx = 0;
+        player->ax = 0;
+        player->state.guy.state = GUY_STATE_IDLE;
+        gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &player->sprite.src, &player->animState);
     }
 
-    switch (guy->state.guy.state) {
+    switch (player->state.guy.state) {
         case GUY_STATE_IDLE:
-            idle(guy);
+            idle(player);
             break;
         case GUY_STATE_WALK:
-            walk(guy, delta);
+            walk(player, delta);
             break;
     }
 
-    guy->pos.y += guy->dy * delta;
-    guy->dy += dropVelocity * delta;
+    player->pos.y += player->dy * delta;
+    player->dy += dropVelocity * delta;
 
-    gbAnimationApply(&guy->sprite.src, delta, &guy->animState, guyAnimations[guy->state.guy.state]);
+    gbAnimationApply(&player->sprite.src, delta, &player->animState, guyAnimations[player->state.guy.state]);
 
     unsigned int index = 0;
     uint8_t collData = 0;
 
     grounded = 0;
 
-    while (index = collisionResolveStaticCollisions(index, &guy->boundingBox, guy->dx, guy->dy, &collData)) {
+    while (index = collisionResolveStaticCollisions(index, &player->boundingBox, player->dx, player->dy, &collData)) {
         if ((collData & HIT_GROUND) == HIT_GROUND) {
-            if (guy->dy > 0) {
-                guy->dy = 0;
+            if (player->dy > 0) {
+                player->dy = 0;
                 grounded = 1;
             }
         }
     }
 }
 
-void guyRespond(DynamicEntity *guy, double delta) {
+void guyRespond(DynamicEntity *player, double delta) {
 
 }
 
@@ -213,18 +211,18 @@ void guyRespond(DynamicEntity *guy, double delta) {
 //    printf("guyCount: %d", guyCount);
 //}
 
-static void setState(DynamicEntity *guy, GUY_STATE state) {
-    guy->state.guy.state = state;
+static void setState(DynamicEntity *player, GUY_STATE state) {
+    player->state.guy.state = state;
 
-    gbAnimationStateInit(guyAnimations[state], &guy->sprite.src, &guy->animState);
+    gbAnimationStateInit(guyAnimations[state], &player->sprite.src, &player->animState);
 }
 
-static void idle(DynamicEntity *guy) {
+static void idle(DynamicEntity *player) {
     //handleMoveKeyDown(guy);
 }
 
-static void walk(DynamicEntity *guy, double delta) {
-   guy->pos.x += guy->dx * delta;
+static void walk(DynamicEntity *player, double delta) {
+   player->pos.x += player->dx * delta;
 }
 
 //static void handleMoveKeyDown(Guy *guy) {

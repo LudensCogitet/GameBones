@@ -39,18 +39,28 @@ void collisionInit() {
     }
 }
 
-void collisionTeardown() {
+void collisionDynamicTeardown() {
     for (unsigned i = 0; i < dynamicColliderCursor; i++) {
         dynamicColliders[i] = 0;
     }
+    dynamicColliderCursor = 0;
+}
 
+void collisionStaticTeardown() {
     for (unsigned i = 0; i < staticColliderCursor; i++) {
         staticColliders[i] = 0;
     }
+    staticColliderCursor = 0;
+}
+
+void collisionTeardown() {
+    collisionDynamicTeardown();
+    collisionStaticTeardown();
 
     for (unsigned i = 0; i < passiveColliderCursor; i++) {
         passiveColliders[i] = 0;
     }
+    passiveColliderCursor = 0;
 }
 
 void collisionDynamicRectSet(

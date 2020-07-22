@@ -37,7 +37,6 @@ void dynamicEntityInit() {
 void dynamicEntityTeardown() {
     for (unsigned int i = 0; i < cursor; i++) {
         if(entities[i]) {
-            free(entities[i]);
             entities[i] = 0;
         }
     }
@@ -69,13 +68,19 @@ int dynamicEntityRegister(DynamicEntity *entity) {
     return cursor++;
 }
 
-void dynamicEntityRemove(unsigned int id) {
+void dynamicEntityUnregister(unsigned int id) {
     unsigned int index = 0;
     for (; index < cursor; index++) {
-        if (entities[index] && entities[index]->id == id) {
-            free(entities[index]);
-        }
+        if (entities[index] && entities[index]->id == id)
+            break;
     }
+
+    if (index == cursor) return;
+
+    spriteUnregister(&entities[index]->sprite);
+    collisionDynamicRectUnregister(&entities[index]->boundingBox);
+
+    entities[index] = 0;
 
     if (--cursor > 0) {
         entities[index] = entities[cursor];

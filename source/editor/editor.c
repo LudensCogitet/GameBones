@@ -26,7 +26,7 @@
 
 #include "../entities/Guy/entityGuy.h"
 
-#define EDITOR_MAX_STATIC_COLLIDERS 100
+#define EDITOR_MAX_STATIC_COLLIDERS 50
 
 typedef enum {
     SERIALIZE_STATIC_COLLIDERS,
@@ -64,12 +64,11 @@ static int dragY = -1;
 static int releaseX = -1;
 static int releaseY = -1;
 
-static unsigned int staticColliderCursor;
-static CollisionStaticRect *staticColliders[EDITOR_MAX_STATIC_COLLIDERS];
-
 static Room currentRoom;
+static DynamicEntity *player = 0;
 
-static DynamicEntity *guy = 0;
+static unsigned int uiColliderCursor = 0;
+static CollisionStaticRect *uiColliders[EDITOR_MAX_STATIC_COLLIDERS];
 
 // **UI**
 static int uiTexture;
@@ -109,9 +108,14 @@ void editorInit() {
     buttonX[PLACE_STATIC_GEOMETRY] = 0;
     buttonX[PLACE_PLAYER] = buttonSrcWidth;
 
-    staticColliderCursor = 0;
-    for (unsigned int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
-        staticColliders[i] = 0;
+    uiColliderCursor = 0;
+    currentRoom.numColliders = 0;
+    for (unsigned int i = 0; i < COLLISION_MAX_STATIC_COLLIDERS; i++) {
+        currentRoom.staticColliders[i] = 0;
+    }
+
+    for (int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
+        uiColliders[i] = 0;
     }
 
     uiTexture = gbTextureLoadFromFile("./assets/UIButtons-sheet.png");
@@ -178,13 +182,32 @@ void editorTeardown() {
     free(inputFieldText);
     inputFieldText = 0;
 
-    for (unsigned int i = 0; i < staticColliderCursor; i++) {
-        if (staticColliders[i]) {
-            collisionStaticRectPassiveUnregister(staticColliders[i]);
-            free(staticColliders[i]);
-            staticColliders[i] = 0;
+    for (unsigned int i = 0; i < currentRoom.numColliders; i++) {
+        if (currentRoom.staticColliders[i]) {
+            collisionStaticRectUnregister(currentRoom.staticColliders[i]);
+            free(currentRoom.staticColliders[i]);
+            currentRoom.staticColliders[i] = 0;
         }
     }
+    currentRoom.numColliders = 0;
+
+    for (unsigned int i = 0; i < currentRoom.numEntities; i++) {
+        if (currentRoom.entities[i]) {
+            dynamicEntityUnregister(currentRoom.entities[i]->id);
+
+        }
+    }
+
+    for (unsigned int i = 0; i < uiColliderCursor; i++) {
+        if (uiColliders[i]) {
+            collisionStaticRectPassiveUnregister(uiColliders[i]);
+            free(uiColliders[i]);
+            uiColliders[i] = 0;
+        }
+    }
+
+
+    uiColliderCursor = 0;
 
     modeButtonHitbox = 0;
     inputFieldHitbox = 0;
@@ -263,7 +286,7 @@ void editorUpdate() {
                 gbGfxGridSquareToWorldCoords(x2, y2, &x2, &y2, 1);
 
                 CollisionStaticRect *rect = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
-                staticColliders[staticColliderCursor++] = rect;
+                currentRoom.staticColliders[currentRoom.numColliders++] = rect;
 
                 collisionStaticRectSet(rect, x1 < x2 ? x1 : x2, y1 < y2 ? y1 : y2, x2 > x1 ? x2 : x1, y2 > y1 ? y2 : y1, 1);
                 collisionStaticRectRegister(rect);
@@ -275,13 +298,13 @@ void editorUpdate() {
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
                 gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                if (!guy) {
+                if (!player) {
                     guyInit();
-                    guy = guyNew(x, y);
-                    dynamicEntityRegister(guy);
+                    player = guyNew(x, y);
+                    dynamicEntityRegister(player);
                 } else {
-                    guy->pos.x = x;
-                    guy->pos.y = y;
+                    player->pos.x = x;
+                    player->pos.y = y;
                 }
         }
     }
@@ -294,16 +317,18 @@ void editorUpdate() {
                 CollisionStaticRect *collider = collisionDetectPointCollision(x, y);
                 if (!collider) break;
 
-                for (unsigned int i = 0; i < staticColliderCursor; i++) {
-                    if (staticColliders[i] != collider) continue;
+                for (unsigned int i = 0; i < currentRoom.numColliders; i++) {
+                    if (currentRoom.staticColliders[i] != collider) continue;
 
-                    collisionStaticRectUnregister(staticColliders[i]);
-                    free(staticColliders[i]);
+                    collisionStaticRectUnregister(currentRoom.staticColliders[i]);
+                    free(currentRoom.staticColliders[i]);
 
-                    if (--staticColliderCursor > 0)
-                        staticColliders[i] = staticColliders[staticColliderCursor];
+                    currentRoom.staticColliders[i] = 0;
 
-                    staticColliders[staticColliderCursor] = 0;
+                    if (--currentRoom.numColliders > 0)
+                        currentRoom.staticColliders[i] = currentRoom.staticColliders[currentRoom.numColliders];
+
+                    currentRoom.staticColliders[currentRoom.numColliders] = 0;
                     break;
                 }
         }
@@ -346,6 +371,9 @@ void handleTextInput() {
             inputFieldHitbox->active = 0;
             inputFieldBackground->active = 0;
             inputFieldText->sprite.active = 0;
+
+            if (buffer[0] == '\0') return;
+
             switch (selectedMenuItem) {
                 case SAVE_ROOM:
                     serializeRoom(&buffer);
@@ -362,7 +390,6 @@ void handleTextInput() {
                     }
                 break;
             }
-
         }
     }
 }
@@ -377,7 +404,11 @@ void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colR
                                      active);
     collisionStaticRectPassiveRegister(*colRect);
 
-    staticColliders[staticColliderCursor++] = *colRect;
+    uiColliders[uiColliderCursor++] = *colRect;
+}
+
+void clearRoom() {
+
 }
 
 void serializeRoom(char *filepath) {
@@ -421,6 +452,14 @@ void serializeRoom(char *filepath) {
 void deserializeRoom(char *filepath) {
     SDL_RWops *file = SDL_RWFromFile(filepath, "r");
     uint16_t signal;
+
+    collisionStaticTeardown();
+    collisionDynamicTeardown();
+    dynamicEntityTeardown();
+
+
+
+    player = 0;
     do {
         signal = SDL_ReadBE16(file);
 
@@ -442,7 +481,7 @@ void deserializeRoom(char *filepath) {
                     CollisionStaticRect *rect;
                     for (int i = 0; i < numColliders; i++) {
                         rect = deserializeStaticCollisionRect(file);
-                        staticColliders[staticColliderCursor++] = rect;
+                        currentRoom.staticColliders[currentRoom.numColliders++] = rect;
                         collisionStaticRectRegister(rect);
                     }
                 }
@@ -456,7 +495,7 @@ void deserializeRoom(char *filepath) {
                         currentRoom.entities[i] = entity;
                         dynamicEntityRegister(entity);
                         if (entity->type == DYNAMIC_ENTITY_TYPE_GUY)
-                            guy = entity;
+                            player = entity;
                     }
                 }
             break;

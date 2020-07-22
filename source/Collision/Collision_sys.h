@@ -24,6 +24,9 @@
 void collisionInit();
 void collisionTeardown();
 
+void collisionStaticTeardown();
+void collisionDynamicTeardown();
+
 void collisionDynamicRectSet(
                              CollisionDynamicRect *rect,
                              unsigned int entityId,
