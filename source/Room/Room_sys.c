@@ -26,6 +26,8 @@ int loadBackground(char *filename) {
 
     if (!backgroundSprite) {
         backgroundSprite = (Sprite *)malloc(sizeof(Sprite));
+    } else {
+        backgroundSprite->active = 1;
     }
 
     spriteSet(
@@ -46,8 +48,9 @@ int loadBackground(char *filename) {
 }
 
 void unloadBackground() {
-    if (backgroundSprite) {
+    if (backgroundSprite && backgroundSprite->active) {
         spriteUnregister(backgroundSprite);
+        backgroundSprite->active = 0;
         gbTextureUnload(backgroundTextureId);
         backgroundTextureId = -1;
     }

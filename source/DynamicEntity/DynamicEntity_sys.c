@@ -82,7 +82,7 @@ void dynamicEntityUnregister(unsigned int id) {
 
     entities[index] = 0;
 
-    if (--cursor > 0) {
+    if (--cursor > 0 && cursor != index) {
         entities[index] = entities[cursor];
     }
 

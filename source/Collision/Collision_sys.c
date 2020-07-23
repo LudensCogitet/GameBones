@@ -97,7 +97,7 @@ void collisionDynamicRectUnregister(CollisionDynamicRect *rect) {
     dynamicColliderPositions[index] = 0;
     dynamicColliders[index] = 0;
 
-    if (--dynamicColliderCursor > 0) {
+    if (--dynamicColliderCursor > 0 && dynamicColliderCursor != index) {
         dynamicColliders[index] = dynamicColliders[dynamicColliderCursor];
         dynamicColliderPositions[index] = dynamicColliderPositions[dynamicColliderCursor];
         dynamicColliders[index]->index = index;
@@ -133,7 +133,7 @@ void collisionStaticRectUnregister(CollisionStaticRect *rect) {
 
     staticColliders[index] = 0;
 
-    if (--staticColliderCursor > 0) {
+    if (--staticColliderCursor > 0 && staticColliderCursor != index) {
         staticColliders[index] = staticColliders[staticColliderCursor];
     }
 
@@ -158,7 +158,7 @@ void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect) {
 
     passiveColliders[index] = 0;
 
-    if (--passiveColliderCursor > 0) {
+    if (--passiveColliderCursor > 0 && passiveColliderCursor != index) {
         passiveColliders[index] = passiveColliders[passiveColliderCursor];
     }
 

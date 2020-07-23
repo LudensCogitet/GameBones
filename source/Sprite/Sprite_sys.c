@@ -70,7 +70,6 @@ int spriteRegister(Sprite *sprite, Position *pos) {
     }
 
     sprite->id = cursors[layer];
-    sprite->layer = layer;
 
     positions[layer][cursors[layer]] = pos;
     sprites[layer][cursors[layer]] = sprite;
@@ -85,9 +84,10 @@ void spriteUnregister(Sprite *sprite) {
     positions[layer][index] = 0;
     sprites[layer][index] = 0;
 
-    if (--cursors[layer] > 0) {
+    if (--cursors[layer] > 0 && cursors[layer] != index) {
         positions[layer][index] = positions[layer][cursors[layer]];
         sprites[layer][index] = sprites[layer][cursors[layer]];
+        sprites[layer][index]->id = index;
     }
 
     positions[layer][cursors[layer]] = 0;
