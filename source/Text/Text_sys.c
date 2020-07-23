@@ -25,10 +25,11 @@ void textNew(Text *textStruct,
               0, 0, w, h,
               w / gbScaleFactorX,
               h / gbScaleFactorY,
+              layer,
               active,
               fixed,
               SDL_FLIP_NONE);
-    spriteRegister(&textStruct->sprite, &textStruct->pos, layer);
+    spriteRegister(&textStruct->sprite, &textStruct->pos);
 }
 
 void textDelete(Text *textGraphic) {

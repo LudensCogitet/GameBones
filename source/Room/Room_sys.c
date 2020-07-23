@@ -15,15 +15,14 @@ void unloadBackground();
 int loadBackground(char *filename);
 
 int loadBackground(char *filename) {
-    int oldTextureId = backgroundTextureId;
-    backgroundTextureId = gbTextureLoadFromFile(filename);
+    int newTextureId = gbTextureLoadFromFile(filename);
 
-    if (backgroundTextureId < 0) {
-        backgroundTextureId = oldTextureId;
+    if (newTextureId < 0) {
         return 0;
     }
 
-    unloadBackground(oldTextureId);
+    unloadBackground();
+    backgroundTextureId = newTextureId;
 
     if (!backgroundSprite) {
         backgroundSprite = (Sprite *)malloc(sizeof(Sprite));
@@ -34,14 +33,14 @@ int loadBackground(char *filename) {
               backgroundTextureId,
               0, 0, 640, 640,
               GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH, GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT,
-              1, 1, SDL_FLIP_NONE
+              SPRITE_LAYER_BACKGROUND, 1, 1, SDL_FLIP_NONE
               );
     int x, y;
     gbGfxGridSquareToWorldCoords(0, 0, &x, &y, 0);
     backgroundPos.x = x;
     backgroundPos.y = y;
 
-    spriteRegister(backgroundSprite, &backgroundPos, SPRITE_LAYER_BACKGROUND);
+    spriteRegister(backgroundSprite, &backgroundPos);
 
     return 1;
 }
@@ -50,7 +49,6 @@ void unloadBackground() {
     if (backgroundSprite) {
         spriteUnregister(backgroundSprite);
         gbTextureUnload(backgroundTextureId);
-        backgroundSprite = 0;
-        backgroundTextureId = 0;
+        backgroundTextureId = -1;
     }
 }

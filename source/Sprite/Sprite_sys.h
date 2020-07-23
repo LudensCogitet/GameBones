@@ -19,11 +19,12 @@ void spriteSet(Sprite *sprite,
 
                 int w,
                 int h,
+                SPRITE_LAYER layer,
                 uint8_t active,
                 uint8_t fixed,
                 SDL_RendererFlip flip);
 
-void spriteRegister(Sprite *sprite, Position *pos, SPRITE_LAYER layer);
+void spriteRegister(Sprite *sprite, Position *pos);
 void spriteUnregister(Sprite *sprite);
 void spriteDraw();
 

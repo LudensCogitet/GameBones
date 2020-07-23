@@ -134,11 +134,11 @@ void editorInit() {
                   i * buttonSrcWidth, 0,
                   buttonSrcWidth, buttonSrcHeight,
                   (GB_LOGICAL_SCREEN_WIDTH / 7.27), (GB_LOGICAL_SCREEN_HEIGHT / 11.25),
-                  1, 1, SDL_FLIP_NONE);
+                  SPRITE_LAYER_FOREGROUND, 1, 1, SDL_FLIP_NONE);
         menuPositions[i] = (Position *)malloc(sizeof(Position));
         menuPositions[i]->x = 0;
         menuPositions[i]->y = i * GB_LOGICAL_SCREEN_HEIGHT / 11.25;
-        spriteRegister(menuSprites[i], menuPositions[i], SPRITE_LAYER_FOREGROUND);
+        spriteRegister(menuSprites[i], menuPositions[i]);
         addHitboxToButton(menuPositions[i], menuSprites[i], menuHitboxes + i, 1);
     }
 
@@ -149,8 +149,8 @@ void editorInit() {
               buttonX[mode], buttonSrcHeight,
               buttonSrcWidth, buttonSrcHeight,
               buttonSrcWidth, buttonSrcHeight,
-              1, 1, SDL_FLIP_NONE);
-    spriteRegister(modeButtonSprite, &modeButtonPosition, SPRITE_LAYER_FOREGROUND);
+              SPRITE_LAYER_FOREGROUND, 1, 1, SDL_FLIP_NONE);
+    spriteRegister(modeButtonSprite, &modeButtonPosition);
 
     addHitboxToButton(
                       &modeButtonPosition,
@@ -165,8 +165,8 @@ void editorInit() {
               inputFieldSrcPosition.x, inputFieldSrcPosition.y,
               inputFieldSrcWidth, inputFieldSrcHeight,
               GB_LOGICAL_SCREEN_WIDTH / 2 , GB_LOGICAL_SCREEN_HEIGHT / 11.25,
-              0, 1, SDL_FLIP_NONE);
-    spriteRegister(inputFieldBackground, &inputFieldPosition, SPRITE_LAYER_MIDGROUND);
+              SPRITE_LAYER_MIDGROUND, 0, 1, SDL_FLIP_NONE);
+    spriteRegister(inputFieldBackground, &inputFieldPosition);
 
     inputFieldText = (Text*)malloc(sizeof(Text));
     textNew(inputFieldText, " ", GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, GB_SPRITE_LAYER_FOREGROUND, inputFieldPosition.x + 10, inputFieldPosition.y + 15, 1, 1);
@@ -299,6 +299,7 @@ void editorUpdate() {
                 if (!player) {
                     guyInit();
                     player = guyNew(x, y);
+                    currentRoom.entities[currentRoom.numEntities++] = player;
                     dynamicEntityRegister(player);
                 } else {
                     player->pos.x = x;
@@ -417,10 +418,11 @@ void clearRoom() {
     player = 0;
 
     for (int i = 0; i < currentRoom.numColliders; i++) {
-        collisionStaticRectUnregister(&currentRoom.staticColliders[i]);
+        collisionStaticRectUnregister(currentRoom.staticColliders[i]);
         free(currentRoom.staticColliders[i]);
         currentRoom.staticColliders[i] = 0;
     }
+    currentRoom.numColliders = 0;
 }
 
 void serializeRoom(char *filepath) {

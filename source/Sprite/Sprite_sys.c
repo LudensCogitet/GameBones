@@ -43,6 +43,7 @@ void spriteSet(Sprite *sprite,
 
                 int w,
                 int h,
+                SPRITE_LAYER layer,
                 uint8_t active,
                 uint8_t fixed,
                 SDL_RendererFlip flip) {
@@ -56,12 +57,14 @@ void spriteSet(Sprite *sprite,
     sprite->width    = w;
     sprite->height   = h;
 
+    sprite->layer = layer;
     sprite->active = active;
     sprite->fixed = fixed;
     sprite->flip = flip;
 }
 
-int spriteRegister(Sprite *sprite, Position *pos, SPRITE_LAYER layer) {
+int spriteRegister(Sprite *sprite, Position *pos) {
+    SPRITE_LAYER layer = sprite->layer;
     if (cursors[layer] >= SPRITE_MAX_PER_LAYER) {
         return 0;
     }

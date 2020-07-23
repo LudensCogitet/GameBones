@@ -62,7 +62,7 @@ int dynamicEntityRegister(DynamicEntity *entity) {
         nextId = entity->id + 1;
 
     entities[cursor] = entity;
-    spriteRegister(&entity->sprite, &entity->pos, entity->sprite.layer);
+    spriteRegister(&entity->sprite, &entity->pos);
     collisionDynamicRectRegister(&entity->boundingBox, &entity->pos);
 
     return cursor++;
