@@ -46,9 +46,11 @@ int loadBackground(char *filename) {
     return 1;
 }
 
-void unloadBackground(int textureId) {
+void unloadBackground() {
     if (backgroundSprite) {
         spriteUnregister(backgroundSprite);
-        gbTextureUnload(textureId);
+        gbTextureUnload(backgroundTextureId);
+        backgroundSprite = 0;
+        backgroundTextureId = 0;
     }
 }

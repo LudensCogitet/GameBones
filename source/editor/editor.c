@@ -97,6 +97,8 @@ static CollisionStaticRect *inputFieldHitbox;
 static Sprite *inputFieldBackground;
 static uint8_t textMode = 0;
 
+static char roomFilepath[50] = {'\0'};
+
 // Forward Declarations
 void handleTextInput();
 void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect, uint8_t active);
@@ -112,6 +114,11 @@ void editorInit() {
     currentRoom.numColliders = 0;
     for (unsigned int i = 0; i < COLLISION_MAX_STATIC_COLLIDERS; i++) {
         currentRoom.staticColliders[i] = 0;
+    }
+
+    currentRoom.numEntities = 0;
+    for (unsigned int i = 0; i < DYNAMIC_ENTITY_MAX_ENTITIES; i++) {
+        currentRoom.entities[i] = 0;
     }
 
     for (int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
@@ -182,21 +189,7 @@ void editorTeardown() {
     free(inputFieldText);
     inputFieldText = 0;
 
-    for (unsigned int i = 0; i < currentRoom.numColliders; i++) {
-        if (currentRoom.staticColliders[i]) {
-            collisionStaticRectUnregister(currentRoom.staticColliders[i]);
-            free(currentRoom.staticColliders[i]);
-            currentRoom.staticColliders[i] = 0;
-        }
-    }
-    currentRoom.numColliders = 0;
-
-    for (unsigned int i = 0; i < currentRoom.numEntities; i++) {
-        if (currentRoom.entities[i]) {
-            dynamicEntityUnregister(currentRoom.entities[i]->id);
-
-        }
-    }
+    clearRoom();
 
     for (unsigned int i = 0; i < uiColliderCursor; i++) {
         if (uiColliders[i]) {
@@ -245,14 +238,19 @@ void editorUpdate() {
 
         for (int i = 0; i < NUM_MENU_ITEMS; i++) {
             if (menuHitboxes[i] == collider) {
+                int clearTextBuffer = selectedMenuItem != i;
                 switch (i) {
                     case NEW_ROOM:
-                        printf("New Room %d %d %f\n", i, NEW_ROOM, menuPositions[i]->y);
-                        break;
+                        clearRoom();
+                    break;
                     case SAVE_ROOM:
+                        if (selectedMenuItem == LOAD_ROOM)
+                            clearTextBuffer = 0;
                     case LOAD_ROOM:
+                        if (selectedMenuItem == SAVE_ROOM)
+                            clearTextBuffer = 0;
                     case LOAD_BG:
-                        if (selectedMenuItem != i) {
+                        if (clearTextBuffer) {
                             gbInputClearTextInput();
                             textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, "");
                         }
@@ -263,7 +261,7 @@ void editorUpdate() {
                         textMode = 1;
                         gbInputStartTextInput(SDLK_RETURN);
                         handleTextInput();
-                        break;
+                    break;
                 }
             }
         }
@@ -408,7 +406,21 @@ void addHitboxToButton(Position *pos, Sprite *button, CollisionStaticRect **colR
 }
 
 void clearRoom() {
+    unloadBackground();
 
+    for (int i = 0; i < currentRoom.numEntities; i++) {
+        dynamicEntityUnregister(currentRoom.entities[i]->id);
+        free(currentRoom.entities[i]);
+        currentRoom.entities[i] = 0;
+    }
+    currentRoom.numEntities = 0;
+    player = 0;
+
+    for (int i = 0; i < currentRoom.numColliders; i++) {
+        collisionStaticRectUnregister(&currentRoom.staticColliders[i]);
+        free(currentRoom.staticColliders[i]);
+        currentRoom.staticColliders[i] = 0;
+    }
 }
 
 void serializeRoom(char *filepath) {
@@ -453,13 +465,8 @@ void deserializeRoom(char *filepath) {
     SDL_RWops *file = SDL_RWFromFile(filepath, "r");
     uint16_t signal;
 
-    collisionStaticTeardown();
-    collisionDynamicTeardown();
-    dynamicEntityTeardown();
+    clearRoom();
 
-
-
-    player = 0;
     do {
         signal = SDL_ReadBE16(file);
 

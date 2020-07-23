@@ -59,8 +59,6 @@ DynamicEntity *guyNew(double x, double y) {
     DynamicEntity *player = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
     player->pos = (Position){x, y};
 
-    spriteSet(&player->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
-
     player->dx = 0;
     player->dy = 0;
     player->ax = 0;
@@ -72,6 +70,7 @@ DynamicEntity *guyNew(double x, double y) {
     player->state.guy.state = GUY_STATE_IDLE;
     gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &player->sprite.src, &player->animState);
 
+    spriteSet(&player->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&player->boundingBox, player->id, 5, 0, 22, 31);
 
     return player;

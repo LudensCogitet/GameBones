@@ -7,6 +7,9 @@
 #include "../DynamicEntity/DynamicEntity_sys.h"
 #include "../DynamicEntity/DynamicEntity_type.h"
 
+#define ROOM_FILENAME_SIZE_MAX 50
+#define ROOM_BACKGROUND_FILENAME_SIZE_MAX 50
+
 typedef struct {
     Position pos;
     uint32_t type;
@@ -16,8 +19,8 @@ typedef struct {
     int x;
     int y;
 
-    char roomFilename[50];
-    char backgroundFilename[50];
+    char roomFilename[ROOM_FILENAME_SIZE_MAX];
+    char backgroundFilename[ROOM_BACKGROUND_FILENAME_SIZE_MAX];
 
     int numColliders;
     CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
