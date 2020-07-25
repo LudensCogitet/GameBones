@@ -140,18 +140,18 @@ int getEntityCount() {
     return cursor;
 }
 
-void dynamicEntitySerializeAll(SDL_RWops *file) {
-    if (!cursor) {
+void dynamicEntitySerializeAll(DynamicEntity **toSerialize, unsigned int count, SDL_RWops *file) {
+    if (!count) {
         SDL_WriteBE16(file, 0);
         return;
     }
 
     // Write number of entities
-    SDL_WriteBE16(file, cursor);
+    SDL_WriteBE16(file, count);
 
     // Write each entity's data
-    for (int i = 0; i < cursor; i++) {
-        DynamicEntity *entity = entities[i];
+    for (int i = 0; i < count; i++) {
+        DynamicEntity *entity = toSerialize[i];
         SDL_WriteBE16(file, entity->type);
         SDL_WriteBE64(file, entity->pos.x);
         SDL_WriteBE64(file, entity->pos.y);

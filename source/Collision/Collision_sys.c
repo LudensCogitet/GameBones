@@ -325,19 +325,19 @@ void collisionDebugDraw() {
     gbRendererResetDrawColor();
 }
 
-void serializeStaticCollisionRects(SDL_RWops *file) {
-    if (!staticColliderCursor) {
+void serializeStaticCollisionRects(CollisionStaticRect **rects, unsigned int numRects, SDL_RWops *file) {
+    if (!numRects) {
         SDL_WriteBE16(file, 0);
         return;
     }
 
     // Write number of colliders
-    SDL_WriteBE16(file, staticColliderCursor);
+    SDL_WriteBE16(file, numRects);
 
     // Write each collider info
     CollisionStaticRect *rect;
-    for (int i = 0; i < staticColliderCursor; i++) {
-        rect = staticColliders[i];
+    for (int i = 0; i < numRects; i++) {
+        rect = rects[i];
 
         SDL_WriteU8(file, rect->active);
         SDL_WriteBE64(file, rect->x1);

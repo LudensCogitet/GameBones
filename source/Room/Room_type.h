@@ -11,16 +11,14 @@
 #define ROOM_BACKGROUND_FILENAME_SIZE_MAX 50
 
 typedef struct {
-    Position pos;
-    uint32_t type;
-} DynamicEntityData;
-
-typedef struct {
-    int x;
-    int y;
-
     char roomFilename[ROOM_FILENAME_SIZE_MAX];
     char backgroundFilename[ROOM_BACKGROUND_FILENAME_SIZE_MAX];
+
+    int backgroundTextureId;
+    Position backgroundPos;
+    Sprite backgroundSprite;
+
+    DynamicEntity *player;
 
     int numColliders;
     CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];

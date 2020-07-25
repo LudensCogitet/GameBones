@@ -14,7 +14,7 @@
 
 #define DYNAMIC_ENTITY_MAX_MESSAGES 5
 
-#define DYNAMIC_ENTITY_MAX_ENTITIES 1000
+#define DYNAMIC_ENTITY_MAX_ENTITIES 100
 
 extern void (*dynamicEntityInits[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
 extern void (*dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
@@ -36,7 +36,7 @@ void dynamicEntityUnregister(unsigned int id);
 DynamicEntity *dynamicEntityFindById(unsigned int id);
 DynamicEntity *dynamicEntityFindOfType(DYNAMIC_ENTITY_TYPE type);
 
-void dynamicEntitySerializeAll(SDL_RWops *file);
+void dynamicEntitySerializeAll(DynamicEntity **toSerialize, unsigned int count, SDL_RWops *file);
 DynamicEntity *dynamicEntityDeserialize(SDL_RWops *file);
 
 void dynamicEntitySendMessage(Message message, unsigned int entityId);
