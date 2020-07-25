@@ -14,6 +14,7 @@ typedef enum {
 } ROOM_SERIALIZE_SIGNAL;
 
 Room *roomNew();
+void roomDestroy(Room *room);
 int roomLoadBackground(Room * room, char *filename);
 void roomUnloadBackground(Room *room);
 void roomSerialize(Room *room, char *filepath);

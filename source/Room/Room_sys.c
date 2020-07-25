@@ -24,6 +24,8 @@ Room *roomNew() {
     newRoom->player = 0;
     newRoom->numColliders = 0;
     newRoom->numEntities = 0;
+
+    return newRoom;
 }
 
 void roomDestroy(Room *room) {

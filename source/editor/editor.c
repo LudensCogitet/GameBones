@@ -358,13 +358,13 @@ void handleTextInput() {
 
             switch (selectedMenuItem) {
                 case SAVE_ROOM:
-                    roomSerialize(currentRoom, &buffer);
+                    roomSerialize(currentRoom, buffer);
                 break;
                 case LOAD_ROOM:
                     roomDeactivate(currentRoom);
                     roomDestroy(currentRoom);
                     currentRoom = roomNew();
-                    roomDeserialize(currentRoom, &buffer);
+                    roomDeserialize(currentRoom, buffer);
                     roomActivate(currentRoom);
                 break;
                 case LOAD_BG:
@@ -372,7 +372,7 @@ void handleTextInput() {
                         sprintf(buffer, "Failed to load background image.");
                         textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
                     } else {
-                        sprintf(&currentRoom->backgroundFilename, buffer);
+                        sprintf(currentRoom->backgroundFilename, buffer);
                     }
                 break;
             }
