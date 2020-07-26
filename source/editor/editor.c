@@ -58,7 +58,6 @@ static int releaseX = -1;
 static int releaseY = -1;
 
 static Room *currentRoom;
-static DynamicEntity *player = 0;
 
 static unsigned int uiColliderCursor = 0;
 static CollisionStaticRect *uiColliders[EDITOR_MAX_STATIC_COLLIDERS];
@@ -92,6 +91,8 @@ static uint8_t textMode = 0;
 
 static char roomFilepath[50] = {'\0'};
 
+extern void setPlayerPosition(double x, double y);
+
 // Forward Declarations
 void handleTextInput();
 void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colRect, uint8_t active);
@@ -102,6 +103,7 @@ void editorInit() {
     buttonX[PLACE_PLAYER] = buttonSrcWidth;
 
     currentRoom = roomNew();
+    spriteRegister(&currentRoom->backgroundSprite, &currentRoom->backgroundPos);
 
     uiColliderCursor = 0;
     for (int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
@@ -279,15 +281,14 @@ void editorUpdate() {
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
                 gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                if (!currentRoom->player) {
-                    guyInit();
-                    DynamicEntity *player = guyNew(x, y);
-                    roomAddDynamicEntity(currentRoom, player);
-                    dynamicEntityRegister(player);
-                } else {
-                    currentRoom->player->pos.x = x;
-                    currentRoom->player->pos.y = y;
+                setPlayerPosition(x, y);
+
+                if (!currentRoom->playerStart) {
+                    currentRoom->playerStart = (Position *)malloc(sizeof(Position));
                 }
+
+                currentRoom->playerStart->x = x;
+                currentRoom->playerStart->y = y;
         }
     }
 

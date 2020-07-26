@@ -29,6 +29,17 @@
 
 #include "Sprite/Sprite_sys.h"
 
+DynamicEntity *player = 0;
+void setPlayerPosition(double x, double y) {
+    if (!player) {
+        player = guyNew(x, y);
+        dynamicEntityRegister(player);
+    } else {
+        player->pos.x = x;
+        player->pos.y = y;
+    }
+}
+
 int main(int argc, char *argv[]) {
     gbRendererInit("Test", 1, 1);
     gbInputInit();
@@ -39,7 +50,7 @@ int main(int argc, char *argv[]) {
     collisionInit();
     editorInit();
 
-    dynamicEntityInits[DYNAMIC_ENTITY_TYPE_GUY]();
+    guyInit();
 
     uint8_t done = 0;
     uint32_t last_time = 0;

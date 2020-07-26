@@ -21,14 +21,25 @@ Room *roomNew() {
 
     newRoom->backgroundSprite.active = 0;
     newRoom->backgroundTextureId = -1;
-    newRoom->player = 0;
+    newRoom->playerStart = 0;
     newRoom->numColliders = 0;
     newRoom->numEntities = 0;
+
+    int x, y;
+    gbGfxGridSquareToWorldCoords(0, 0, &x, &y, 0);
+    newRoom->backgroundPos.x = x;
+    newRoom->backgroundPos.y = y;
+    newRoom->backgroundSprite.layer = SPRITE_LAYER_BACKGROUND;
 
     return newRoom;
 }
 
 void roomDestroy(Room *room) {
+    if (room->playerStart) {
+        free(room->playerStart);
+        room->playerStart = 0;
+    }
+
     for (unsigned int i = 0; i < room->numColliders; i++) {
         free(room->staticColliders[i]);
         room->staticColliders[i] = 0;
@@ -60,9 +71,6 @@ int roomAddDynamicEntity(Room *room, DynamicEntity *entity) {
 
     room->entities[room->numEntities++] = entity;
 
-    if (entity->type == DYNAMIC_ENTITY_TYPE_GUY)
-        room->player = entity;
-
     return 1;
 }
 
@@ -83,11 +91,6 @@ int roomLoadBackground(Room * room, char *filename) {
               GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH, GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT,
               SPRITE_LAYER_BACKGROUND, 1, 1, SDL_FLIP_NONE
               );
-    int x, y;
-    gbGfxGridSquareToWorldCoords(0, 0, &x, &y, 0);
-    room->backgroundPos.x = x;
-    room->backgroundPos.y = y;
-
     return 1;
 }
 
@@ -116,6 +119,15 @@ void roomSerialize(Room *room, char *filepath) {
     // Write filepath
     for (int i = 0; i < charCount; i++)
         SDL_WriteU8(file, (uint8_t)room->backgroundFilename[i]);
+
+    // SERIALIZE PLAYER START POSITION
+    // Check for player start in this room
+    if (room->playerStart) {
+        SDL_WriteBE16(file, SERIALIZE_PLAYER_START);
+        // write x, y coords
+        SDL_WriteBE64(file, room->playerStart->x);
+        SDL_WriteBE64(file, room->playerStart->y);
+    }
 
     // SERIALIZE STATIC COLLIDERS
     // Write signal
@@ -157,6 +169,19 @@ void roomDeserialize(Room *room, char *filepath) {
                         roomLoadBackground(room, room->backgroundFilename);
                 }
             break;
+            case SERIALIZE_PLAYER_START:
+                {
+                    double x = SDL_ReadBE64(file);
+                    double y = SDL_ReadBE64(file);
+
+                    if (!room->playerStart)
+                        room->playerStart = (Position *)malloc(sizeof(Position));
+
+                    room->playerStart->x = x;
+                    room->playerStart->y = y;
+                    setPlayerPosition(x, y);
+                }
+            break;
             case SERIALIZE_STATIC_COLLIDERS:
                 {
                     uint16_t numColliders = SDL_ReadBE16(file);
@@ -175,8 +200,6 @@ void roomDeserialize(Room *room, char *filepath) {
                     for (int i = 0; i < numEntities; i++) {
                         DynamicEntity *entity = dynamicEntityDeserialize(file);
                         room->entities[i] = entity;
-                        if (entity->type == DYNAMIC_ENTITY_TYPE_GUY)
-                            room->player = entity;
                     }
                     room->numEntities = numEntities;
                 }
@@ -203,7 +226,6 @@ void roomActivate(Room *room) {
 void roomDeactivate(Room *room) {
     if (room->backgroundSprite.active) {
         spriteUnregister(&room->backgroundSprite);
-        room->backgroundSprite.active = 0;
     }
 
     for (int i = 0; i < room->numEntities; i++)

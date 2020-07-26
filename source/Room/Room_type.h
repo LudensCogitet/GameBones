@@ -18,7 +18,7 @@ typedef struct {
     Position backgroundPos;
     Sprite backgroundSprite;
 
-    DynamicEntity *player;
+    Position *playerStart;
 
     int numColliders;
     CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
