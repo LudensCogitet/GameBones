@@ -22,7 +22,7 @@
 #include "./gbText/gbText_type.h"
 #include "../Collision/Collision_sys.h"
 
-uint8_t GB_GFX_DEBUG_FLAG = 1;
+uint8_t GB_GFX_DEBUG_FLAG = 0;
 
 static int32_t gbGfxCameraOffsetX = 0;
 static int32_t gbGfxCameraOffsetY = 0;

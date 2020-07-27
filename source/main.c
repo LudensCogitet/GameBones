@@ -31,16 +31,96 @@
 
 #include "entities/Guy/entityGuy.h"
 
+static int activeRoomX = 1;
+static int activeRoomY = 0;
 static Room *rooms[2][2];
 
-DynamicEntity *guy = 0;
+DynamicEntity *mainPlayer = 0;
 void setPlayerPosition(double x, double y) {
-    if (!guy) {
-        guy = guyNew(x, y);
-        dynamicEntityRegister(guy);
+    if (!mainPlayer) {
+        mainPlayer = guyNew(x, y);
+        dynamicEntityRegister(mainPlayer);
     } else {
-        guy->pos.x = x;
-        guy->pos.y = y;
+        mainPlayer->pos.x = x;
+        mainPlayer->pos.y = y;
+    }
+}
+
+void gameInit() {
+    for (unsigned int x = 0; x < 2; x++) {
+        for (unsigned int y = 0; y < 2; y++) {
+            rooms[x][y] = roomNew();
+        }
+    }
+    roomDeserialize(rooms[1][0], "./room1.rm");
+    roomDeserialize(rooms[1][1], "./room2.rm");
+    roomDeserialize(rooms[0][1], "./room3.rm");
+    roomDeserialize(rooms[0][0], "./room4.rm");
+
+    roomActivate(rooms[activeRoomX][activeRoomY]);
+}
+
+void checkRoomChange() {
+    double pLeftExtremity = (mainPlayer->pos.x);
+    double pRightExtremity = mainPlayer->pos.x + mainPlayer->sprite.width;
+
+    double pTopExtremity = mainPlayer->pos.y;
+    double pBottomExtremity = mainPlayer->pos.y + mainPlayer->sprite.height;
+
+    int oldRoomX = -1;
+    int oldRoomY = -1;
+
+    // Player has exited grid to the left
+    if (pRightExtremity < GB_GFX_GRID_OFFSET_X) {
+        oldRoomX = activeRoomX;
+        oldRoomY = activeRoomY;
+        if (activeRoomX == 0)
+            activeRoomX = 1;
+        else
+            activeRoomX = 0;
+
+        mainPlayer->pos.x += GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH;
+    }
+
+    // Player has exited grid to the right
+    if (pLeftExtremity > (GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH))) {
+        oldRoomX = activeRoomX;
+        oldRoomY = activeRoomY;
+        if (activeRoomX == 1)
+            activeRoomX = 0;
+        else
+            activeRoomX = 1;
+
+        mainPlayer->pos.x = GB_GFX_GRID_OFFSET_X;
+    }
+
+    // Player has exited grid by the top
+    if (pBottomExtremity < GB_GFX_GRID_OFFSET_Y) {
+        oldRoomX = activeRoomX;
+        oldRoomY = activeRoomY;
+        if (activeRoomY == 0)
+            activeRoomY = 1;
+        else
+            activeRoomY = 0;
+
+        mainPlayer->pos.y += GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT;
+    }
+
+    // Player has exited grid through the bottom
+    if (pTopExtremity > (GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT))) {
+        oldRoomX = activeRoomX;
+        oldRoomY = activeRoomY;
+        if (activeRoomY == 1)
+            activeRoomY = 0;
+        else
+            activeRoomY = 1;
+
+        mainPlayer->pos.y = GB_GFX_GRID_OFFSET_Y;
+    }
+
+    if (oldRoomX > -1 && oldRoomY > -1) {
+        roomDeactivate(rooms[oldRoomX][oldRoomY]);
+        roomActivate(rooms[activeRoomX][activeRoomY]);
     }
 }
 
@@ -52,9 +132,9 @@ int main(int argc, char *argv[]) {
     gbAnimationInit();
     dynamicEntityInit();
     collisionInit();
-    editorInit();
-
     guyInit();
+
+    gameInit();//editorInit();
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -81,7 +161,7 @@ int main(int argc, char *argv[]) {
         if(gbInputCheckState(GB_INPUT_TOGGLE_EDIT_MODE, GB_INPUT_RELEASED))
             GB_GFX_DEBUG_FLAG = !GB_GFX_DEBUG_FLAG;
 
-        editorUpdate();
+        checkRoomChange();//editorUpdate();
         dynamicEntityAct(delta);
         gbGfxDraw();
 
@@ -107,7 +187,7 @@ int main(int argc, char *argv[]) {
 //        file = 0;
 //    }
 
-    editorTeardown();
+    //editorTeardown();
     collisionTeardown();
     gbAnimationTeardown();
     gbGfxTeardown();
