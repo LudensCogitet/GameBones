@@ -31,6 +31,8 @@
 
 #include "entities/Guy/entityGuy.h"
 
+static Room *rooms[2][2];
+
 DynamicEntity *guy = 0;
 void setPlayerPosition(double x, double y) {
     if (!guy) {
