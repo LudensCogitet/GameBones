@@ -6,6 +6,8 @@
 #include "../gbGfx/gbGfx_sys.h"
 #include "../Sprite/Sprite_sys.h"
 
+extern void setPlayerPosition(double x, double y);
+
 // Forward Declarations
 void roomUnloadBackground(Room *room);
 int roomLoadBackground(Room *room, char *filename);

@@ -29,14 +29,16 @@
 
 #include "Sprite/Sprite_sys.h"
 
-DynamicEntity *player = 0;
+#include "entities/Guy/entityGuy.h"
+
+DynamicEntity *guy = 0;
 void setPlayerPosition(double x, double y) {
-    if (!player) {
-        player = guyNew(x, y);
-        dynamicEntityRegister(player);
+    if (!guy) {
+        guy = guyNew(x, y);
+        dynamicEntityRegister(guy);
     } else {
-        player->pos.x = x;
-        player->pos.y = y;
+        guy->pos.x = x;
+        guy->pos.y = y;
     }
 }
 

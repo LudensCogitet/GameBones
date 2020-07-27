@@ -56,24 +56,24 @@ DynamicEntity *guyNew(double x, double y) {
     guyCount++;
     printf("Guy count: %d\n", guyCount);
 
-    DynamicEntity *player = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
-    player->pos = (Position){x, y};
+    DynamicEntity *guy = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
+    guy->pos = (Position){x, y};
 
-    player->dx = 0;
-    player->dy = 0;
-    player->ax = 0;
-    player->ay = 0;
+    guy->dx = 0;
+    guy->dy = 0;
+    guy->ax = 0;
+    guy->ay = 0;
 
-    player->state.guy.direction = 0;
-    player->state.guy.moveKeysDown = 0;
+    guy->state.guy.direction = 0;
+    guy->state.guy.moveKeysDown = 0;
 
-    player->state.guy.state = GUY_STATE_IDLE;
-    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &player->sprite.src, &player->animState);
+    guy->state.guy.state = GUY_STATE_IDLE;
+    gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
 
-    spriteSet(&player->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
-    collisionDynamicRectSet(&player->boundingBox, player->id, 5, 0, 22, 31);
+    spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
+    collisionDynamicRectSet(&guy->boundingBox, guy->id, 5, 0, 22, 31);
 
-    return player;
+    return guy;
 }
 
 //void handleInput(Guy *guy) {
