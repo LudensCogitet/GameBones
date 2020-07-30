@@ -224,7 +224,8 @@ void editorUpdate() {
                 int clearTextBuffer = selectedMenuItem != i;
                 switch (i) {
                     case NEW_ROOM:
-                        roomDeactivate(currentRoom);
+                        roomStartDeactivation(currentRoom);
+                        roomFinishDeactivation(currentRoom);
                         roomDestroy(currentRoom);
                         currentRoom = roomNew();
                     break;
@@ -362,11 +363,13 @@ void handleTextInput() {
                     roomSerialize(currentRoom, buffer);
                 break;
                 case LOAD_ROOM:
-                    roomDeactivate(currentRoom);
+                    roomStartDeactivation(currentRoom);
+                    roomFinishDeactivation(currentRoom);
                     roomDestroy(currentRoom);
                     currentRoom = roomNew();
                     roomDeserialize(currentRoom, buffer);
-                    roomActivate(currentRoom);
+                    roomStartActivation(currentRoom);
+                    roomFinishActivation(currentRoom);
                 break;
                 case LOAD_BG:
                     if (!roomLoadBackground(currentRoom, buffer)) {

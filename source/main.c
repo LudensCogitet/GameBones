@@ -33,6 +33,7 @@
 
 static int activeRoomX = 1;
 static int activeRoomY = 0;
+
 static Room *rooms[2][2];
 
 DynamicEntity *mainPlayer = 0;
@@ -57,71 +58,133 @@ void gameInit() {
     roomDeserialize(rooms[0][1], "./room3.rm");
     roomDeserialize(rooms[0][0], "./room4.rm");
 
-    roomActivate(rooms[activeRoomX][activeRoomY]);
+    roomStartActivation(rooms[activeRoomX][activeRoomY]);
+    roomFinishActivation(rooms[activeRoomX][activeRoomY]);
 }
 
-void checkRoomChange() {
-    double pLeftExtremity = (mainPlayer->pos.x);
-    double pRightExtremity = mainPlayer->pos.x + mainPlayer->sprite.width;
+int handleRoomChange(double delta) {
+    static uint8_t roomTransition = 0;
+    static int oldRoomX = -1;
+    static int oldRoomY = -1;
+    static int roomDx = 0;
+    static int roomDy = 0;
 
-    double pTopExtremity = mainPlayer->pos.y;
-    double pBottomExtremity = mainPlayer->pos.y + mainPlayer->sprite.height;
+    if (!roomTransition) {
+        double pLeftExtremity = mainPlayer->pos.x + mainPlayer->boundingBox.offsetX;
+        double pRightExtremity = mainPlayer->pos.x + mainPlayer->boundingBox.offsetX + mainPlayer->boundingBox.width;
 
-    int oldRoomX = -1;
-    int oldRoomY = -1;
+        double pTopExtremity = mainPlayer->pos.y + mainPlayer->boundingBox.offsetY;
+        double pBottomExtremity = mainPlayer->pos.y + mainPlayer->boundingBox.offsetY + mainPlayer->boundingBox.height;
 
-    // Player has exited grid to the left
-    if (pRightExtremity < GB_GFX_GRID_OFFSET_X) {
-        oldRoomX = activeRoomX;
-        oldRoomY = activeRoomY;
-        if (activeRoomX == 0)
-            activeRoomX = 1;
-        else
-            activeRoomX = 0;
+        // Player has exited grid to the left
+        if (pRightExtremity < GB_GFX_GRID_OFFSET_X) {
+            oldRoomX = activeRoomX;
+            oldRoomY = activeRoomY;
+            if (activeRoomX == 0)
+                activeRoomX = 1;
+            else
+                activeRoomX = 0;
 
-        mainPlayer->pos.x += GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH;
+            mainPlayer->pos.x += GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH;
+            roomDx = (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
+        }
+
+        // Player has exited grid to the right
+        if (pLeftExtremity > (GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH))) {
+            oldRoomX = activeRoomX;
+            oldRoomY = activeRoomY;
+            if (activeRoomX == 1)
+                activeRoomX = 0;
+            else
+                activeRoomX = 1;
+
+            mainPlayer->pos.x = GB_GFX_GRID_OFFSET_X;
+            roomDx = -(GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
+        }
+
+        // Player has exited grid by the top
+        if (pBottomExtremity < GB_GFX_GRID_OFFSET_Y) {
+            oldRoomX = activeRoomX;
+            oldRoomY = activeRoomY;
+            if (activeRoomY == 0)
+                activeRoomY = 1;
+            else
+                activeRoomY = 0;
+
+            mainPlayer->pos.y += GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT;
+            roomDy = (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
+        }
+
+        // Player has exited grid through the bottom
+        if (pTopExtremity > (GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT))) {
+            oldRoomX = activeRoomX;
+            oldRoomY = activeRoomY;
+            if (activeRoomY == 1)
+                activeRoomY = 0;
+            else
+                activeRoomY = 1;
+
+            mainPlayer->pos.y = GB_GFX_GRID_OFFSET_Y;
+            roomDy = -(GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
+        }
+
+        if (oldRoomX > -1 && oldRoomY > -1) {
+            mainPlayer->sprite.active = 0;
+            roomStartDeactivation(rooms[oldRoomX][oldRoomY]);
+            roomStartActivation(rooms[activeRoomX][activeRoomY]);
+            rooms[activeRoomX][activeRoomY]->backgroundPos.x -= roomDx;
+            rooms[activeRoomX][activeRoomY]->backgroundPos.y -= roomDy;
+            roomTransition = 1;
+        }
+    } else {
+        uint8_t done = 0;
+        double newX = rooms[activeRoomX][activeRoomY]->backgroundPos.x;
+        double newY = rooms[activeRoomX][activeRoomY]->backgroundPos.y;
+
+        double dx = 0;
+        double dy = 0;
+        if (newX < GB_GFX_GRID_OFFSET_X) {
+            dx = roomDx * delta;
+            rooms[activeRoomX][activeRoomY]->backgroundPos.x += dx;
+            rooms[oldRoomX][oldRoomY]->backgroundPos.x += dx;
+
+            done = rooms[activeRoomX][activeRoomY]->backgroundPos.x >= GB_GFX_GRID_OFFSET_X;
+        } else if (newX > GB_GFX_GRID_OFFSET_X) {
+            dx = roomDx * delta;
+            rooms[activeRoomX][activeRoomY]->backgroundPos.x += dx;
+            rooms[oldRoomX][oldRoomY]->backgroundPos.x += dx;
+
+            done = rooms[activeRoomX][activeRoomY]->backgroundPos.x <= GB_GFX_GRID_OFFSET_X;
+        } else if (newY < GB_GFX_GRID_OFFSET_Y) {
+            dy = roomDy * delta;
+            rooms[activeRoomX][activeRoomY]->backgroundPos.y += dy;
+            rooms[oldRoomX][oldRoomY]->backgroundPos.y += dy;
+
+            done = rooms[activeRoomX][activeRoomY]->backgroundPos.y >= GB_GFX_GRID_OFFSET_Y;
+        } else if (newY > GB_GFX_GRID_OFFSET_Y) {
+            dy = roomDy * delta;
+            rooms[activeRoomX][activeRoomY]->backgroundPos.y += dy;
+            rooms[oldRoomX][oldRoomY]->backgroundPos.y += dy;
+
+            done = rooms[activeRoomX][activeRoomY]->backgroundPos.y <= GB_GFX_GRID_OFFSET_Y;
+        }
+
+        if (done) {
+            mainPlayer->sprite.active = 1;
+            roomFinishDeactivation(rooms[oldRoomX][oldRoomY]);
+            rooms[oldRoomX][oldRoomY]->backgroundPos.x = GB_GFX_GRID_OFFSET_X;
+            rooms[oldRoomX][oldRoomY]->backgroundPos.y = GB_GFX_GRID_OFFSET_Y;
+            oldRoomX = -1;
+            oldRoomY = -1;
+            roomDx = 0;
+            roomDy = 0;
+
+            roomFinishActivation(rooms[activeRoomX][activeRoomY]);
+            roomTransition = 0;
+        }
     }
 
-    // Player has exited grid to the right
-    if (pLeftExtremity > (GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH))) {
-        oldRoomX = activeRoomX;
-        oldRoomY = activeRoomY;
-        if (activeRoomX == 1)
-            activeRoomX = 0;
-        else
-            activeRoomX = 1;
-
-        mainPlayer->pos.x = GB_GFX_GRID_OFFSET_X;
-    }
-
-    // Player has exited grid by the top
-    if (pBottomExtremity < GB_GFX_GRID_OFFSET_Y) {
-        oldRoomX = activeRoomX;
-        oldRoomY = activeRoomY;
-        if (activeRoomY == 0)
-            activeRoomY = 1;
-        else
-            activeRoomY = 0;
-
-        mainPlayer->pos.y += GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT;
-    }
-
-    // Player has exited grid through the bottom
-    if (pTopExtremity > (GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT))) {
-        oldRoomX = activeRoomX;
-        oldRoomY = activeRoomY;
-        if (activeRoomY == 1)
-            activeRoomY = 0;
-        else
-            activeRoomY = 1;
-
-        mainPlayer->pos.y = GB_GFX_GRID_OFFSET_Y;
-    }
-
-    if (oldRoomX > -1 && oldRoomY > -1) {
-        roomDeactivate(rooms[oldRoomX][oldRoomY]);
-        roomActivate(rooms[activeRoomX][activeRoomY]);
-    }
+    return roomTransition;
 }
 
 int main(int argc, char *argv[]) {
@@ -161,8 +224,10 @@ int main(int argc, char *argv[]) {
         if(gbInputCheckState(GB_INPUT_TOGGLE_EDIT_MODE, GB_INPUT_RELEASED))
             GB_GFX_DEBUG_FLAG = !GB_GFX_DEBUG_FLAG;
 
-        checkRoomChange();//editorUpdate();
-        dynamicEntityAct(delta);
+        //editorUpdate();
+        if (!handleRoomChange(delta))
+            dynamicEntityAct(delta);
+
         gbGfxDraw();
 
         SDL_Delay(0);

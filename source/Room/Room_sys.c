@@ -212,24 +212,7 @@ void roomDeserialize(Room *room, char *filepath) {
     SDL_RWclose(file);
 }
 
-void roomActivate(Room *room) {
-    if (room->backgroundTextureId > -1) {
-        room->backgroundSprite.active = 1;
-        spriteRegister(&room->backgroundSprite, &room->backgroundPos);
-    }
-
-    for (int i = 0; i < room->numEntities; i++)
-        dynamicEntityRegister(room->entities[i]);
-
-    for (int i = 0; i < room->numColliders; i++)
-        collisionStaticRectRegister(room->staticColliders[i]);
-}
-
-void roomDeactivate(Room *room) {
-    if (room->backgroundSprite.active) {
-        spriteUnregister(&room->backgroundSprite);
-    }
-
+void roomStartDeactivation(Room *room) {
     for (int i = 0; i < room->numEntities; i++)
         dynamicEntityUnregister(room->entities[i]->id);
 
@@ -237,3 +220,23 @@ void roomDeactivate(Room *room) {
         collisionStaticRectUnregister(room->staticColliders[i]);
 }
 
+void roomFinishDeactivation(Room *room) {
+    if (room->backgroundSprite.active) {
+        spriteUnregister(&room->backgroundSprite);
+    }
+}
+
+void roomStartActivation(Room *room) {
+    if (room->backgroundTextureId > -1) {
+        room->backgroundSprite.active = 1;
+        spriteRegister(&room->backgroundSprite, &room->backgroundPos);
+    }
+}
+
+void roomFinishActivation(Room *room) {
+    for (int i = 0; i < room->numEntities; i++)
+        dynamicEntityRegister(room->entities[i]);
+
+    for (int i = 0; i < room->numColliders; i++)
+        collisionStaticRectRegister(room->staticColliders[i]);
+}

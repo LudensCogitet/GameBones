@@ -20,8 +20,12 @@ int roomLoadBackground(Room * room, char *filename);
 void roomUnloadBackground(Room *room);
 void roomSerialize(Room *room, char *filepath);
 void roomDeserialize(Room *room, char *filepath);
-void roomActivate(Room *room);
-void roomDeactivate(Room *room);
+
+void roomStartActivaton(Room *room);
+void roomFinishActivaton(Room *room);
+
+void roomStartDeactivation(Room *room);
+void roomFinishDeactivation(Room *room);
 
 int roomAddStaticCollider(Room *room, CollisionStaticRect *rect);
 int roomAddDynamicEntity(Room *room, DynamicEntity *entity);
