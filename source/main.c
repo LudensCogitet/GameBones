@@ -199,6 +199,16 @@ int main(int argc, char *argv[]) {
 
     gameInit();//editorInit();
 
+    Position overlayPos = (Position){0, 0};
+    Sprite overlay;
+    spriteSet(&overlay,
+              gbTextureLoadNamed(GB_TEXTURE_NAME_OVERLAY),
+              0, 0, 1280, 720,
+              gbScreenWidth, gbScreenHeight,
+              SPRITE_LAYER_FOREGROUND,
+              1, 1, SDL_FLIP_NONE);
+    spriteRegister(&overlay, &overlayPos);
+
     uint8_t done = 0;
     uint32_t last_time = 0;
     uint32_t current_time = 0;

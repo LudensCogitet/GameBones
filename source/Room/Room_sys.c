@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 
+#include "Room_sys.h"
 #include "../gbGfx/gbGfx_sys.h"
 #include "../Sprite/Sprite_sys.h"
 

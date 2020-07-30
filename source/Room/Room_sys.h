@@ -21,8 +21,8 @@ void roomUnloadBackground(Room *room);
 void roomSerialize(Room *room, char *filepath);
 void roomDeserialize(Room *room, char *filepath);
 
-void roomStartActivaton(Room *room);
-void roomFinishActivaton(Room *room);
+void roomStartActivation(Room *room);
+void roomFinishActivation(Room *room);
 
 void roomStartDeactivation(Room *room);
 void roomFinishDeactivation(Room *room);
