@@ -13,8 +13,22 @@ typedef struct {
     unsigned int moveKeysDown;
 } GuyState;
 
+typedef enum {
+    MOVE_ROOM_PANEL_STATE_EMPTY,
+    MOVE_ROOM_PANEL_STATE_DOWN,
+    MOVE_ROOM_PANEL_STATE_UP,
+    MOVE_ROOM_PANEL_STATE_RIGHT,
+    MOVE_ROOM_PANEL_STATE_LEFT,
+    MOVE_ROOM_PANEL_STATE_NUM_STATES
+} MOVE_ROOM_PANEL_STATE;
+
+typedef struct {
+    MOVE_ROOM_PANEL_STATE state;
+} MoveRoomPanelState;
+
 typedef union {
     GuyState guy;
+    MoveRoomPanelState moveRoomPanel;
 } DynamicEntityState;
 
 #endif // DYNAMIC_ENTITY_STATE_H_INCLUDED

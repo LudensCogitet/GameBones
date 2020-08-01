@@ -69,11 +69,13 @@ void collisionDynamicRectSet(
                              int offsetX,
                              int offsetY,
                              unsigned int width,
-                             unsigned int height
+                             unsigned int height,
+                             uint8_t solid
                              ) {
     rect->entityId = entityId;
 
     rect->active = 1;
+    rect->solid = solid;
     rect->offsetX = offsetX;
     rect->offsetY = offsetY;
     rect->width = width;
@@ -249,21 +251,10 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
         if (!rect->active) continue;
 
         uint8_t data = detectCollision(
-                                    x1A,
-                                    y1A,
-                                    x2A,
-                                    y2A,
-
-                                    rect->x1,
-                                    rect->y1,
-                                    rect->x2,
-                                    rect->y2,
-
-                                    dx,
-                                    dy,
-
-                                    &xOverlap,
-                                    &yOverlap
+                                    x1A, y1A, x2A, y2A,
+                                    rect->x1, rect->y1, rect->x2, rect->y2,
+                                    dx, dy,
+                                    &xOverlap, &yOverlap
                                     );
 
         if ((data & COLLISION_X) && (data & COLLISION_Y)) {
@@ -276,6 +267,57 @@ unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynam
             }
 
             *collData = data;
+            return index + 1;
+        }
+    }
+
+    *collData = 0;
+    return 0;
+}
+
+unsigned int collisionResolveDynamicCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, unsigned int *entityId, uint8_t *collData) {
+    Position *dynamicPosition = dynamicColliderPositions[dynamicCollider->index];
+
+    for (;index < dynamicColliderCursor; index++) {
+        double x1A = dynamicPosition->x + dynamicCollider->offsetX;
+        double y1A = dynamicPosition->y + dynamicCollider->offsetY;
+        double x2A = x1A + dynamicCollider->width;
+        double y2A = y1A + dynamicCollider->height;
+
+        CollisionDynamicRect *rect = dynamicColliders[index];
+        if (rect->entityId == dynamicCollider->entityId) continue;
+
+        Position *rectPos = dynamicColliderPositions[index];
+        if (!rect->active) continue;
+
+        double x1B = rectPos->x + rect->offsetX;
+        double y1B = rectPos->y + rect->offsetY;
+        double x2B = x1B + rect->width;
+        double y2B = y1B + rect->height;
+
+        double xOverlap = 0;
+        double yOverlap = 0;
+
+        uint8_t data = detectCollision(
+                                    x1A, y1A, x2A, y2A,
+                                    x1B, y1B, x2B, y2B,
+                                    dx, dy,
+                                    &xOverlap, &yOverlap
+                                    );
+
+        if ((data & COLLISION_X) && (data & COLLISION_Y)) {
+
+            if (((xOverlap && dx) || (yOverlap && dy)) && dynamicCollider->solid && rect->solid) {
+                if (data & COLLISION_X_MARKED) {
+                    dynamicPosition->x += xOverlap;
+                }
+                if (data & COLLISION_Y_MARKED) {
+                    dynamicPosition->y += yOverlap;
+                }
+            }
+
+            *collData = data;
+            *entityId = rect->entityId;
             return index + 1;
         }
     }

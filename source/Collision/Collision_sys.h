@@ -33,7 +33,8 @@ void collisionDynamicRectSet(
                              int offsetX,
                              int offsetY,
                              unsigned int width,
-                             unsigned int height
+                             unsigned int height,
+                             uint8_t solid
                              );
 void collisionDynamicRectRegister(CollisionDynamicRect *rect, Position *pos);
 void collisionDynamicRectUnregister(CollisionDynamicRect *rect);
@@ -45,6 +46,7 @@ void collisionStaticRectPassiveRegister(CollisionStaticRect *rect);
 void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect);
 
 unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData);
+unsigned int collisionResolveDynamicCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, unsigned int *entityId, uint8_t *collData);
 CollisionStaticRect *collisionDetectPointCollision(int x, int y);
 CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y);
 

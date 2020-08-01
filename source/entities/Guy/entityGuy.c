@@ -71,7 +71,7 @@ DynamicEntity *guyNew(double x, double y) {
     gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
 
     spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
-    collisionDynamicRectSet(&guy->boundingBox, guy->id, 5, 0, 22, 31);
+    collisionDynamicRectSet(&guy->boundingBox, guy->id, 5, 0, 22, 31, 1);
 
     return guy;
 }

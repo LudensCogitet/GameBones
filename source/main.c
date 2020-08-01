@@ -30,6 +30,7 @@
 #include "Sprite/Sprite_sys.h"
 
 #include "entities/Guy/entityGuy.h"
+#include "entities/MoveRoomPanel/entityMoveRoomPanel.h"
 
 static int activeRoomX = 1;
 static int activeRoomY = 0;
@@ -37,6 +38,7 @@ static int activeRoomY = 0;
 static Room *rooms[2][2];
 
 DynamicEntity *mainPlayer = 0;
+
 void setPlayerPosition(double x, double y) {
     if (!mainPlayer) {
         mainPlayer = guyNew(x, y);
@@ -196,6 +198,7 @@ int main(int argc, char *argv[]) {
     dynamicEntityInit();
     collisionInit();
     guyInit();
+    moveRoomPanelInit();
 
     gameInit();//editorInit();
 
@@ -217,6 +220,10 @@ int main(int argc, char *argv[]) {
     double secondCounter = 0;
     unsigned int fps = 0;
     double addAcc = 0;
+
+
+    DynamicEntity *panel = moveRoomPanelNew(GB_GFX_GRID_OFFSET_X + 128, GB_GFX_GRID_OFFSET_Y + 128);
+    dynamicEntityRegister(panel);
 
     gbInputSetKey(GB_INPUT_MOVE_LEFT, SDLK_LEFT);
     gbInputSetKey(GB_INPUT_MOVE_RIGHT, SDLK_RIGHT);
