@@ -326,7 +326,7 @@ unsigned int collisionResolveDynamicCollisions(unsigned int index, CollisionDyna
     return 0;
 }
 
-CollisionStaticRect *collisionDetectPointCollision(int x, int y) {
+CollisionStaticRect *collisionDetectPointCollisionStatic(int x, int y) {
     for (unsigned int i = 0; i < staticColliderCursor; i++) {
         if (!staticColliders[i]->active) continue;
 

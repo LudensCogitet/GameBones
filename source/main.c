@@ -32,10 +32,13 @@
 #include "entities/Guy/entityGuy.h"
 #include "entities/MoveRoomPanel/entityMoveRoomPanel.h"
 
+#define MAIN_ROOM_GRID_WIDTH 2
+#define MAIN_ROOM_GRID_HEIGHT 2
+
 static int activeRoomX = 1;
 static int activeRoomY = 0;
 
-static Room *rooms[2][2];
+static Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
 
 DynamicEntity *mainPlayer = 0;
 
@@ -79,52 +82,44 @@ int handleRoomChange(double delta) {
         double pBottomExtremity = mainPlayer->pos.y + mainPlayer->boundingBox.offsetY + mainPlayer->boundingBox.height;
 
         // Player has exited grid to the left
-        if (pRightExtremity < GB_GFX_GRID_OFFSET_X) {
+        if (pRightExtremity < GB_GFX_GRID_OFFSET_X && activeRoomX > 0) {
             oldRoomX = activeRoomX;
             oldRoomY = activeRoomY;
-            if (activeRoomX == 0)
-                activeRoomX = 1;
-            else
-                activeRoomX = 0;
+
+            activeRoomX--;
 
             mainPlayer->pos.x += GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH;
             roomDx = (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
         }
 
         // Player has exited grid to the right
-        if (pLeftExtremity > (GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH))) {
+        if (pLeftExtremity > (GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_SIZE * GB_GFX_GRID_WIDTH)) && activeRoomX < MAIN_ROOM_GRID_WIDTH - 1) {
             oldRoomX = activeRoomX;
             oldRoomY = activeRoomY;
-            if (activeRoomX == 1)
-                activeRoomX = 0;
-            else
-                activeRoomX = 1;
+
+            activeRoomX++;
 
             mainPlayer->pos.x = GB_GFX_GRID_OFFSET_X;
             roomDx = -(GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
         }
 
         // Player has exited grid by the top
-        if (pBottomExtremity < GB_GFX_GRID_OFFSET_Y) {
+        if (pBottomExtremity < GB_GFX_GRID_OFFSET_Y && activeRoomY > 0) {
             oldRoomX = activeRoomX;
             oldRoomY = activeRoomY;
-            if (activeRoomY == 0)
-                activeRoomY = 1;
-            else
-                activeRoomY = 0;
+
+            activeRoomY--;
 
             mainPlayer->pos.y += GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT;
             roomDy = (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
         }
 
         // Player has exited grid through the bottom
-        if (pTopExtremity > (GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT))) {
+        if (pTopExtremity > (GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_SIZE * GB_GFX_GRID_HEIGHT)) && activeRoomY < MAIN_ROOM_GRID_HEIGHT - 1) {
             oldRoomX = activeRoomX;
             oldRoomY = activeRoomY;
-            if (activeRoomY == 1)
-                activeRoomY = 0;
-            else
-                activeRoomY = 1;
+
+            activeRoomY++;
 
             mainPlayer->pos.y = GB_GFX_GRID_OFFSET_Y;
             roomDy = -(GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
@@ -189,6 +184,27 @@ int handleRoomChange(double delta) {
     return roomTransition;
 }
 
+int validRoomIndex(int dx, int dy) {
+    int newRoomX = activeRoomX + dx;
+    int newRoomY = activeRoomY + dy;
+
+    return newRoomX >= 0 && newRoomX <= MAIN_ROOM_GRID_WIDTH - 1 &&
+           newRoomY >= 0 && newRoomY <= MAIN_ROOM_GRID_HEIGHT - 1;
+}
+
+void handleRoomMove(int dx, int dy) {
+    if (!validRoomIndex(dx, dy)) return;
+
+    int oldRoomX = activeRoomX;
+    int oldRoomY = activeRoomY;
+    activeRoomX = activeRoomX + dx;
+    activeRoomY = activeRoomY + dy;
+
+    Room *swap = rooms[activeRoomX][activeRoomY];
+    rooms[activeRoomX][activeRoomY] = rooms[oldRoomX][oldRoomY];
+    rooms[oldRoomX][oldRoomY] = swap;
+}
+
 int main(int argc, char *argv[]) {
     gbRendererInit("Test", 1, 1);
     gbInputInit();
@@ -228,6 +244,8 @@ int main(int argc, char *argv[]) {
     gbInputSetKey(GB_INPUT_MOVE_LEFT, SDLK_LEFT);
     gbInputSetKey(GB_INPUT_MOVE_RIGHT, SDLK_RIGHT);
     gbInputSetKey(GB_INPUT_JUMP, SDLK_SPACE);
+    gbInputSetKey(GB_INPUT_INTERACT, SDLK_LSHIFT);
+    gbInputSetKey(GB_INPUT_SELECT, SDLK_DOWN);
     gbInputSetKey(GB_INPUT_QUIT_GAME, SDLK_q);
     gbInputSetKey(GB_INPUT_MOUSE_SELECT, SDL_BUTTON_LEFT);
     gbInputSetKey(GB_INPUT_MOUSE_ALT, SDL_BUTTON_RIGHT);

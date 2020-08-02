@@ -298,7 +298,7 @@ void editorUpdate() {
             int x, y;
             case PLACE_STATIC_GEOMETRY:
                 SDL_GetMouseState(&x, &y);
-                CollisionStaticRect *collider = collisionDetectPointCollision(x, y);
+                CollisionStaticRect *collider = collisionDetectPointCollisionStatic(x, y);
                 if (!collider) break;
 
                 for (unsigned int i = 0; i < currentRoom->numColliders; i++) {

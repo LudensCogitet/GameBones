@@ -47,7 +47,7 @@ void collisionStaticRectPassiveUnregister(CollisionStaticRect *rect);
 
 unsigned int collisionResolveStaticCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, uint8_t *collData);
 unsigned int collisionResolveDynamicCollisions(unsigned int index, CollisionDynamicRect *dynamicCollider, double dx, double dy, unsigned int *entityId, uint8_t *collData);
-CollisionStaticRect *collisionDetectPointCollision(int x, int y);
+CollisionStaticRect *collisionDetectPointCollisionStatic(int x, int y);
 CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y);
 
 void serializeStaticCollisionRects(CollisionStaticRect **rects, unsigned int numRects, SDL_RWops *file);
