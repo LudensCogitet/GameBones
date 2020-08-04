@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <math.h>
 
 #include <SDL2/SDL.h>
@@ -35,8 +36,19 @@
 #define MAIN_ROOM_GRID_WIDTH 2
 #define MAIN_ROOM_GRID_HEIGHT 2
 
+uint8_t EDIT_MODE = 0;
+
+static enum {
+    GRID_BOUND_LEFT,
+    GRID_BOUND_RIGHT,
+    GRID_BOUND_TOP,
+    GRID_BOUND_BOTTOM
+};
+
 static int activeRoomX = 1;
 static int activeRoomY = 0;
+
+static CollisionStaticRect bounds[4];
 
 static Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
 
@@ -52,9 +64,46 @@ void setPlayerPosition(double x, double y) {
     }
 }
 
+void setRoomBounds() {
+    bounds[GRID_BOUND_RIGHT].active = !validRoomIndex(1, 0);
+    bounds[GRID_BOUND_LEFT].active = !validRoomIndex(-1, 0);
+    bounds[GRID_BOUND_TOP].active = !validRoomIndex(0, -1);
+    bounds[GRID_BOUND_BOTTOM].active = !validRoomIndex(0, 1);
+}
+
 void gameInit() {
-    for (unsigned int x = 0; x < 2; x++) {
-        for (unsigned int y = 0; y < 2; y++) {
+    int x1, y1, x2, y2;
+
+    x1 = GB_GFX_GRID_OFFSET_X - GB_GFX_GRID_SIZE;
+    y1 = GB_GFX_GRID_OFFSET_Y - GB_GFX_GRID_SIZE;
+    x2 = GB_GFX_GRID_OFFSET_X;
+    y2 = GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE) + GB_GFX_GRID_SIZE;
+    collisionStaticRectSet(&bounds[GRID_BOUND_LEFT], x1, y1, x2, y2, 1);
+
+    x1 = GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE);
+    // y1 is same as above
+    x2 = x1 + GB_GFX_GRID_SIZE;
+    // y2 is same as above
+    collisionStaticRectSet(&bounds[GRID_BOUND_RIGHT], x1, y1, x2, y2, 1);
+
+    x1 = GB_GFX_GRID_OFFSET_X - GB_GFX_GRID_SIZE;
+    // y1 is the same as above
+    x2 = GB_GFX_GRID_OFFSET_X + (GB_GFX_GRID_WIDTH * GB_GFX_GRID_SIZE) + GB_GFX_GRID_SIZE;
+    y2 = y1 + GB_GFX_GRID_SIZE;
+    collisionStaticRectSet(&bounds[GRID_BOUND_TOP], x1, y1, x2, y2, 1);
+
+    // x1 is same as above
+    y1 = GB_GFX_GRID_OFFSET_Y + (GB_GFX_GRID_HEIGHT * GB_GFX_GRID_SIZE);
+    // x2 is same as above
+    y2 = y1 + GB_GFX_GRID_SIZE;
+    collisionStaticRectSet(&bounds[GRID_BOUND_BOTTOM], x1, y1, x2, y2, 1);
+
+    for (unsigned int i = 0; i < 8; i++) {
+        collisionStaticRectRegister(&bounds[i]);
+    }
+
+    for (unsigned int x = 0; x < MAIN_ROOM_GRID_WIDTH; x++) {
+        for (unsigned int y = 0; y < MAIN_ROOM_GRID_HEIGHT; y++) {
             rooms[x][y] = roomNew();
         }
     }
@@ -65,6 +114,8 @@ void gameInit() {
 
     roomStartActivation(rooms[activeRoomX][activeRoomY]);
     roomFinishActivation(rooms[activeRoomX][activeRoomY]);
+
+    setRoomBounds();
 }
 
 int handleRoomChange(double delta) {
@@ -178,6 +229,7 @@ int handleRoomChange(double delta) {
 
             roomFinishActivation(rooms[activeRoomX][activeRoomY]);
             roomTransition = 0;
+            setRoomBounds();
         }
     }
 
@@ -203,9 +255,13 @@ void handleRoomMove(int dx, int dy) {
     Room *swap = rooms[activeRoomX][activeRoomY];
     rooms[activeRoomX][activeRoomY] = rooms[oldRoomX][oldRoomY];
     rooms[oldRoomX][oldRoomY] = swap;
+
+    setRoomBounds();
 }
 
 int main(int argc, char *argv[]) {
+    EDIT_MODE = argc > 1 && strcmpi(argv[1], "edit") == 0;
+
     gbRendererInit("Test", 1, 1);
     gbInputInit();
     gbTextureInit();
@@ -214,19 +270,26 @@ int main(int argc, char *argv[]) {
     dynamicEntityInit();
     collisionInit();
     guyInit();
-    moveRoomPanelInit();
 
-    gameInit();//editorInit();
+    if (EDIT_MODE)
+        editorInit();
+    else {
+        moveRoomPanelInit();
+        gameInit();
+    }
 
-    Position overlayPos = (Position){0, 0};
-    Sprite overlay;
-    spriteSet(&overlay,
-              gbTextureLoadNamed(GB_TEXTURE_NAME_OVERLAY),
-              0, 0, 1280, 720,
-              gbScreenWidth, gbScreenHeight,
-              SPRITE_LAYER_FOREGROUND,
-              1, 1, SDL_FLIP_NONE);
-    spriteRegister(&overlay, &overlayPos);
+    if (!EDIT_MODE) {
+        Position overlayPos = (Position){0, 0};
+        Sprite overlay;
+        spriteSet(&overlay,
+                  gbTextureLoadNamed(GB_TEXTURE_NAME_OVERLAY),
+                  0, 0, 1280, 720,
+                  gbScreenWidth, gbScreenHeight,
+                  SPRITE_LAYER_FOREGROUND,
+                  1, 1, SDL_FLIP_NONE);
+
+        spriteRegister(&overlay, &overlayPos);
+    }
 
     uint8_t done = 0;
     uint32_t last_time = 0;
@@ -259,9 +322,14 @@ int main(int argc, char *argv[]) {
         if(gbInputCheckState(GB_INPUT_TOGGLE_EDIT_MODE, GB_INPUT_RELEASED))
             GB_GFX_DEBUG_FLAG = !GB_GFX_DEBUG_FLAG;
 
-        //editorUpdate();
-        if (!handleRoomChange(delta))
+        if (EDIT_MODE) {
+            editorUpdate();
             dynamicEntityAct(delta);
+        } else {
+            if (!handleRoomChange(delta)) {
+                dynamicEntityAct(delta);
+            }
+        }
 
         gbGfxDraw();
 

@@ -136,11 +136,11 @@ void guyThink(DynamicEntity *player, double delta) {
         }
     }
 
-    if (grounded) {
+    //if (grounded) { //TODO: UNCOMMENT THIS
         if (gbInputCheckState(GB_INPUT_JUMP, GB_INPUT_PRESSED)) {
             player->dy = -250;
         }
-    }
+    //}
 
     // MOVEMENT PHYSICS
     double oldVelocity = player->dx;

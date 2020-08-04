@@ -26,8 +26,8 @@
 static int initialized = 0;
 static int texture = -1;
 
-extern validRoomIndex(int dx, int dy);
-extern handleRoomMove(int dx, int dy);
+extern int validRoomIndex(int dx, int dy);
+extern void handleRoomMove(int dx, int dy);
 extern DynamicEntity *mainPlayer;
 
 DynamicEntity *moveRoomPanelNew(double x, double y) {
