@@ -79,9 +79,8 @@ void gbGfxDraw() {
 
     if (GB_GFX_DEBUG_FLAG) {
         collisionDebugDraw();
-        editorRender();
     }
-
+    editorRender();
 
     SDL_RenderPresent(gbMainRenderer);
 }

@@ -38,7 +38,7 @@ typedef enum {
 
 typedef enum {
     PLACE_STATIC_GEOMETRY,
-    PLACE_PLAYER,
+    PLACE_DYNAMIC,
     NUM_MODES
 } MODE;
 
@@ -89,6 +89,12 @@ static CollisionStaticRect *inputFieldHitbox;
 static Sprite *inputFieldBackground;
 static uint8_t textMode = 0;
 
+// Entity Palette
+static Position entityPalettePos;
+static Sprite entityPalette;
+static CollisionStaticRect entityPaletteRects[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES];
+static DYNAMIC_ENTITY_TYPE selectedType = DYNAMIC_ENTITY_TYPE_GUY;
+
 static char roomFilepath[50] = {'\0'};
 
 extern void setPlayerPosition(double x, double y);
@@ -100,7 +106,7 @@ void addHitboxToButton(Position *pos, Sprite *sprite, CollisionStaticRect **colR
 void editorInit() {
     modeButtonPosition = (Position) {GB_LOGICAL_SCREEN_WIDTH - (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0};
     buttonX[PLACE_STATIC_GEOMETRY] = 0;
-    buttonX[PLACE_PLAYER] = buttonSrcWidth;
+    buttonX[PLACE_DYNAMIC] = buttonSrcWidth;
 
     currentRoom = roomNew();
     spriteRegister(&currentRoom->backgroundSprite, &currentRoom->backgroundPos);
@@ -161,6 +167,27 @@ void editorInit() {
                       inputFieldBackground,
                       &inputFieldHitbox,
                       0);
+    entityPalettePos = (Position) {GB_LOGICAL_SCREEN_WIDTH - 160, 200};
+    spriteSet(&entityPalette,
+              gbTextureLoadNamed(GB_TEXTURE_NAME_ENTITY_PALETTE),
+              0, 0, 160, 160,
+              160, 160, SPRITE_LAYER_MIDGROUND,
+              0, 1, SDL_FLIP_NONE);
+    spriteRegister(&entityPalette, &entityPalettePos);
+
+    collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY],
+                           entityPalettePos.x, entityPalettePos.y,
+                           entityPalettePos.x + 32, entityPalettePos.y + 32,
+                           1
+                           );
+    collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY]);
+
+    collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL],
+                           entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].x2, entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].y1,
+                           entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].x2 + 32, entityPalettePos.y + 64,
+                           1
+                           );
+    collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]);
 }
 
 void editorTeardown() {
@@ -216,6 +243,7 @@ void editorUpdate() {
         if (collider == modeButtonHitbox) {
             if (++mode >= NUM_MODES) mode = 0;
             modeButtonSprite->src.x = buttonX[mode];
+            entityPalette.active = mode == PLACE_DYNAMIC;
             return;
         }
 
@@ -252,6 +280,14 @@ void editorUpdate() {
             }
         }
 
+        if (mode == PLACE_DYNAMIC) {
+            for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++) {
+                if (collider == entityPaletteRects + i) {
+                    selectedType = i;
+                }
+            }
+        }
+
         if (!clickInGrid) return;
 
         switch (mode) {
@@ -274,9 +310,9 @@ void editorUpdate() {
 
                 collisionStaticRectSet(rect, x1 < x2 ? x1 : x2, y1 < y2 ? y1 : y2, x2 > x1 ? x2 : x1, y2 > y1 ? y2 : y1, 1);
                 collisionStaticRectRegister(rect);
-
+                clickX = clickY = dragX = dragY = -1;
                 break;
-            case PLACE_PLAYER: ;
+            case PLACE_DYNAMIC: ;
                 int x, y;
                 SDL_GetMouseState(&x, &y);
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
@@ -320,28 +356,46 @@ void editorUpdate() {
 }
 
 void editorRender() {
+
     switch(mode) {
         case PLACE_STATIC_GEOMETRY:
-            if (clickX < 0 || clickY < 0 || dragX < 0 || dragY < 0 || !clickInGrid) break;
+            {
+                if (clickX < 0 || clickY < 0 || dragX < 0 || dragY < 0 || !clickInGrid) break;
 
-            SDL_SetRenderDrawColor(gbMainRenderer, 0xFF, 0x00, 0x00, 0xFF);
+                int x1 = clickX < dragX ? clickX : dragX;
+                int y1 = clickY < dragY ? clickY : dragY;
+                int x2 = dragX > clickX ? dragX : clickX;
+                int y2 = dragY > clickY ? dragY : clickY;
 
-            int x1 = clickX < dragX ? clickX : dragX;
-            int y1 = clickY < dragY ? clickY : dragY;
-            int x2 = dragX > clickX ? dragX : clickX;
-            int y2 = dragY > clickY ? dragY : clickY;
+                gbGfxGridSquareToWorldCoords(x1, y1, &x1, &y1, 0);
+                gbGfxGridSquareToWorldCoords(x2, y2, &x2, &y2, 1);
 
-            gbGfxGridSquareToWorldCoords(x1, y1, &x1, &y1, 0);
-            gbGfxGridSquareToWorldCoords(x2, y2, &x2, &y2, 1);
+                SDL_SetRenderDrawColor(gbMainRenderer, 0xFF, 0x00, 0x00, 0xFF);
+                SDL_Rect rect;
 
-            SDL_Rect rect;
-            rect.x = x1;
-            rect.y = y1;
-            rect.w = x2 - x1;
-            rect.h = y2 - y1;
+                rect.x = x1;
+                rect.y = y1;
+                rect.w = x2 - x1;
+                rect.h = y2 - y1;
 
-            SDL_RenderDrawRect(gbMainRenderer, &rect);
-            gbRendererResetDrawColor();
+                SDL_RenderDrawRect(gbMainRenderer, &rect);
+                gbRendererResetDrawColor();
+                break;
+            }
+        case PLACE_DYNAMIC:
+            {
+                SDL_SetRenderDrawColor(gbMainRenderer, 0xFF, 0x00, 0x00, 0xFF);
+                SDL_Rect rect;
+
+                rect.x = entityPaletteRects[selectedType].x1;
+                rect.y = entityPaletteRects[selectedType].y1;
+                rect.w = entityPaletteRects[selectedType].x2 - entityPaletteRects[selectedType].x1;
+                rect.h = entityPaletteRects[selectedType].y2 - entityPaletteRects[selectedType].y1;
+
+                SDL_RenderDrawRect(gbMainRenderer, &rect);
+                gbRendererResetDrawColor();
+                break;
+            }
     }
 }
 
