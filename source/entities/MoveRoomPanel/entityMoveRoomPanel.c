@@ -31,14 +31,13 @@ extern void handleRoomMove(int dx, int dy);
 extern DynamicEntity *mainPlayer;
 
 DynamicEntity *moveRoomPanelNew(double x, double y) {
-    DynamicEntity *panel = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_GUY);
+    DynamicEntity *panel = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL);
     panel->pos = (Position){x, y};
 
     panel->dx = 0;      // Change room this dir X
     panel->dy = 0;      // Change room this dir Y
     panel->ax = 0;      // Player in bounding box flag
     panel->ay = 0;
-    panel->type = DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL;
     panel->state.moveRoomPanel.state = MOVE_ROOM_PANEL_STATE_EMPTY;
 
     spriteSet(&panel->sprite, GB_TEXTURE_NAME_MOVE_ROOM_PANEL, 0, 0, 32, 64, 32, 64, SPRITE_LAYER_BACKMID, 1, 0, SDL_FLIP_NONE);

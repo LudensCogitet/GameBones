@@ -25,6 +25,7 @@
 #include "../Room/Room_sys.h"
 
 #include "../entities/Guy/entityGuy.h"
+#include "../entities/MoveRoomPanel/entityMoveRoomPanel.h"
 
 #define EDITOR_MAX_STATIC_COLLIDERS 50
 
@@ -175,16 +176,22 @@ void editorInit() {
               0, 1, SDL_FLIP_NONE);
     spriteRegister(&entityPalette, &entityPalettePos);
 
+    int x, y;
+    x = entityPalettePos.x;
+    y = entityPalettePos.y;
+
     collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY],
-                           entityPalettePos.x, entityPalettePos.y,
-                           entityPalettePos.x + 32, entityPalettePos.y + 32,
+                           x, y,
+                           x + 32, y + 32,
                            1
                            );
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY]);
 
+    x += 32;
+
     collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL],
-                           entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].x2, entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].y1,
-                           entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY].x2 + 32, entityPalettePos.y + 64,
+                           x, y,
+                           x + 32, y + 64,
                            1
                            );
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]);
@@ -318,14 +325,26 @@ void editorUpdate() {
                 gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
                 gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                setPlayerPosition(x, y);
+                switch (selectedType) {
+                    case DYNAMIC_ENTITY_TYPE_GUY:
+                        setPlayerPosition(x, y);
 
-                if (!currentRoom->playerStart) {
-                    currentRoom->playerStart = (Position *)malloc(sizeof(Position));
+                        if (!currentRoom->playerStart) {
+                            currentRoom->playerStart = (Position *)malloc(sizeof(Position));
+                        }
+
+                        currentRoom->playerStart->x = x;
+                        currentRoom->playerStart->y = y;
+                        break;
+                    case DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL:
+                        moveRoomPanelInit();
+                        DynamicEntity * panel = moveRoomPanelNew(x, y);
+                        roomAddDynamicEntity(currentRoom, panel);
+                        dynamicEntityRegister(panel);
+                        break;
                 }
 
-                currentRoom->playerStart->x = x;
-                currentRoom->playerStart->y = y;
+
         }
     }
 

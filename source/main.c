@@ -300,10 +300,6 @@ int main(int argc, char *argv[]) {
     unsigned int fps = 0;
     double addAcc = 0;
 
-
-    DynamicEntity *panel = moveRoomPanelNew(GB_GFX_GRID_OFFSET_X + 128, GB_GFX_GRID_OFFSET_Y + 128);
-    dynamicEntityRegister(panel);
-
     gbInputSetKey(GB_INPUT_MOVE_LEFT, SDLK_LEFT);
     gbInputSetKey(GB_INPUT_MOVE_RIGHT, SDLK_RIGHT);
     gbInputSetKey(GB_INPUT_JUMP, SDLK_SPACE);
