@@ -54,6 +54,14 @@ static Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
 
 DynamicEntity *mainPlayer = 0;
 
+int validRoomIndex(int dx, int dy) {
+    int newRoomX = activeRoomX + dx;
+    int newRoomY = activeRoomY + dy;
+
+    return newRoomX >= 0 && newRoomX <= MAIN_ROOM_GRID_WIDTH - 1 &&
+           newRoomY >= 0 && newRoomY <= MAIN_ROOM_GRID_HEIGHT - 1;
+}
+
 void setPlayerPosition(double x, double y) {
     if (!mainPlayer) {
         mainPlayer = guyNew(x, y);
@@ -236,14 +244,6 @@ int handleRoomChange(double delta) {
     return roomTransition;
 }
 
-int validRoomIndex(int dx, int dy) {
-    int newRoomX = activeRoomX + dx;
-    int newRoomY = activeRoomY + dy;
-
-    return newRoomX >= 0 && newRoomX <= MAIN_ROOM_GRID_WIDTH - 1 &&
-           newRoomY >= 0 && newRoomY <= MAIN_ROOM_GRID_HEIGHT - 1;
-}
-
 void handleRoomMove(int dx, int dy) {
     if (!validRoomIndex(dx, dy)) return;
 
@@ -260,7 +260,7 @@ void handleRoomMove(int dx, int dy) {
 }
 
 int main(int argc, char *argv[]) {
-    EDIT_MODE = argc > 1 && strcmpi(argv[1], "edit") == 0;
+    EDIT_MODE = argc > 1 && strcmp(argv[1], "edit") == 0;
 
     gbRendererInit("Test", 1, 1);
     gbInputInit();
