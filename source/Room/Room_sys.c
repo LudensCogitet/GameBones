@@ -34,6 +34,12 @@ Room *roomNew() {
     newRoom->backgroundPos.y = y;
     newRoom->backgroundSprite.layer = SPRITE_LAYER_BACKGROUND;
 
+    for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+        for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+            newRoom->powerGrid[x][y] = 0;
+        }
+    }
+
     return newRoom;
 }
 
@@ -146,6 +152,17 @@ void roomSerialize(Room *room, char *filepath) {
     // Write dynamic entities
     dynamicEntitySerializeAll(room->entities, room->numEntities, file);
 
+    // SERIALIZE POWER GRID
+    // Write signal
+    SDL_WriteBE16(file, SERIALIZE_POWER_GRID);
+
+    // Write power grid data
+    for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+        for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+            SDL_WriteU8(file, room->powerGrid[x][y]);
+        }
+    }
+
     // Write end signal
     SDL_WriteBE16(file, SERIALIZE_END);
 
@@ -206,6 +223,13 @@ void roomDeserialize(Room *room, char *filepath) {
                     }
                     room->numEntities = numEntities;
                 }
+            break;
+            case SERIALIZE_POWER_GRID:
+                for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+                    for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+                        room->powerGrid[x][y] = SDL_ReadU8(file);
+                }
+            }
             break;
         }
     } while (signal != SERIALIZE_END);

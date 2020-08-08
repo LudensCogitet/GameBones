@@ -1,6 +1,8 @@
 #ifndef ROOM_TYPE_H_INCLUDED
 #define ROOM_TYPE_H_INCLUDED
 
+#include "../gbGfx/gbGfx_sys.h"
+
 #include "../Collision/Collision_sys.h"
 #include "../Collision/CollisionStaticRect_type.h"
 
@@ -9,6 +11,24 @@
 
 #define ROOM_FILENAME_SIZE_MAX 50
 #define ROOM_BACKGROUND_FILENAME_SIZE_MAX 50
+
+#define POWER_GRID_GET_STATE(x) (x & 0xF0)
+#define POWER_GRID_GET_WIRING(x) (x >> 4)
+
+typedef enum {
+    EMPTY,
+    VERTICAL,
+    HORIZONTAL,
+    CORNER_TOP_LEFT,
+    CORNER_TOP_RIGHT,
+    CORNER_BOTTOM_RIGHT,
+    CORNER_BOTTOM_LEFT,
+    T_NO_BOTTOM,
+    T_NO_LEFT,
+    T_NO_TOP,
+    T_NO_RIGHT,
+    CROSS
+} POWER_GRID_WIRING;
 
 typedef struct {
     char roomFilename[ROOM_FILENAME_SIZE_MAX];
@@ -19,6 +39,7 @@ typedef struct {
     Sprite backgroundSprite;
 
     Position *playerStart;
+    uint8_t powerGrid[GB_GFX_GRID_WIDTH][GB_GFX_GRID_HEIGHT];
 
     int numColliders;
     CollisionStaticRect *staticColliders[COLLISION_MAX_STATIC_COLLIDERS];
