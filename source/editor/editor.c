@@ -40,6 +40,7 @@ typedef enum {
 typedef enum {
     PLACE_STATIC_GEOMETRY,
     PLACE_DYNAMIC,
+    PLACE_POWER,
     NUM_MODES
 } MODE;
 
@@ -96,6 +97,12 @@ static Sprite entityPalette;
 static CollisionStaticRect entityPaletteRects[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES];
 static DYNAMIC_ENTITY_TYPE selectedType = DYNAMIC_ENTITY_TYPE_GUY;
 
+// Power Grid Palette
+static Position powerGridPalettePos;
+static Sprite powerGridPalette;
+static CollisionStaticRect powerGridRects[POWER_GRID_WIRING_NUM];
+static POWER_GRID_WIRING selectedWiring;
+
 static char roomFilepath[50] = {'\0'};
 
 extern void setPlayerPosition(double x, double y);
@@ -108,6 +115,7 @@ void editorInit() {
     modeButtonPosition = (Position) {GB_LOGICAL_SCREEN_WIDTH - (GB_LOGICAL_SCREEN_WIDTH / 7.27), 0};
     buttonX[PLACE_STATIC_GEOMETRY] = 0;
     buttonX[PLACE_DYNAMIC] = buttonSrcWidth;
+    buttonX[PLACE_POWER] = buttonSrcWidth * 2;
 
     currentRoom = roomNew();
     spriteRegister(&currentRoom->backgroundSprite, &currentRoom->backgroundPos);
@@ -168,6 +176,8 @@ void editorInit() {
                       inputFieldBackground,
                       &inputFieldHitbox,
                       0);
+
+    // START entity palette init
     entityPalettePos = (Position) {GB_LOGICAL_SCREEN_WIDTH - 160, 200};
     spriteSet(&entityPalette,
               gbTextureLoadNamed(GB_TEXTURE_NAME_ENTITY_PALETTE),
@@ -183,8 +193,7 @@ void editorInit() {
     collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY],
                            x, y,
                            x + 32, y + 32,
-                           1
-                           );
+                           1);
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_GUY]);
 
     x += 32;
@@ -192,9 +201,102 @@ void editorInit() {
     collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL],
                            x, y,
                            x + 32, y + 64,
-                           1
-                           );
+                           1);
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]);
+    // END entity palette init
+
+    // START power grid palette init
+    powerGridPalettePos = (Position) {GB_LOGICAL_SCREEN_WIDTH - 128, 200};
+    spriteSet(&powerGridPalette,
+              gbTextureLoadNamed(GB_TEXTURE_NAME_POWER_GRID_PALETTE),
+              0, 0, 128, 128,
+              128, 128, SPRITE_LAYER_MIDGROUND,
+              0, 1, SDL_FLIP_NONE);
+    spriteRegister(&powerGridPalette, &powerGridPalettePos);
+
+    x = powerGridPalettePos.x;
+    y = powerGridPalettePos.y;
+
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_EMPTY],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_EMPTY]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_VERTICAL],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_VERTICAL]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_HORIZONTAL],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_HORIZONTAL]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_GENERATOR],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_GENERATOR]);
+
+    x = powerGridPalettePos.x;
+    y += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_CORNER_TOP_LEFT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_TOP_LEFT]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_CORNER_TOP_RIGHT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_TOP_RIGHT]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_CORNER_BOTTOM_RIGHT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_BOTTOM_RIGHT]);
+
+    x = powerGridPalettePos.x;
+    y += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_CORNER_BOTTOM_LEFT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_BOTTOM_LEFT]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_T_NO_BOTTOM],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_T_NO_BOTTOM]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_T_NO_LEFT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_T_NO_LEFT]);
+
+    x = powerGridPalettePos.x;
+    y += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_T_NO_TOP],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_T_NO_TOP]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_T_NO_RIGHT],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_T_NO_RIGHT]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_CROSS],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CROSS]);
+    // END power grid palette init
 }
 
 void editorTeardown() {
@@ -215,7 +317,6 @@ void editorTeardown() {
             uiColliders[i] = 0;
         }
     }
-
 
     uiColliderCursor = 0;
 
@@ -250,7 +351,19 @@ void editorUpdate() {
         if (collider == modeButtonHitbox) {
             if (++mode >= NUM_MODES) mode = 0;
             modeButtonSprite->src.x = buttonX[mode];
-            entityPalette.active = mode == PLACE_DYNAMIC;
+            if (entityPalette.active = mode == PLACE_DYNAMIC) {
+                for (int i = 0; i < POWER_GRID_WIRING_NUM; i++)
+                    powerGridRects[i].active = 0;
+                for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++)
+                    entityPaletteRects[i].active = 1;
+            }
+
+            if (powerGridPalette.active = mode == PLACE_POWER) {
+                for (int i = 0; i < POWER_GRID_WIRING_NUM; i++)
+                    powerGridRects[i].active = 1;
+                for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++)
+                    entityPaletteRects[i].active = 0;
+            }
             return;
         }
 
@@ -291,6 +404,12 @@ void editorUpdate() {
             for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++) {
                 if (collider == entityPaletteRects + i) {
                     selectedType = i;
+                }
+            }
+        } else if (mode == PLACE_POWER) {
+            for (int i = 0; i < POWER_GRID_WIRING_NUM; i++) {
+                if (collider == powerGridRects + i) {
+                    selectedWiring = i;
                 }
             }
         }
@@ -374,6 +493,19 @@ void editorUpdate() {
     }
 }
 
+void drawPaletteBackground(CollisionStaticRect paletteRect) {
+    SDL_SetRenderDrawColor(gbMainRenderer, 0xFF, 0x00, 0x00, 0xFF);
+    SDL_Rect rect;
+
+    rect.x = paletteRect.x1;
+    rect.y = paletteRect.y1;
+    rect.w = paletteRect.x2 - paletteRect.x1;
+    rect.h = paletteRect.y2 - paletteRect.y1;
+
+    SDL_RenderDrawRect(gbMainRenderer, &rect);
+    gbRendererResetDrawColor();
+}
+
 void editorRender() {
 
     switch(mode) {
@@ -402,19 +534,10 @@ void editorRender() {
                 break;
             }
         case PLACE_DYNAMIC:
-            {
-                SDL_SetRenderDrawColor(gbMainRenderer, 0xFF, 0x00, 0x00, 0xFF);
-                SDL_Rect rect;
-
-                rect.x = entityPaletteRects[selectedType].x1;
-                rect.y = entityPaletteRects[selectedType].y1;
-                rect.w = entityPaletteRects[selectedType].x2 - entityPaletteRects[selectedType].x1;
-                rect.h = entityPaletteRects[selectedType].y2 - entityPaletteRects[selectedType].y1;
-
-                SDL_RenderDrawRect(gbMainRenderer, &rect);
-                gbRendererResetDrawColor();
-                break;
-            }
+            drawPaletteBackground(entityPaletteRects[selectedType]);
+            break;
+        case PLACE_POWER:
+            drawPaletteBackground(powerGridRects[selectedWiring]);
     }
 }
 
