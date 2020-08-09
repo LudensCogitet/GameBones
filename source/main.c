@@ -45,12 +45,13 @@ static enum {
     GRID_BOUND_BOTTOM
 };
 
-static int activeRoomX = 1;
-static int activeRoomY = 0;
+int activeRoomX = 1;
+int activeRoomY = 0;
 
 static CollisionStaticRect bounds[4];
 
-static Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
+Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
+unsigned int mainCabelsTexture;
 
 DynamicEntity *mainPlayer = 0;
 
@@ -270,6 +271,8 @@ int main(int argc, char *argv[]) {
     dynamicEntityInit();
     collisionInit();
     guyInit();
+
+    mainCabelsTexture = gbTextureLoadNamed(GB_TEXTURE_NAME_CABELS);
 
     if (EDIT_MODE)
         editorInit();

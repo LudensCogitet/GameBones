@@ -12,8 +12,11 @@
 #define ROOM_FILENAME_SIZE_MAX 50
 #define ROOM_BACKGROUND_FILENAME_SIZE_MAX 50
 
-#define POWER_GRID_GET_STATE(x) (x & 0xF0)
-#define POWER_GRID_GET_WIRING(x) (x >> 4)
+#define POWER_GRID_GET_WIRING(x) (x & 0x0F)
+#define POWER_GRID_GET_STATE(x) (x >> 4)
+#define POWER_GRID_CLEAR_WIRING(x) (x &= 0xF0)
+#define POWER_GRID_ON 16
+#define POWER_GRID_BLOCKED 32
 
 typedef enum {
     POWER_GRID_EMPTY,

@@ -59,7 +59,7 @@ static int dragY = -1;
 static int releaseX = -1;
 static int releaseY = -1;
 
-static Room *currentRoom;
+Room *currentEditorRoom;
 
 static unsigned int uiColliderCursor = 0;
 static CollisionStaticRect *uiColliders[EDITOR_MAX_STATIC_COLLIDERS];
@@ -117,8 +117,8 @@ void editorInit() {
     buttonX[PLACE_DYNAMIC] = buttonSrcWidth;
     buttonX[PLACE_POWER] = buttonSrcWidth * 2;
 
-    currentRoom = roomNew();
-    spriteRegister(&currentRoom->backgroundSprite, &currentRoom->backgroundPos);
+    currentEditorRoom = roomNew();
+    spriteRegister(&currentEditorRoom->backgroundSprite, &currentEditorRoom->backgroundPos);
 
     uiColliderCursor = 0;
     for (int i = 0; i < EDITOR_MAX_STATIC_COLLIDERS; i++) {
@@ -340,6 +340,20 @@ void editorUpdate() {
             case PLACE_STATIC_GEOMETRY:
                 SDL_GetMouseState(&dragX, &dragY);
                 gbGfxScreenCoordsToGridSquare(dragX, dragY, &dragX, &dragY);
+                break;
+            case PLACE_POWER: ;
+                {
+                    int x = 0;
+                    int y = 0;
+                    SDL_GetMouseState(&x, &y);
+                    if (gbGfxScreenCoordsToGridSquare(x, y, &x, &y)) {
+                        if (selectedWiring)
+                            currentEditorRoom->powerGrid[x][y] |= selectedWiring;
+                        else
+                            POWER_GRID_CLEAR_WIRING(currentEditorRoom->powerGrid[x][y]);
+                    }
+                }
+                break;
         }
     }
 
@@ -372,10 +386,10 @@ void editorUpdate() {
                 int clearTextBuffer = selectedMenuItem != i;
                 switch (i) {
                     case NEW_ROOM:
-                        roomStartDeactivation(currentRoom);
-                        roomFinishDeactivation(currentRoom);
-                        roomDestroy(currentRoom);
-                        currentRoom = roomNew();
+                        roomStartDeactivation(currentEditorRoom);
+                        roomFinishDeactivation(currentEditorRoom);
+                        roomDestroy(currentEditorRoom);
+                        currentEditorRoom = roomNew();
                     break;
                     case SAVE_ROOM:
                         if (selectedMenuItem == LOAD_ROOM)
@@ -432,38 +446,38 @@ void editorUpdate() {
                 gbGfxGridSquareToWorldCoords(x2, y2, &x2, &y2, 1);
 
                 CollisionStaticRect *rect = (CollisionStaticRect *)malloc(sizeof(CollisionStaticRect));
-                roomAddStaticCollider(currentRoom, rect);
+                roomAddStaticCollider(currentEditorRoom, rect);
 
                 collisionStaticRectSet(rect, x1 < x2 ? x1 : x2, y1 < y2 ? y1 : y2, x2 > x1 ? x2 : x1, y2 > y1 ? y2 : y1, 1);
                 collisionStaticRectRegister(rect);
                 clickX = clickY = dragX = dragY = -1;
                 break;
             case PLACE_DYNAMIC: ;
-                int x, y;
-                SDL_GetMouseState(&x, &y);
-                gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
-                gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
+                {
+                    SDL_GetMouseState(&x, &y);
+                    gbGfxScreenCoordsToGridSquare(x, y, &x, &y);
+                    gbGfxGridSquareToWorldCoords(x, y, &x, &y, 0);
 
-                switch (selectedType) {
-                    case DYNAMIC_ENTITY_TYPE_GUY:
-                        setPlayerPosition(x, y);
+                    switch (selectedType) {
+                        case DYNAMIC_ENTITY_TYPE_GUY:
+                            setPlayerPosition(x, y);
 
-                        if (!currentRoom->playerStart) {
-                            currentRoom->playerStart = (Position *)malloc(sizeof(Position));
-                        }
+                            if (!currentEditorRoom->playerStart) {
+                                currentEditorRoom->playerStart = (Position *)malloc(sizeof(Position));
+                            }
 
-                        currentRoom->playerStart->x = x;
-                        currentRoom->playerStart->y = y;
-                        break;
-                    case DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL:
-                        moveRoomPanelInit();
-                        DynamicEntity * panel = moveRoomPanelNew(x, y);
-                        roomAddDynamicEntity(currentRoom, panel);
-                        dynamicEntityRegister(panel);
-                        break;
+                            currentEditorRoom->playerStart->x = x;
+                            currentEditorRoom->playerStart->y = y;
+                            break;
+                        case DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL:
+                            moveRoomPanelInit();
+                            DynamicEntity * panel = moveRoomPanelNew(x, y);
+                            roomAddDynamicEntity(currentEditorRoom, panel);
+                            dynamicEntityRegister(panel);
+                            break;
+                    }
                 }
-
-
+                break;
         }
     }
 
@@ -475,18 +489,18 @@ void editorUpdate() {
                 CollisionStaticRect *collider = collisionDetectPointCollisionStatic(x, y);
                 if (!collider) break;
 
-                for (unsigned int i = 0; i < currentRoom->numColliders; i++) {
-                    if (currentRoom->staticColliders[i] != collider) continue;
+                for (unsigned int i = 0; i < currentEditorRoom->numColliders; i++) {
+                    if (currentEditorRoom->staticColliders[i] != collider) continue;
 
-                    collisionStaticRectUnregister(currentRoom->staticColliders[i]);
-                    free(currentRoom->staticColliders[i]);
+                    collisionStaticRectUnregister(currentEditorRoom->staticColliders[i]);
+                    free(currentEditorRoom->staticColliders[i]);
 
-                    currentRoom->staticColliders[i] = 0;
+                    currentEditorRoom->staticColliders[i] = 0;
 
-                    if (--currentRoom->numColliders > 0 && currentRoom->numColliders != i)
-                        currentRoom->staticColliders[i] = currentRoom->staticColliders[currentRoom->numColliders];
+                    if (--currentEditorRoom->numColliders > 0 && currentEditorRoom->numColliders != i)
+                        currentEditorRoom->staticColliders[i] = currentEditorRoom->staticColliders[currentEditorRoom->numColliders];
 
-                    currentRoom->staticColliders[currentRoom->numColliders] = 0;
+                    currentEditorRoom->staticColliders[currentEditorRoom->numColliders] = 0;
                     break;
                 }
         }
@@ -556,23 +570,23 @@ void handleTextInput() {
 
             switch (selectedMenuItem) {
                 case SAVE_ROOM:
-                    roomSerialize(currentRoom, buffer);
+                    roomSerialize(currentEditorRoom, buffer);
                 break;
                 case LOAD_ROOM:
-                    roomStartDeactivation(currentRoom);
-                    roomFinishDeactivation(currentRoom);
-                    roomDestroy(currentRoom);
-                    currentRoom = roomNew();
-                    roomDeserialize(currentRoom, buffer);
-                    roomStartActivation(currentRoom);
-                    roomFinishActivation(currentRoom);
+                    roomStartDeactivation(currentEditorRoom);
+                    roomFinishDeactivation(currentEditorRoom);
+                    roomDestroy(currentEditorRoom);
+                    currentEditorRoom = roomNew();
+                    roomDeserialize(currentEditorRoom, buffer);
+                    roomStartActivation(currentEditorRoom);
+                    roomFinishActivation(currentEditorRoom);
                 break;
                 case LOAD_BG:
-                    if (!roomLoadBackground(currentRoom, buffer)) {
+                    if (!roomLoadBackground(currentEditorRoom, buffer)) {
                         sprintf(buffer, "Failed to load background image.");
                         textChange(inputFieldText, GB_FONT_MID_FREE_MONO, GB_COLOR_WHITE, buffer);
                     } else {
-                        sprintf(currentRoom->backgroundFilename, buffer);
+                        sprintf(currentEditorRoom->backgroundFilename, buffer);
                     }
                 break;
             }
