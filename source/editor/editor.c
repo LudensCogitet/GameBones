@@ -117,7 +117,7 @@ void editorInit() {
     buttonX[PLACE_DYNAMIC] = buttonSrcWidth;
     buttonX[PLACE_POWER] = buttonSrcWidth * 2;
 
-    currentEditorRoom = roomNew();
+    currentEditorRoom = roomNew(0, 0);
     spriteRegister(&currentEditorRoom->backgroundSprite, &currentEditorRoom->backgroundPos);
 
     uiColliderCursor = 0;
@@ -389,7 +389,7 @@ void editorUpdate() {
                         roomStartDeactivation(currentEditorRoom);
                         roomFinishDeactivation(currentEditorRoom);
                         roomDestroy(currentEditorRoom);
-                        currentEditorRoom = roomNew();
+                        currentEditorRoom = roomNew(0, 0);
                     break;
                     case SAVE_ROOM:
                         if (selectedMenuItem == LOAD_ROOM)
@@ -503,6 +503,10 @@ void editorUpdate() {
                     currentEditorRoom->staticColliders[currentEditorRoom->numColliders] = 0;
                     break;
                 }
+                break;
+            case PLACE_POWER:
+                roomRefreshPower(currentEditorRoom);
+                break;
         }
     }
 }
@@ -576,7 +580,7 @@ void handleTextInput() {
                     roomStartDeactivation(currentEditorRoom);
                     roomFinishDeactivation(currentEditorRoom);
                     roomDestroy(currentEditorRoom);
-                    currentEditorRoom = roomNew();
+                    currentEditorRoom = roomNew(0, 0);
                     roomDeserialize(currentEditorRoom, buffer);
                     roomStartActivation(currentEditorRoom);
                     roomFinishActivation(currentEditorRoom);

@@ -13,7 +13,7 @@ extern void setPlayerPosition(double x, double y);
 void roomUnloadBackground(Room *room);
 int roomLoadBackground(Room *room, char *filename);
 
-Room *roomNew() {
+Room *roomNew(int gridX, int gridY) {
     Room *newRoom = (Room *)malloc(sizeof(Room));
 
     for (int i = 0; i < ROOM_FILENAME_SIZE_MAX; i++)
@@ -39,6 +39,9 @@ Room *roomNew() {
             newRoom->powerGrid[x][y] = 0;
         }
     }
+
+    newRoom->gridX = gridX;
+    newRoom->gridY = gridY;
 
     return newRoom;
 }
@@ -264,4 +267,104 @@ void roomFinishActivation(Room *room) {
 
     for (int i = 0; i < room->numColliders; i++)
         collisionStaticRectRegister(room->staticColliders[i]);
+}
+
+void roomTracePower(uint8_t *grid, int gridX, int gridY) {
+    int xCursor = 0;
+    int yCursor = 0;
+    int routesX[4] = { 0 };
+    int routesY[4] = { 0 };
+
+    POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY) |= POWER_GRID_ON;
+
+    uint8_t wiring = POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY));
+
+    if (wiring == POWER_GRID_HORIZONTAL ||
+        wiring == POWER_GRID_GENERATOR ||
+        wiring == POWER_GRID_CROSS ||
+        wiring == POWER_GRID_CORNER_BOTTOM_RIGHT ||
+        wiring == POWER_GRID_T_NO_LEFT ||
+        wiring == POWER_GRID_T_NO_TOP ||
+        wiring == POWER_GRID_T_NO_BOTTOM ||
+        wiring == POWER_GRID_CORNER_TOP_RIGHT) {
+            if (gridX + 1 < GB_GFX_GRID_WIDTH &&
+                POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, gridX + 1, gridY)) &&
+                !(POWER_GRID_GET_SQUARE_PTR(grid, gridX + 1, gridY) & POWER_GRID_ON)) {
+                routesX[xCursor++] = gridX + 1;
+                routesY[yCursor++] = gridY;
+            }
+        }
+    if (wiring == POWER_GRID_HORIZONTAL ||
+        wiring == POWER_GRID_GENERATOR ||
+        wiring == POWER_GRID_CROSS ||
+        wiring == POWER_GRID_CORNER_BOTTOM_LEFT ||
+        wiring == POWER_GRID_CORNER_TOP_LEFT ||
+        wiring == POWER_GRID_T_NO_RIGHT ||
+        wiring == POWER_GRID_T_NO_TOP ||
+        wiring == POWER_GRID_T_NO_BOTTOM) {
+            if (gridX - 1 >= 0 &&
+                POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, gridX - 1, gridY)) &&
+                !(POWER_GRID_GET_SQUARE_PTR(grid, gridX - 1, gridY) & POWER_GRID_ON)) {
+                routesX[xCursor++] = gridX - 1;
+                routesY[yCursor++] = gridY;
+            }
+        }
+
+    if (wiring == POWER_GRID_VERTICAL ||
+        wiring == POWER_GRID_GENERATOR ||
+        wiring == POWER_GRID_CROSS ||
+        wiring == POWER_GRID_CORNER_TOP_LEFT ||
+        wiring == POWER_GRID_CORNER_TOP_RIGHT ||
+        wiring == POWER_GRID_T_NO_RIGHT ||
+        wiring == POWER_GRID_T_NO_LEFT ||
+        wiring == POWER_GRID_T_NO_BOTTOM) {
+            if (gridY - 1 >= 0 &&
+                POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY - 1)) &&
+                !(POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY - 1) & POWER_GRID_ON)) {
+                routesX[xCursor++] = gridX;
+                routesY[yCursor++] = gridY - 1;
+            }
+        }
+
+    if (wiring == POWER_GRID_VERTICAL ||
+        wiring == POWER_GRID_GENERATOR ||
+        wiring == POWER_GRID_CROSS ||
+        wiring == POWER_GRID_CORNER_BOTTOM_LEFT ||
+        wiring == POWER_GRID_CORNER_BOTTOM_RIGHT ||
+        wiring == POWER_GRID_T_NO_RIGHT ||
+        wiring == POWER_GRID_T_NO_LEFT ||
+        wiring == POWER_GRID_T_NO_TOP) {
+            if (gridY + 1 < GB_GFX_GRID_HEIGHT &&
+                POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY + 1)) &&
+                !(POWER_GRID_GET_SQUARE_PTR(grid, gridX, gridY + 1) & POWER_GRID_ON)) {
+                routesX[xCursor++] = gridX;
+                routesY[yCursor++] = gridY + 1;
+            }
+        }
+
+    for (int x = 0; x < xCursor; x++) {
+        for (int y = 0; y < yCursor; y++) {
+            roomTracePower(grid, routesX[x], routesY[y]);
+        }
+    }
+}
+
+void roomRefreshPower(Room *room) {
+   uint8_t *grid = &room->powerGrid;
+
+    // Clear power
+    for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+        for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+            POWER_GRID_CLEAR_STATE(POWER_GRID_GET_SQUARE_PTR(grid, x, y), POWER_GRID_ON);
+        }
+    }
+
+    // Seek Generators
+    for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+        for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+            if (POWER_GRID_GET_WIRING(POWER_GRID_GET_SQUARE_PTR(grid, x, y)) == POWER_GRID_GENERATOR) {
+                roomTracePower(grid, x, y);
+            }
+        }
+    }
 }

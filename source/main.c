@@ -113,7 +113,7 @@ void gameInit() {
 
     for (unsigned int x = 0; x < MAIN_ROOM_GRID_WIDTH; x++) {
         for (unsigned int y = 0; y < MAIN_ROOM_GRID_HEIGHT; y++) {
-            rooms[x][y] = roomNew();
+            rooms[x][y] = roomNew(x, y);
         }
     }
     roomDeserialize(rooms[1][0], "./room1.rm");
@@ -256,6 +256,11 @@ void handleRoomMove(int dx, int dy) {
     Room *swap = rooms[activeRoomX][activeRoomY];
     rooms[activeRoomX][activeRoomY] = rooms[oldRoomX][oldRoomY];
     rooms[oldRoomX][oldRoomY] = swap;
+
+    rooms[activeRoomX][activeRoomY]->gridX = activeRoomX;
+    rooms[activeRoomX][activeRoomY]->gridY = activeRoomY;
+    rooms[oldRoomX][activeRoomY]->gridX = oldRoomX;
+    rooms[oldRoomY][activeRoomY]->gridY = oldRoomY;
 
     setRoomBounds();
 }

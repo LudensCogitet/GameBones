@@ -15,7 +15,7 @@ typedef enum {
     SERIALIZE_END
 } ROOM_SERIALIZE_SIGNAL;
 
-Room *roomNew();
+Room *roomNew(int gridX, int gridY);
 void roomDestroy(Room *room);
 int roomLoadBackground(Room * room, char *filename);
 void roomUnloadBackground(Room *room);
@@ -30,5 +30,7 @@ void roomFinishDeactivation(Room *room);
 
 int roomAddStaticCollider(Room *room, CollisionStaticRect *rect);
 int roomAddDynamicEntity(Room *room, DynamicEntity *entity);
+
+void roomRefreshPower(Room *room);
 
 #endif // ROOM_SYS_H_INCLUDED
