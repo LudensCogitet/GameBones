@@ -12,6 +12,8 @@
 
 #define GB_GFX_GRID_WIDTH       20
 #define GB_GFX_GRID_HEIGHT      20
+#define GB_GFX_GRID_MAX_X       19
+#define GB_GFX_GRID_MAX_Y       19
 
 #define GB_GFX_GRID_SIZE        (GB_LOGICAL_SCREEN_WIDTH / 40)
 

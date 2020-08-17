@@ -31,7 +31,7 @@ static int32_t gbGfxCameraOffsetY = 0;
 extern Room *currentEditorRoom;
 extern int activeRoomX;
 extern int activeRoomY;
-extern Room ***rooms;
+extern Room *currentRoom;
 extern unsigned int mainCabelsTexture;
 extern uint8_t EDIT_MODE;
 
@@ -85,24 +85,27 @@ void gbGfxDraw() {
 
     spriteDraw();
 
-    for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
-        for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
-            uint8_t grid = EDIT_MODE ? currentEditorRoom->powerGrid[x][y] : rooms[activeRoomX][activeRoomY]->powerGrid[x][y];
-            uint8_t wiring = POWER_GRID_GET_WIRING(grid);
-            if (wiring) {
-                SDL_Rect src = (SDL_Rect) { POWER_GRID_GET_STATE(grid) * 32, wiring * 32, 32, 32 };
 
-                int dstX, dstY;
-                gbGfxGridSquareToWorldCoords(x, y, &dstX, &dstY, 0);
-                SDL_Rect dst = (SDL_Rect) { dstX, dstY, 32, 32 };
+    if (EDIT_MODE || currentRoom) {
+        for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
+            for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
+                uint8_t grid = EDIT_MODE ? currentEditorRoom->powerGrid[x][y] : currentRoom->powerGrid[x][y];
+                uint8_t wiring = POWER_GRID_GET_WIRING(grid);
+                if (wiring) {
+                    SDL_Rect src = (SDL_Rect) { POWER_GRID_GET_STATE(grid) * 32, wiring * 32, 32, 32 };
 
-                SDL_RenderCopyEx(gbMainRenderer,
-                                 gbTextures[mainCabelsTexture],
-                                 &src,
-                                 &dst,
-                                 0,
-                                 0,
-                                 SDL_FLIP_NONE);
+                    int dstX, dstY;
+                    gbGfxGridSquareToWorldCoords(x, y, &dstX, &dstY, 0);
+                    SDL_Rect dst = (SDL_Rect) { dstX, dstY, 32, 32 };
+
+                    SDL_RenderCopyEx(gbMainRenderer,
+                                     gbTextures[mainCabelsTexture],
+                                     &src,
+                                     &dst,
+                                     0,
+                                     0,
+                                     SDL_FLIP_NONE);
+                }
             }
         }
     }

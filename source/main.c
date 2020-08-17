@@ -32,11 +32,7 @@
 
 #include "entities/Guy/entityGuy.h"
 #include "entities/MoveRoomPanel/entityMoveRoomPanel.h"
-
-#define MAIN_ROOM_GRID_WIDTH 2
-#define MAIN_ROOM_GRID_HEIGHT 2
-
-uint8_t EDIT_MODE = 0;
+#include "global_state.h"
 
 static enum {
     GRID_BOUND_LEFT,
@@ -45,15 +41,9 @@ static enum {
     GRID_BOUND_BOTTOM
 };
 
-int activeRoomX = 1;
-int activeRoomY = 0;
-
 static CollisionStaticRect bounds[4];
 
-Room *rooms[MAIN_ROOM_GRID_WIDTH][MAIN_ROOM_GRID_HEIGHT];
 unsigned int mainCabelsTexture;
-
-DynamicEntity *mainPlayer = 0;
 
 int validRoomIndex(int dx, int dy) {
     int newRoomX = activeRoomX + dx;
@@ -121,10 +111,18 @@ void gameInit() {
     roomDeserialize(rooms[0][1], "./room3.rm");
     roomDeserialize(rooms[0][0], "./room4.rm");
 
+    activeRoomX = 1;
+    activeRoomY = 0;
+
+    mainPowerGridWidth = GB_GFX_GRID_WIDTH * MAIN_ROOM_GRID_WIDTH;
+    mainPowerGridHeight = GB_GFX_GRID_HEIGHT * MAIN_ROOM_GRID_HEIGHT;
+
     roomStartActivation(rooms[activeRoomX][activeRoomY]);
     roomFinishActivation(rooms[activeRoomX][activeRoomY]);
 
     setRoomBounds();
+
+    roomRefreshPower();
 }
 
 int handleRoomChange(double delta) {
@@ -259,10 +257,12 @@ void handleRoomMove(int dx, int dy) {
 
     rooms[activeRoomX][activeRoomY]->gridX = activeRoomX;
     rooms[activeRoomX][activeRoomY]->gridY = activeRoomY;
-    rooms[oldRoomX][activeRoomY]->gridX = oldRoomX;
-    rooms[oldRoomY][activeRoomY]->gridY = oldRoomY;
+    rooms[oldRoomX][oldRoomY]->gridX = oldRoomX;
+    rooms[oldRoomX][oldRoomY]->gridY = oldRoomY;
 
     setRoomBounds();
+
+    roomRefreshPower();
 }
 
 int main(int argc, char *argv[]) {

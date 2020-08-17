@@ -31,6 +31,6 @@ void roomFinishDeactivation(Room *room);
 int roomAddStaticCollider(Room *room, CollisionStaticRect *rect);
 int roomAddDynamicEntity(Room *room, DynamicEntity *entity);
 
-void roomRefreshPower(Room *room);
+void roomRefreshPower();
 
 #endif // ROOM_SYS_H_INCLUDED
