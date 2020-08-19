@@ -281,6 +281,9 @@ void roomTracePower(int x, int y) {
     int routesX[4] = { 0 };
     int routesY[4] = { 0 };
 
+    if (rooms[PG_X(x)][PG_Y(y)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y)] & POWER_GRID_BLOCKED)
+        return;
+
     rooms[PG_X(x)][PG_Y(y)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y)] |= POWER_GRID_ON;
 
     uint8_t wiring = POWER_GRID_GET_WIRING(rooms[PG_X(x)][PG_Y(y)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y)]);

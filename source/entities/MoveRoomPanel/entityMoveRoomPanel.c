@@ -23,12 +23,13 @@
 
 #include "../../gbTexture/gbTextureName_enum.h"
 
+#include "../../global_state.h"
+
 static int initialized = 0;
 static int texture = -1;
 
 extern int validRoomIndex(int dx, int dy);
 extern void handleRoomMove(int dx, int dy);
-extern DynamicEntity *mainPlayer;
 
 DynamicEntity *moveRoomPanelNew(double x, double y) {
     DynamicEntity *panel = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL);
@@ -44,18 +45,6 @@ DynamicEntity *moveRoomPanelNew(double x, double y) {
     collisionDynamicRectSet(&panel->boundingBox, panel->id, 0, 0, 32, 64, 0);
 
     return panel;
-}
-
-int checkPlayerCollision(DynamicEntity *panel) {
-    int index = 0;
-    unsigned int id = 0;
-    uint8_t collData;
-
-    while(index = collisionResolveDynamicCollisions(index, &panel->boundingBox, 0, 0, &id, &collData)) {
-        if (id == mainPlayer->id) break;
-    }
-
-    return index != 0;
 }
 
 void updateDirection(DynamicEntity *panel, MOVE_ROOM_PANEL_STATE newState) {
@@ -114,10 +103,10 @@ void updateDirection(DynamicEntity *panel, MOVE_ROOM_PANEL_STATE newState) {
 
 void moveRoomPanelThink(DynamicEntity *panel, double delta) {
     if (gbInputCheckState(GB_INPUT_SELECT, GB_INPUT_RELEASED)) {
-        if (checkPlayerCollision(panel))
+        if (collisionCheckPlayer(panel))
             updateDirection(panel, 0);
     } else if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
-        if (checkPlayerCollision(panel)) {
+        if (collisionCheckPlayer(panel)) {
             handleRoomMove(
             panel->dx, panel->dy);
             switch (panel->state.moveRoomPanel.state) {

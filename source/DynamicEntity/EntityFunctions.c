@@ -3,6 +3,7 @@
 
 #include "../entities/Guy/entityGuy.h"
 #include "../entities/MoveRoomPanel/entityMoveRoomPanel.h"
+#include "../entities/switch/entitySwitch.h"
 
 void initEntityFunctions() {
     // Guy
@@ -18,4 +19,11 @@ void initEntityFunctions() {
     dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]    = &moveRoomPanelNew;
     dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]    = &moveRoomPanelThink;
     dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL]  = &moveRoomPanelRespond;
+
+    // Switch
+    dynamicEntityInits[DYNAMIC_ENTITY_TYPE_SWITCH]     = &switchInit;
+    dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_SWITCH] = &switchTeardown;
+    dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_SWITCH]    = &switchNew;
+    dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_SWITCH]    = &switchThink;
+    dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_SWITCH]  = &switchRespond;
 }

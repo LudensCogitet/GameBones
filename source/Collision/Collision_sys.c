@@ -10,6 +10,8 @@
 #include "CollisionDynamicRect_type.h"
 #include "CollisionStaticRect_type.h"
 
+#include "../global_state.h"
+
 static Position *dynamicColliderPositions[COLLISION_MAX_DYNAMIC_COLLIDERS];
 static CollisionDynamicRect *dynamicColliders[COLLISION_MAX_DYNAMIC_COLLIDERS];
 static unsigned int dynamicColliderCursor;
@@ -350,6 +352,18 @@ CollisionStaticRect *collisionDetectPointCollisionPassive(int x, int y) {
     }
 
     return 0;
+}
+
+uint8_t collisionCheckPlayer(DynamicEntity *other) {
+    int index = 0;
+    unsigned int id = 0;
+    uint8_t collData;
+
+    while(index = collisionResolveDynamicCollisions(index, &other->boundingBox, 0, 0, &id, &collData)) {
+        if (id == mainPlayer->id) break;
+    }
+
+    return index != 0;
 }
 
 void collisionDebugDraw() {
