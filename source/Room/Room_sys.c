@@ -272,7 +272,8 @@ void roomFinishActivation(Room *room) {
     for (int i = 0; i < room->numColliders; i++)
         collisionStaticRectRegister(room->staticColliders[i]);
 
-    currentRoom = room;
+    if (currentRoom != room)
+        currentRoom = room;
 }
 
 void roomTracePower(int x, int y) {

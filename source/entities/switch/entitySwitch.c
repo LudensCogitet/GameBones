@@ -32,12 +32,14 @@ DynamicEntity *switchNew(double x, double y) {
     DynamicEntity *switchEntity = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_SWITCH);
     switchEntity->pos = (Position){x, y};
 
-    // switchEntity->dx == Power grid target x
-    // switchEntity->dy == Power grid target Y
-    gbGfxScreenCoordsToGridSquare(x, y + 1, &switchEntity->dx, &switchEntity->dy);
+    int gridX, gridY;
+    gbGfxScreenCoordsToGridSquare(x, y, &gridX, &gridY);
 
-    switchEntity->ax = 0;      // on / off flag
-    switchEntity->ay = 0;
+    switchEntity->dx = gridX;       // Power grid target x
+    switchEntity->dy = gridY + 1;   // Power grid target Y
+
+    switchEntity->ax = 0;       // on / off flag
+    switchEntity->ay = 1;       // first tick flag
 
     spriteSet(&switchEntity->sprite, GB_TEXTURE_NAME_SWITCH, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_BACKMID, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&switchEntity->boundingBox, switchEntity->id, 0, 0, 32, 32, 0);
@@ -46,13 +48,18 @@ DynamicEntity *switchNew(double x, double y) {
 }
 
 void switchThink(DynamicEntity *switchEntity, double delta) {
+    if (switchEntity->ay) {
+        switchEntity->ay = 0;
+        currentRoom->powerGrid[(int)switchEntity->dx][(int)switchEntity->dy] |= POWER_GRID_BLOCKED;
+    }
+
     if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
         if (collisionCheckPlayer(switchEntity)) {
             switchEntity->ax = !switchEntity->ax;
 
             switchEntity->sprite.src.x = switchEntity->ax * 32;
 
-            if (switchEntity->ax) {
+            if (!switchEntity->ax) {
                 currentRoom->powerGrid[(int)switchEntity->dx][(int)switchEntity->dy] |= POWER_GRID_BLOCKED;
             } else {
                 POWER_GRID_CLEAR_STATE(currentRoom->powerGrid[(int)switchEntity->dx][(int)switchEntity->dy], POWER_GRID_BLOCKED);

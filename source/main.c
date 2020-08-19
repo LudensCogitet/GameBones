@@ -283,6 +283,7 @@ int main(int argc, char *argv[]) {
         editorInit();
     else {
         moveRoomPanelInit();
+        switchInit();
         gameInit();
     }
 

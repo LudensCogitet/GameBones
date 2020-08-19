@@ -28,7 +28,6 @@ uint8_t GB_GFX_DEBUG_FLAG = 0;
 static int32_t gbGfxCameraOffsetX = 0;
 static int32_t gbGfxCameraOffsetY = 0;
 
-extern Room *currentEditorRoom;
 extern int activeRoomX;
 extern int activeRoomY;
 extern Room *currentRoom;
@@ -89,10 +88,10 @@ void gbGfxDraw() {
     if (EDIT_MODE || currentRoom) {
         for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
             for (int y = 0; y < GB_GFX_GRID_HEIGHT; y++) {
-                uint8_t grid = EDIT_MODE ? currentEditorRoom->powerGrid[x][y] : currentRoom->powerGrid[x][y];
+                uint8_t grid = currentRoom->powerGrid[x][y];
                 uint8_t wiring = POWER_GRID_GET_WIRING(grid);
                 if (wiring) {
-                    SDL_Rect src = (SDL_Rect) { POWER_GRID_GET_STATE(grid) * 32, wiring * 32, 32, 32 };
+                    SDL_Rect src = (SDL_Rect) { grid & POWER_GRID_ON ? 32 : 0, wiring * 32, 32, 32 };
 
                     int dstX, dstY;
                     gbGfxGridSquareToWorldCoords(x, y, &dstX, &dstY, 0);
