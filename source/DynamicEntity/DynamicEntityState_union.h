@@ -26,9 +26,14 @@ typedef struct {
     MOVE_ROOM_PANEL_STATE state;
 } MoveRoomPanelState;
 
+typedef struct {
+    uint8_t open;
+} DoorState;
+
 typedef union {
     GuyState guy;
     MoveRoomPanelState moveRoomPanel;
+    DoorState door;
 } DynamicEntityState;
 
 #endif // DYNAMIC_ENTITY_STATE_H_INCLUDED

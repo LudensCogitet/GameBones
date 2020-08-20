@@ -289,6 +289,8 @@ void roomTracePower(int x, int y) {
 
     uint8_t wiring = POWER_GRID_GET_WIRING(rooms[PG_X(x)][PG_Y(y)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y)]);
 
+    if (!wiring) return;
+
     if (wiring == POWER_GRID_HORIZONTAL ||
         wiring == POWER_GRID_GENERATOR ||
         wiring == POWER_GRID_CROSS ||
@@ -300,7 +302,7 @@ void roomTracePower(int x, int y) {
             if (x + 1 < mainPowerGridWidth) {
                 uint8_t cell = rooms[PG_X(x + 1)][PG_Y(y)]->powerGrid[PG_ROOM_X(x + 1)][PG_ROOM_Y(y)];
 
-                if (POWER_GRID_GET_WIRING(cell) && !(cell & POWER_GRID_ON)) {
+                if (!(cell & POWER_GRID_ON)) {
                 routesX[xCursor++] = x + 1;
                 routesY[yCursor++] = y;
             }
@@ -317,7 +319,7 @@ void roomTracePower(int x, int y) {
             if (x - 1 >= 0) {
                 uint8_t cell = rooms[PG_X(x - 1)][PG_Y(y)]->powerGrid[PG_ROOM_X(x - 1)][PG_ROOM_Y(y)];
 
-                if (POWER_GRID_GET_WIRING(cell) && !(cell & POWER_GRID_ON)) {
+                if (!(cell & POWER_GRID_ON)) {
                     routesX[xCursor++] = x - 1;
                     routesY[yCursor++] = y;
                 }
@@ -335,7 +337,7 @@ void roomTracePower(int x, int y) {
             if (y - 1 >= 0) {
                 uint8_t cell = rooms[PG_X(x)][PG_Y(y - 1)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y - 1)];
 
-                if (POWER_GRID_GET_WIRING(cell) && !(cell & POWER_GRID_ON)) {
+                if (!(cell & POWER_GRID_ON)) {
                     routesX[xCursor++] = x;
                     routesY[yCursor++] = y - 1;
                 }
@@ -353,7 +355,7 @@ void roomTracePower(int x, int y) {
             if (y + 1 < mainPowerGridHeight) {
                 uint8_t cell = rooms[PG_X(x)][PG_Y(y + 1)]->powerGrid[PG_ROOM_X(x)][PG_ROOM_Y(y + 1)];
 
-                if (POWER_GRID_GET_WIRING(cell) && !(cell & POWER_GRID_ON)) {
+                if (!(cell & POWER_GRID_ON)) {
                     routesX[xCursor++] = x;
                     routesY[yCursor++] = y + 1;
                 }

@@ -4,6 +4,7 @@
 #include "../entities/Guy/entityGuy.h"
 #include "../entities/MoveRoomPanel/entityMoveRoomPanel.h"
 #include "../entities/switch/entitySwitch.h"
+#include "../entities/door/entityDoor.h"
 
 void initEntityFunctions() {
     // Guy
@@ -26,4 +27,11 @@ void initEntityFunctions() {
     dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_SWITCH]    = &switchNew;
     dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_SWITCH]    = &switchThink;
     dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_SWITCH]  = &switchRespond;
+
+    // Door
+    dynamicEntityInits[DYNAMIC_ENTITY_TYPE_DOOR]     = &doorInit;
+    dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_DOOR] = &doorTeardown;
+    dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_DOOR]    = &doorNew;
+    dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_DOOR]    = &doorThink;
+    dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_DOOR]  = &doorRespond;
 }

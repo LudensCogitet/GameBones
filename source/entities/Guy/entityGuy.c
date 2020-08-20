@@ -192,6 +192,9 @@ void guyThink(DynamicEntity *player, double delta) {
             }
         }
     }
+
+    unsigned int entityId;
+    while (index = collisionResolveDynamicCollisions(index, &player->boundingBox, player->dx, player->dy, &entityId, &collData));
 }
 
 void guyRespond(DynamicEntity *player, double delta) {

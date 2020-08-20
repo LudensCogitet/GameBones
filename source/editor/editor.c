@@ -27,6 +27,7 @@
 #include "../entities/Guy/entityGuy.h"
 #include "../entities/MoveRoomPanel/entityMoveRoomPanel.h"
 #include "../entities/switch/entitySwitch.h"
+#include "../entities/door/entityDoor.h"
 
 #include "../global_state.h"
 
@@ -210,6 +211,13 @@ void editorInit() {
                            x + 32, y + 32,
                            1);
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_SWITCH]);
+
+    x += 32;
+    collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_DOOR],
+                           x, y,
+                           x + 32, y + 128,
+                           1);
+    collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_DOOR]);
     // END entity palette init
 
     // START power grid palette init
@@ -495,6 +503,12 @@ void editorUpdate() {
                             DynamicEntity * switchEntity = switchNew(x, y);
                             roomAddDynamicEntity(currentRoom, switchEntity);
                             dynamicEntityRegister(switchEntity);
+                            break;
+                        case DYNAMIC_ENTITY_TYPE_DOOR:
+                            doorInit();
+                            DynamicEntity * door = doorNew(x, y);
+                            roomAddDynamicEntity(currentRoom, door);
+                            dynamicEntityRegister(door);
                             break;
                     }
                 }
