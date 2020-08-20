@@ -266,6 +266,12 @@ void editorInit() {
                            1);
     collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_BOTTOM_RIGHT]);
 
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_BLOCK],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_BLOCK]);
+
     x = powerGridPalettePos.x;
     y += 32;
     collisionStaticRectSet(&powerGridRects[POWER_GRID_CORNER_BOTTOM_LEFT],
@@ -354,10 +360,12 @@ void editorUpdate() {
                     int y = 0;
                     SDL_GetMouseState(&x, &y);
                     if (gbGfxScreenCoordsToGridSquare(x, y, &x, &y)) {
-                        if (selectedWiring)
+                        if (selectedWiring == POWER_GRID_BLOCK)
+                            currentRoom->powerGrid[x][y] |= POWER_GRID_BLOCKED;
+                        else if (selectedWiring)
                             currentRoom->powerGrid[x][y] |= selectedWiring;
                         else
-                            POWER_GRID_CLEAR_WIRING(currentRoom->powerGrid[x][y]);
+                            currentRoom->powerGrid[x][y] = 0;
                     }
                 }
                 break;

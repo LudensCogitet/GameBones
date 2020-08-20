@@ -39,7 +39,7 @@ DynamicEntity *switchNew(double x, double y) {
     switchEntity->dy = gridY + 1;   // Power grid target Y
 
     switchEntity->ax = 0;       // on / off flag
-    switchEntity->ay = 1;       // first tick flag
+    switchEntity->ay = 0;
 
     spriteSet(&switchEntity->sprite, GB_TEXTURE_NAME_SWITCH, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_BACKMID, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&switchEntity->boundingBox, switchEntity->id, 0, 0, 32, 32, 0);
@@ -48,11 +48,6 @@ DynamicEntity *switchNew(double x, double y) {
 }
 
 void switchThink(DynamicEntity *switchEntity, double delta) {
-    if (switchEntity->ay) {
-        switchEntity->ay = 0;
-        currentRoom->powerGrid[(int)switchEntity->dx][(int)switchEntity->dy] |= POWER_GRID_BLOCKED;
-    }
-
     if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
         if (collisionCheckPlayer(switchEntity)) {
             switchEntity->ax = !switchEntity->ax;

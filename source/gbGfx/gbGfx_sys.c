@@ -104,6 +104,19 @@ void gbGfxDraw() {
                                      0,
                                      0,
                                      SDL_FLIP_NONE);
+
+                    if (grid & POWER_GRID_BLOCKED) {
+                        src.x = 0;
+                        src.y = POWER_GRID_BLOCK * 32;
+
+                        SDL_RenderCopyEx(gbMainRenderer,
+                         gbTextures[mainCabelsTexture],
+                         &src,
+                         &dst,
+                         0,
+                         0,
+                         SDL_FLIP_NONE);
+                    }
                 }
             }
         }
