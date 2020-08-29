@@ -34,6 +34,16 @@
 #define EDITOR_MAX_STATIC_COLLIDERS 50
 #define POWER_GRID_SPECIAL_SWITCH_ON POWER_GRID_WIRING_NUM
 
+
+#define EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL      DYNAMIC_ENTITY_TYPE_DOOR
+#define EDITOR_DYNAMIC_ENTITY_DOOR_VERTICAL             DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES
+#define EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL    DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES + 1
+#define EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL           DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES + 2
+
+#define EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL_STATE DOOR_STATE_FORCE_FIELD
+#define EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL_STATE DOOR_STATE_FORCE_FIELD | DOOR_STATE_HORIZONTAL
+#define EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL_STATE DOOR_STATE_HORIZONTAL
+
 typedef enum {
     NEW_ROOM,
     LOAD_ROOM,
@@ -95,15 +105,18 @@ static Sprite *inputFieldBackground;
 static uint8_t textMode = 0;
 
 // Entity Palette
+#define DYNAMIC_ENTITY_PALETTE_RECT_NUM DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES + 3
 static Position entityPalettePos;
 static Sprite entityPalette;
-static CollisionStaticRect entityPaletteRects[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES];
+static CollisionStaticRect entityPaletteRects[DYNAMIC_ENTITY_PALETTE_RECT_NUM];
 static DYNAMIC_ENTITY_TYPE selectedType = DYNAMIC_ENTITY_TYPE_GUY;
+static uint32_t selectedStateInit = 0;
 
 // Power Grid Palette
+#define POWER_GRID_RECT_NUM POWER_GRID_WIRING_NUM + 1
 static Position powerGridPalettePos;
 static Sprite powerGridPalette;
-static CollisionStaticRect powerGridRects[POWER_GRID_WIRING_NUM + 1];   // +1 for on switch
+static CollisionStaticRect powerGridRects[POWER_GRID_RECT_NUM];   // +1 for on switch
 static POWER_GRID_WIRING selectedWiring;
 static uint8_t selectedGridState = 0;
 
@@ -215,11 +228,32 @@ void editorInit() {
     collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_SWITCH]);
 
     x += 32;
-    collisionStaticRectSet(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_DOOR],
+    collisionStaticRectSet(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL],
                            x, y,
                            x + 32, y + 128,
                            1);
-    collisionStaticRectPassiveRegister(&entityPaletteRects[DYNAMIC_ENTITY_TYPE_DOOR]);
+    collisionStaticRectPassiveRegister(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL]);
+
+    x += 32;
+    collisionStaticRectSet(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_VERTICAL],
+                           x, y,
+                           x + 32, y + 128,
+                           1);
+    collisionStaticRectPassiveRegister(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_VERTICAL]);
+
+    x += 32;
+    collisionStaticRectSet(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL],
+                           x, y,
+                           x + 128, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL]);
+
+    y += 32;
+    collisionStaticRectSet(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL],
+                           x, y,
+                           x + 128, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL]);
     // END entity palette init
 
     // START power grid palette init
@@ -399,16 +433,16 @@ void editorUpdate() {
             if (++mode >= NUM_MODES) mode = 0;
             modeButtonSprite->src.x = buttonX[mode];
             if (entityPalette.active = mode == PLACE_DYNAMIC) {
-                for (int i = 0; i < POWER_GRID_WIRING_NUM; i++)
+                for (int i = 0; i < POWER_GRID_RECT_NUM + 1; i++)
                     powerGridRects[i].active = 0;
-                for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++)
+                for (int i = 0; i < DYNAMIC_ENTITY_PALETTE_RECT_NUM; i++)
                     entityPaletteRects[i].active = 1;
             }
 
             if (powerGridPalette.active = mode == PLACE_POWER) {
-                for (int i = 0; i < POWER_GRID_WIRING_NUM; i++)
+                for (int i = 0; i < POWER_GRID_RECT_NUM; i++)
                     powerGridRects[i].active = 1;
-                for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++)
+                for (int i = 0; i < DYNAMIC_ENTITY_PALETTE_RECT_NUM; i++)
                     entityPaletteRects[i].active = 0;
             }
             return;
@@ -448,13 +482,32 @@ void editorUpdate() {
         }
 
         if (mode == PLACE_DYNAMIC) {
-            for (int i = 0; i < DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES; i++) {
+            for (int i = 0; i < DYNAMIC_ENTITY_PALETTE_RECT_NUM; i++) {
                 if (collider == entityPaletteRects + i) {
-                    selectedType = i;
+                    selectedStateInit = 0;
+                    if (i == EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL ||
+                        i == EDITOR_DYNAMIC_ENTITY_DOOR_VERTICAL ||
+                        i == EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL ||
+                        i == EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL) {
+                        selectedType = DYNAMIC_ENTITY_TYPE_DOOR;
+                        switch (i) {
+                            case EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL:
+                                selectedStateInit = EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL_STATE;
+                                break;
+                            case EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL:
+                                selectedStateInit = EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL_STATE;
+                                break;
+                            case EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL:
+                                selectedStateInit = EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL_STATE;
+                                break;
+                        }
+                    } else {
+                        selectedType = i;
+                    }
                 }
             }
         } else if (mode == PLACE_POWER) {
-            for (int i = 0; i < POWER_GRID_WIRING_NUM + 1; i++) {
+            for (int i = 0; i < POWER_GRID_RECT_NUM; i++) {
                 if (collider == powerGridRects + i) {
                     selectedWiring = i;
                 }
@@ -516,7 +569,7 @@ void editorUpdate() {
                             break;
                         case DYNAMIC_ENTITY_TYPE_DOOR:
                             doorInit();
-                            DynamicEntity * door = doorNew(x, y, 0);
+                            DynamicEntity * door = doorNew(x, y, selectedStateInit);
                             roomAddDynamicEntity(currentRoom, door);
                             dynamicEntityRegister(door);
                             break;
@@ -597,7 +650,23 @@ void editorRender() {
                 break;
             }
         case PLACE_DYNAMIC:
-            drawPaletteBackground(entityPaletteRects[selectedType]);
+            if (selectedType == DYNAMIC_ENTITY_TYPE_DOOR) {
+                switch (selectedStateInit) {
+                    case EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL_STATE:
+                        drawPaletteBackground(entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_VERTICAL]);
+                        break;
+                    case EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL_STATE:
+                        drawPaletteBackground(entityPaletteRects[EDITOR_DYNAMIC_ENTITY_FORCE_FIELD_HORIZONTAL]);
+                        break;
+                    case EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL_STATE:
+                        drawPaletteBackground(entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_HORIZONTAL]);
+                        break;
+                    default:
+                        drawPaletteBackground(entityPaletteRects[EDITOR_DYNAMIC_ENTITY_DOOR_VERTICAL]);
+                }
+            } else {
+                drawPaletteBackground(entityPaletteRects[selectedType]);
+            }
             break;
         case PLACE_POWER:
             drawPaletteBackground(powerGridRects[selectedWiring]);

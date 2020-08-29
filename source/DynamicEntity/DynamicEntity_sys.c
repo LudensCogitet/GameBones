@@ -45,7 +45,7 @@ void dynamicEntityTeardown() {
 
 DynamicEntity *dynamicEntityNew(DYNAMIC_ENTITY_TYPE type) {
     DynamicEntity *entity = (DynamicEntity *)malloc(sizeof(DynamicEntity));
-    entity->id = nextId++;
+    entity->id = type == DYNAMIC_ENTITY_TYPE_GUY ? 0 : nextId++;
     entity->inboxCursor = 0;
     entity->type = type;
     entity->active = 1;
@@ -151,11 +151,14 @@ void dynamicEntitySerializeAll(DynamicEntity **toSerialize, unsigned int count, 
 
     // Write each entity's data
     for (int i = 0; i < count; i++) {
+        if (toSerialize[i]->id == 0) continue;
+
         DynamicEntity *entity = toSerialize[i];
         SDL_WriteBE16(file, entity->type);
         SDL_WriteBE64(file, entity->pos.x);
         SDL_WriteBE64(file, entity->pos.y);
         SDL_WriteBE32(file, entity->id);
+        SDL_WriteBE32(file, entity->state);
     }
 }
 

@@ -32,6 +32,7 @@
 
 #include "entities/Guy/entityGuy.h"
 #include "entities/MoveRoomPanel/entityMoveRoomPanel.h"
+#include "entities/door/entityDoor.h"
 #include "global_state.h"
 
 static enum {
@@ -283,7 +284,7 @@ int main(int argc, char *argv[]) {
         editorInit();
     else {
         moveRoomPanelInit();
-        switchInit();
+        doorInit();
         gameInit();
     }
 
@@ -329,7 +330,7 @@ int main(int argc, char *argv[]) {
 
         if (EDIT_MODE) {
             editorUpdate();
-            dynamicEntityAct(delta);
+            //dynamicEntityAct(delta);
         } else {
             if (!handleRoomChange(delta)) {
                 dynamicEntityAct(delta);
