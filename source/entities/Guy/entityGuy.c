@@ -142,7 +142,7 @@ void guyThink(DynamicEntity *player, double delta) {
         }
     //}
 
-    if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
+    if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_JUST_PRESSED)) {
         int x, y;
         gbGfxScreenCoordsToGridSquare(player->pos.x + player->sprite.width / 2, player->pos.y + player->sprite.height / 2, &x, &y);
         if (currentRoom->powerGrid[x][y] & POWER_GRID_IS_SWITCH) {

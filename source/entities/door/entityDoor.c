@@ -41,14 +41,50 @@ DynamicEntity *doorNew(double x, double y, uint32_t state) {
     door->ay = gridY + 3;  // Bottom outlet Y
     door->state = state;
 
-    spriteSet(&door->sprite, GB_TEXTURE_NAME_DOOR, 0, 0, 32, 128, 32, 128, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
-    collisionDynamicRectSet(&door->boundingBox, door->id, 11, 32, 8, 64, 1);
+    int srcX, srcY, srcW, srcH, dstWidth, dstHeight, boxOffsetX, boxOffsetY, boxWidth, boxHeight;
+
+    if (state & DOOR_STATE_HORIZONTAL) {
+        srcX = 96;
+        srcW = 128;
+        srcH = 32;
+        width = 128;
+        height = 32;
+
+        boxOffsetX = 32;
+        boxOffsetY = 11;
+        width = 64;
+        height = 8;
+        if (state & DOOR_STATE_FORCE_FIELD) {
+            srcY = 0;
+        } else {
+            srcY = 64;
+        }
+    } else {
+        srcY = 0;
+        srcW = 32;
+        srcH = 128;
+        width = 32;
+        height = 128;
+
+        boxOffsetX = 11;
+        boxOffsetY = 32;
+        width = 8;
+        height = 64;
+        if (state & DOOR_STATE_FORCE_FIELD) {
+            srcX = 0;
+        } else {
+            srcX = 64;
+        }
+    }
+
+    spriteSet(&door->sprite, GB_TEXTURE_NAME_DOOR, srcX, srcY, srcW, srcY, width, height, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
+    collisionDynamicRectSet(&door->boundingBox, door->id, boxOffsetX, boxOffsetY, boxWidth, boxHeight, 1);
 
     return door;
 }
 
 void doorThink(DynamicEntity *door, double delta) {
-    if (door->state) {
+    if (door->state & DOOR_STATE_OPEN) {
         if (!(currentRoom->powerGrid[(int)door->dx][(int)door->dy] & POWER_GRID_ON) &&
             !(currentRoom->powerGrid[(int)door->ax][(int)door->ay] & POWER_GRID_ON)) {
          door->boundingBox.active = 1;
