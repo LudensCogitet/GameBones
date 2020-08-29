@@ -94,31 +94,39 @@ void spriteUnregister(Sprite *sprite) {
     sprites[layer][cursors[layer]] = 0;
 }
 
-void spriteDraw() {
+void draw(SPRITE_LAYER l) {
     static SDL_Rect dst;
-    for (unsigned int l = 0; l < SPRITE_LAYER_NUM_LAYERS; l++) {
-        for (unsigned int s = 0; s < cursors[l]; s++) {
-            if (!sprites[l][s]->active) continue;
+    for (unsigned int s = 0; s < cursors[l]; s++) {
+        if (!sprites[l][s]->active) continue;
 
-            dst.x = positions[l][s]->x * gbScaleFactorX;
-            dst.y = positions[l][s]->y * gbScaleFactorY;
-            dst.w = sprites[l][s]->width * gbScaleFactorX;
-            dst.h = sprites[l][s]->height * gbScaleFactorY;
+        dst.x = positions[l][s]->x * gbScaleFactorX;
+        dst.y = positions[l][s]->y * gbScaleFactorY;
+        dst.w = sprites[l][s]->width * gbScaleFactorX;
+        dst.h = sprites[l][s]->height * gbScaleFactorY;
 
 //            if (!sprites[l][s]->fixed) {
 //                dst.x -= gbGfxCameraOffsetX * gbScaleFactorX;
 //                dst.y -= gbGfxCameraOffsetY * gbScaleFactorY;
 //            }
 
-            SDL_RenderCopyEx(
-                gbMainRenderer,
-                gbTextures[sprites[l][s]->texture],
-                &sprites[l][s]->src,
-                &dst,
-                0,
-                0,
-                sprites[l][s]->flip
-            );
-        }
+        SDL_RenderCopyEx(
+            gbMainRenderer,
+            gbTextures[sprites[l][s]->texture],
+            &sprites[l][s]->src,
+            &dst,
+            0,
+            0,
+            sprites[l][s]->flip
+        );
+    }
+}
+
+void backgroundDraw() {
+    draw(SPRITE_LAYER_BACKGROUND);
+}
+
+void spriteDraw() {
+    for (unsigned int l = 1; l < SPRITE_LAYER_NUM_LAYERS; l++) {
+        draw(l);
     }
 }

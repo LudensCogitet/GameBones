@@ -28,7 +28,7 @@
 static int initialized = 0;
 static int texture = -1;
 
-DynamicEntity *switchNew(double x, double y) {
+DynamicEntity *switchNew(double x, double y, uint32_t state) {
     DynamicEntity *switchEntity = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_SWITCH);
     switchEntity->pos = (Position){x, y};
 
@@ -40,6 +40,7 @@ DynamicEntity *switchNew(double x, double y) {
 
     switchEntity->ax = 0;       // on / off flag
     switchEntity->ay = 0;
+    switchEntity->state = state;
 
     spriteSet(&switchEntity->sprite, GB_TEXTURE_NAME_SWITCH, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_BACKMID, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&switchEntity->boundingBox, switchEntity->id, 0, 0, 32, 32, 0);

@@ -55,7 +55,7 @@ int validRoomIndex(int dx, int dy) {
 
 void setPlayerPosition(double x, double y) {
     if (!mainPlayer) {
-        mainPlayer = guyNew(x, y);
+        mainPlayer = guyNew(x, y, 0);
         dynamicEntityRegister(mainPlayer);
     } else {
         mainPlayer->pos.x = x;
@@ -107,9 +107,9 @@ void gameInit() {
         }
     }
     roomDeserialize(rooms[1][0], "./room1.rm");
-    roomDeserialize(rooms[1][1], "./room2.rm");
-    roomDeserialize(rooms[0][1], "./room3.rm");
-    roomDeserialize(rooms[0][0], "./room4.rm");
+    roomDeserialize(rooms[1][1], "./room1.rm");
+    roomDeserialize(rooms[0][1], "./room1.rm");
+    roomDeserialize(rooms[0][0], "./room1.rm");
 
     activeRoomX = 1;
     activeRoomY = 0;

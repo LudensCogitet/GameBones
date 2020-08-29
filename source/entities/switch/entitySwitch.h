@@ -6,7 +6,7 @@
 void switchInit();
 void switchTeardown();
 
-DynamicEntity *switchNew(double x, double y);
+DynamicEntity *switchNew(double x, double y, uint32_t state);
 
 void switchThink(DynamicEntity *s, double delta);
 void switchRespond(DynamicEntity *s, double delta);

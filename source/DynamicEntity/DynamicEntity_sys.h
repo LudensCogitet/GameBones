@@ -19,7 +19,7 @@
 extern void (*dynamicEntityInits[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
 extern void (*dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
 
-extern DynamicEntity *(*dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(double x, double y);
+extern DynamicEntity *(*dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(double x, double y, uint32_t state);
 
 extern void (*dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
 extern void (*dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);

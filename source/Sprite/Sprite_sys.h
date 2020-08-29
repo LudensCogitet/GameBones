@@ -26,6 +26,7 @@ void spriteSet(Sprite *sprite,
 
 void spriteRegister(Sprite *sprite, Position *pos);
 void spriteUnregister(Sprite *sprite);
+void backgroundDraw();
 void spriteDraw();
 
 #endif // SPRITE_SYS_H_INCLUDED

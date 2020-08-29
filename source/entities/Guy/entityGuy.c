@@ -24,6 +24,9 @@
 
 #include "../../gbTexture/gbTextureName_enum.h"
 
+#include "../../Room/Room_sys.h"
+#include "../../global_state.h"
+
 static int initialized = 0;
 static int guyTexture = -1;
 static unsigned int guyAnimationIdle = GB_ANIMATION_NO_ANIMATION;
@@ -52,7 +55,7 @@ static void handleMoveKeyDown(DynamicEntity *player);
 static void handleMoveKeyUp(DynamicEntity *player);
 static void setState(DynamicEntity *player, GUY_STATE state);
 
-DynamicEntity *guyNew(double x, double y) {
+DynamicEntity *guyNew(double x, double y, uint32_t state) {
     guyCount++;
     printf("Guy count: %d\n", guyCount);
 
@@ -64,10 +67,7 @@ DynamicEntity *guyNew(double x, double y) {
     guy->ax = 0;
     guy->ay = 0;
 
-    guy->state.guy.direction = 0;
-    guy->state.guy.moveKeysDown = 0;
-
-    guy->state.guy.state = GUY_STATE_IDLE;
+    guy->state = state ? state : GUY_STATE_IDLE;    // states == IDLE, WALK
     gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &guy->sprite.src, &guy->animState);
 
     spriteSet(&guy->sprite, GB_TEXTURE_NAME_GUY, 0, 0, 32, 32, 32, 32, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
@@ -142,6 +142,20 @@ void guyThink(DynamicEntity *player, double delta) {
         }
     //}
 
+    if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
+        int x, y;
+        gbGfxScreenCoordsToGridSquare(player->pos.x + player->sprite.width / 2, player->pos.y + player->sprite.height / 2, &x, &y);
+        if (currentRoom->powerGrid[x][y] & POWER_GRID_IS_SWITCH) {
+            if (currentRoom->powerGrid[x][y] & POWER_GRID_BLOCKED) {
+                currentRoom->powerGrid[x][y] &= ~(POWER_GRID_BLOCKED);
+            } else {
+                currentRoom->powerGrid[x][y] |= POWER_GRID_BLOCKED;
+            }
+
+            roomRefreshPower();
+        }
+    }
+
     // MOVEMENT PHYSICS
     double oldVelocity = player->dx;
     player->dx += (player->ax * delta);
@@ -161,11 +175,11 @@ void guyThink(DynamicEntity *player, double delta) {
     if (!xMove && oldVelocity != 0 && player->dx != 0 && oldSign + newSign == 0) {
         player->dx = 0;
         player->ax = 0;
-        player->state.guy.state = GUY_STATE_IDLE;
+        player->state = GUY_STATE_IDLE;
         gbAnimationStateInit(guyAnimations[GUY_STATE_IDLE], &player->sprite.src, &player->animState);
     }
 
-    switch (player->state.guy.state) {
+    switch (player->state) {
         case GUY_STATE_IDLE:
             idle(player);
             break;
@@ -177,7 +191,7 @@ void guyThink(DynamicEntity *player, double delta) {
     player->pos.y += player->dy * delta;
     player->dy += dropVelocity * delta;
 
-    gbAnimationApply(&player->sprite.src, delta, &player->animState, guyAnimations[player->state.guy.state]);
+    gbAnimationApply(&player->sprite.src, delta, &player->animState, guyAnimations[player->state]);
 
     unsigned int index = 0;
     uint8_t collData = 0;
@@ -214,7 +228,7 @@ void guyRespond(DynamicEntity *player, double delta) {
 //}
 
 static void setState(DynamicEntity *player, GUY_STATE state) {
-    player->state.guy.state = state;
+    player->state = state;
 
     gbAnimationStateInit(guyAnimations[state], &player->sprite.src, &player->animState);
 }

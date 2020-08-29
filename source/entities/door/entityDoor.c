@@ -28,7 +28,7 @@
 static int initialized = 0;
 static int texture = -1;
 
-DynamicEntity *doorNew(double x, double y) {
+DynamicEntity *doorNew(double x, double y, uint32_t state) {
     DynamicEntity *door = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_DOOR);
     door->pos = (Position){x, y};
 
@@ -39,7 +39,7 @@ DynamicEntity *doorNew(double x, double y) {
     door->dy = gridY;      // Top outlet y
     door->ax = gridX;      // Bottom outlet x
     door->ay = gridY + 3;  // Bottom outlet Y
-    door->state.door.open = 0;
+    door->state = state;
 
     spriteSet(&door->sprite, GB_TEXTURE_NAME_DOOR, 0, 0, 32, 128, 32, 128, SPRITE_LAYER_MIDGROUND, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&door->boundingBox, door->id, 11, 32, 8, 64, 1);
@@ -48,18 +48,18 @@ DynamicEntity *doorNew(double x, double y) {
 }
 
 void doorThink(DynamicEntity *door, double delta) {
-    if (door->state.door.open) {
+    if (door->state) {
         if (!(currentRoom->powerGrid[(int)door->dx][(int)door->dy] & POWER_GRID_ON) &&
             !(currentRoom->powerGrid[(int)door->ax][(int)door->ay] & POWER_GRID_ON)) {
          door->boundingBox.active = 1;
-         door->state.door.open = 0;
+         door->state = 0;
          door->sprite.src.x = 0;
         }
     } else {
         if ((currentRoom->powerGrid[(int)door->dx][(int)door->dy] & POWER_GRID_ON) ||
             (currentRoom->powerGrid[(int)door->ax][(int)door->ay] & POWER_GRID_ON)) {
          door->boundingBox.active = 0;
-         door->state.door.open = 1;
+         door->state = 1;
          door->sprite.src.x = 32;
         }
     }

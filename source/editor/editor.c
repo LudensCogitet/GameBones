@@ -32,6 +32,7 @@
 #include "../global_state.h"
 
 #define EDITOR_MAX_STATIC_COLLIDERS 50
+#define POWER_GRID_SPECIAL_SWITCH_ON POWER_GRID_WIRING_NUM
 
 typedef enum {
     NEW_ROOM,
@@ -102,8 +103,9 @@ static DYNAMIC_ENTITY_TYPE selectedType = DYNAMIC_ENTITY_TYPE_GUY;
 // Power Grid Palette
 static Position powerGridPalettePos;
 static Sprite powerGridPalette;
-static CollisionStaticRect powerGridRects[POWER_GRID_WIRING_NUM];
+static CollisionStaticRect powerGridRects[POWER_GRID_WIRING_NUM + 1];   // +1 for on switch
 static POWER_GRID_WIRING selectedWiring;
+static uint8_t selectedGridState = 0;
 
 static char roomFilepath[50] = {'\0'};
 
@@ -180,11 +182,11 @@ void editorInit() {
                       0);
 
     // START entity palette init
-    entityPalettePos = (Position) {GB_LOGICAL_SCREEN_WIDTH - 160, 200};
+    entityPalettePos = (Position) {GB_LOGICAL_SCREEN_WIDTH - 288, 200};
     spriteSet(&entityPalette,
               gbTextureLoadNamed(GB_TEXTURE_NAME_ENTITY_PALETTE),
-              0, 0, 160, 160,
-              160, 160, SPRITE_LAYER_MIDGROUND,
+              0, 0, 288, 288,
+              288, 288, SPRITE_LAYER_MIDGROUND,
               0, 1, SDL_FLIP_NONE);
     spriteRegister(&entityPalette, &entityPalettePos);
 
@@ -275,10 +277,10 @@ void editorInit() {
     collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_CORNER_BOTTOM_RIGHT]);
 
     x += 32;
-    collisionStaticRectSet(&powerGridRects[POWER_GRID_BLOCK],
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_SWITCH],
                            x, y, x + 32, y + 32,
                            1);
-    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_BLOCK]);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_SWITCH]);
 
     x = powerGridPalettePos.x;
     y += 32;
@@ -298,6 +300,12 @@ void editorInit() {
                            x, y, x + 32, y + 32,
                            1);
     collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_T_NO_LEFT]);
+
+    x += 32;
+    collisionStaticRectSet(&powerGridRects[POWER_GRID_SPECIAL_SWITCH_ON],
+                           x, y, x + 32, y + 32,
+                           1);
+    collisionStaticRectPassiveRegister(&powerGridRects[POWER_GRID_SPECIAL_SWITCH_ON]);
 
     x = powerGridPalettePos.x;
     y += 32;
@@ -368,8 +376,10 @@ void editorUpdate() {
                     int y = 0;
                     SDL_GetMouseState(&x, &y);
                     if (gbGfxScreenCoordsToGridSquare(x, y, &x, &y)) {
-                        if (selectedWiring == POWER_GRID_BLOCK)
-                            currentRoom->powerGrid[x][y] |= POWER_GRID_BLOCKED;
+                        if (selectedWiring == POWER_GRID_SWITCH)
+                            currentRoom->powerGrid[x][y] |= (POWER_GRID_BLOCKED | POWER_GRID_IS_SWITCH);
+                        else if (selectedWiring == POWER_GRID_SPECIAL_SWITCH_ON)
+                            currentRoom->powerGrid[x][y] |= POWER_GRID_IS_SWITCH;
                         else if (selectedWiring)
                             currentRoom->powerGrid[x][y] |= selectedWiring;
                         else
@@ -444,7 +454,7 @@ void editorUpdate() {
                 }
             }
         } else if (mode == PLACE_POWER) {
-            for (int i = 0; i < POWER_GRID_WIRING_NUM; i++) {
+            for (int i = 0; i < POWER_GRID_WIRING_NUM + 1; i++) {
                 if (collider == powerGridRects + i) {
                     selectedWiring = i;
                 }
@@ -494,19 +504,19 @@ void editorUpdate() {
                             break;
                         case DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL:
                             moveRoomPanelInit();
-                            DynamicEntity * panel = moveRoomPanelNew(x, y);
+                            DynamicEntity * panel = moveRoomPanelNew(x, y, MOVE_ROOM_PANEL_STATE_EMPTY);
                             roomAddDynamicEntity(currentRoom, panel);
                             dynamicEntityRegister(panel);
                             break;
                         case DYNAMIC_ENTITY_TYPE_SWITCH:
                             switchInit();
-                            DynamicEntity * switchEntity = switchNew(x, y);
+                            DynamicEntity * switchEntity = switchNew(x, y, 0);
                             roomAddDynamicEntity(currentRoom, switchEntity);
                             dynamicEntityRegister(switchEntity);
                             break;
                         case DYNAMIC_ENTITY_TYPE_DOOR:
                             doorInit();
-                            DynamicEntity * door = doorNew(x, y);
+                            DynamicEntity * door = doorNew(x, y, 0);
                             roomAddDynamicEntity(currentRoom, door);
                             dynamicEntityRegister(door);
                             break;

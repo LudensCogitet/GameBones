@@ -18,7 +18,7 @@ typedef struct {
 
     _Bool active;
 
-    DynamicEntityState state;
+    uint32_t state;
 
     Position pos;
 

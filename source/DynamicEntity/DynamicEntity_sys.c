@@ -14,7 +14,7 @@
 void (*dynamicEntityInits[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
 void (*dynamicEntityTeardowns[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])();
 
-DynamicEntity *(*dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(double x, double y);
+DynamicEntity *(*dynamicEntitySetups[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(double x, double y, uint32_t state);
 
 void (*dynamicEntityThinks[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
 void (*dynamicEntityResponds[DYNAMIC_ENTITY_TYPE_NUM_ENTITY_TYPES])(DynamicEntity *entity, double delta);
@@ -164,9 +164,10 @@ DynamicEntity *dynamicEntityDeserialize(SDL_RWops *file) {
     double x = SDL_ReadBE64(file);
     double y = SDL_ReadBE64(file);
     uint32_t id = SDL_ReadBE32(file);
+    uint32_t state = SDL_ReadBE32(file);
 
     dynamicEntityInits[type]();
-    DynamicEntity *entity = dynamicEntitySetups[type](x, y);
+    DynamicEntity *entity = dynamicEntitySetups[type](x, y, state);
     entity->id = id;
 
     if (nextId <= id) nextId = id + 1;

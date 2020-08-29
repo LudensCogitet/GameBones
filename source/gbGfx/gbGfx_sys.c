@@ -82,8 +82,7 @@ void gbGfxDraw() {
         gbRendererResetDrawColor();
     }
 
-    spriteDraw();
-
+    backgroundDraw();
 
     if (EDIT_MODE || currentRoom) {
         for (int x = 0; x < GB_GFX_GRID_WIDTH; x++) {
@@ -105,9 +104,9 @@ void gbGfxDraw() {
                                      0,
                                      SDL_FLIP_NONE);
 
-                    if (grid & POWER_GRID_BLOCKED) {
-                        src.x = 0;
-                        src.y = POWER_GRID_BLOCK * 32;
+                    if (grid & POWER_GRID_IS_SWITCH) {
+                        src.x = grid & POWER_GRID_BLOCKED ? 0 : 32;
+                        src.y = POWER_GRID_SWITCH * 32;
 
                         SDL_RenderCopyEx(gbMainRenderer,
                          gbTextures[mainCabelsTexture],
@@ -121,6 +120,8 @@ void gbGfxDraw() {
             }
         }
     }
+
+    spriteDraw();
 
     if (GB_GFX_DEBUG_FLAG) {
         collisionDebugDraw();

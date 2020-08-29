@@ -16,12 +16,13 @@
 #include "../../gbAnimation/gbAnimation_type.h"
 #include "../../gbAnimation/gbAnimType_type.h"
 
-#include "../../DynamicEntity/DynamicEntityState_union.h"
 #include "../../DynamicEntity/DynamicEntity_sys.h"
 
 #include "../../Sprite/Sprite_sys.h"
 
 #include "../../gbTexture/gbTextureName_enum.h"
+
+#include "entityMoveRoomPanel.h"
 
 #include "../../global_state.h"
 
@@ -31,7 +32,7 @@ static int texture = -1;
 extern int validRoomIndex(int dx, int dy);
 extern void handleRoomMove(int dx, int dy);
 
-DynamicEntity *moveRoomPanelNew(double x, double y) {
+DynamicEntity *moveRoomPanelNew(double x, double y, uint32_t state) {
     DynamicEntity *panel = dynamicEntityNew(DYNAMIC_ENTITY_TYPE_MOVE_ROOM_PANEL);
     panel->pos = (Position){x, y};
 
@@ -39,7 +40,7 @@ DynamicEntity *moveRoomPanelNew(double x, double y) {
     panel->dy = 0;      // Change room this dir Y
     panel->ax = 0;      // Player in bounding box flag
     panel->ay = 0;
-    panel->state.moveRoomPanel.state = MOVE_ROOM_PANEL_STATE_EMPTY;
+    panel->state = MOVE_ROOM_PANEL_STATE_EMPTY;
 
     spriteSet(&panel->sprite, GB_TEXTURE_NAME_MOVE_ROOM_PANEL, 0, 0, 32, 64, 32, 64, SPRITE_LAYER_BACKMID, 1, 0, SDL_FLIP_NONE);
     collisionDynamicRectSet(&panel->boundingBox, panel->id, 0, 0, 32, 64, 0);
@@ -47,7 +48,7 @@ DynamicEntity *moveRoomPanelNew(double x, double y) {
     return panel;
 }
 
-void updateDirection(DynamicEntity *panel, MOVE_ROOM_PANEL_STATE newState) {
+void updateDirection(DynamicEntity *panel, uint32_t newState) {
     int dx = 0;
     int dy = 0;
     int validIndex = newState;
@@ -67,16 +68,16 @@ void updateDirection(DynamicEntity *panel, MOVE_ROOM_PANEL_STATE newState) {
                 dy = -1;
         }
 
-        panel->state.moveRoomPanel.state = newState;
+        panel->state = newState;
     } else {
-        int oldState = panel->state.moveRoomPanel.state;
+        int oldState = panel->state;
         do {
-            panel->state.moveRoomPanel.state++;
+            panel->state++;
 
-            if (panel->state.moveRoomPanel.state == MOVE_ROOM_PANEL_STATE_NUM_STATES)
-                panel->state.moveRoomPanel.state = 1;
+            if (panel->state == MOVE_ROOM_PANEL_STATE_NO_STATE)
+                panel->state = 1;
 
-            switch (panel->state.moveRoomPanel.state) {
+            switch (panel->state) {
                 case MOVE_ROOM_PANEL_STATE_DOWN:
                     if (validIndex = validRoomIndex(0, 1))
                         dy = 1;
@@ -93,10 +94,10 @@ void updateDirection(DynamicEntity *panel, MOVE_ROOM_PANEL_STATE newState) {
                     if (validIndex = validRoomIndex(0, -1))
                         dy = -1;
             }
-        } while (!validIndex && panel->state.moveRoomPanel.state != oldState);
+        } while (!validIndex && panel->state != oldState);
     }
 
-    panel->sprite.src.x = panel->sprite.src.w * panel->state.moveRoomPanel.state;
+    panel->sprite.src.x = panel->sprite.src.w * panel->state;
     panel->dx = dx;
     panel->dy = dy;
 }
@@ -107,9 +108,8 @@ void moveRoomPanelThink(DynamicEntity *panel, double delta) {
             updateDirection(panel, 0);
     } else if (gbInputCheckState(GB_INPUT_INTERACT, GB_INPUT_RELEASED)) {
         if (collisionCheckPlayer(panel)) {
-            handleRoomMove(
-            panel->dx, panel->dy);
-            switch (panel->state.moveRoomPanel.state) {
+            handleRoomMove(panel->dx, panel->dy);
+            switch (panel->state) {
                 case MOVE_ROOM_PANEL_STATE_DOWN:
                     updateDirection(panel, MOVE_ROOM_PANEL_STATE_UP);
                     break;
